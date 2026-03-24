@@ -16,10 +16,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminLayout } from "@/components/AdminLayout";
 import { AddAppointmentModal } from "@/components/AddAppointmentModal";
+import { BrideProfileModal } from "@/components/BrideProfileModal";
 import {
   appointmentsApi,
+  bridesApi,
   APPOINTMENT_TITLE_LABELS,
   type AppointmentWithBride,
+  type BrideWithProfile,
 } from "@/lib/api";
 
 type ViewMode = "week" | "month";
@@ -88,8 +91,12 @@ const ACCENT_COLORS = ["#D4A373", "#A67C52", "#8A6840", "#C4956A", "#B87A4F"];
 export function AdminAppointmentsDesktop() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState(new Date()); // week or month anchor
+  const [profileBride, setProfileBride] = useState<BrideWithProfile | null>(
+    null,
+  );
+  const [profileLoading, setProfileLoading] = useState(false);
 
   // Compute date range for query
   const from = viewMode === "week" ? startOfWeek(cursor) : startOfMonth(cursor);
@@ -116,6 +123,16 @@ export function AdminAppointmentsDesktop() {
     else d.setMonth(d.getMonth() + dir);
     setCursor(d);
     setSelectedId(null);
+  }
+
+  async function openBrideProfile(brideId: string) {
+    setProfileLoading(true);
+    try {
+      const bride = await bridesApi.get(brideId);
+      setProfileBride(bride);
+    } finally {
+      setProfileLoading(false);
+    }
   }
 
   // Week strip days
@@ -255,7 +272,7 @@ export function AdminAppointmentsDesktop() {
                       {v}
                     </button>
                   ))}
-                  <button
+                  {/* <button
                     onClick={() => {
                       setCursor(new Date());
                       setSelectedId(null);
@@ -271,7 +288,7 @@ export function AdminAppointmentsDesktop() {
                     }}
                   >
                     Today
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -563,6 +580,8 @@ export function AdminAppointmentsDesktop() {
                   <DetailPanel
                     appt={selected}
                     onClose={() => setSelectedId(null)}
+                    onViewBride={() => openBrideProfile(selected.bride.id)}
+                    profileLoading={profileLoading}
                   />
                 </div>
               )}
@@ -574,6 +593,11 @@ export function AdminAppointmentsDesktop() {
       <AddAppointmentModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
+      />
+
+      <BrideProfileModal
+        bride={profileBride}
+        onClose={() => setProfileBride(null)}
       />
     </AdminLayout>
   );
@@ -687,9 +711,13 @@ function ApptCard({
 function DetailPanel({
   appt,
   onClose,
+  onViewBride,
+  profileLoading,
 }: {
   appt: AppointmentWithBride;
   onClose: () => void;
+  onViewBride: () => void;
+  profileLoading: boolean;
 }) {
   const accent = "#D4A373";
   const bg = accent + "22";
@@ -862,6 +890,8 @@ function DetailPanel({
             {appt.status}
           </Badge>
           <button
+            onClick={onViewBride}
+            disabled={profileLoading}
             style={{
               width: "100%",
               padding: "9px",
@@ -871,46 +901,21 @@ function DetailPanel({
               borderRadius: 7,
               fontSize: 12,
               fontWeight: 500,
-              cursor: "pointer",
-            }}
-          >
-            View Bride Profile
-          </button>
-          <button
-            style={{
-              width: "100%",
-              padding: "9px",
-              background: "#F5EFE9",
-              color: "#A67C52",
-              border: "1px solid #E8E0D5",
-              borderRadius: 7,
-              fontSize: 12,
-              cursor: "pointer",
+              cursor: profileLoading ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 6,
+              opacity: profileLoading ? 0.7 : 1,
             }}
           >
-            <Upload size={13} /> Upload Photos
-          </button>
-          <button
-            style={{
-              width: "100%",
-              padding: "9px",
-              background: "#fff",
-              color: "#555",
-              border: "1px solid #E8E0D5",
-              borderRadius: 7,
-              fontSize: 12,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-            }}
-          >
-            <FileText size={13} /> Add Notes
+            {profileLoading ? (
+              <>
+                <Loader2 size={13} className="animate-spin" /> Loading…
+              </>
+            ) : (
+              "View Bride Profile"
+            )}
           </button>
         </div>
       </div>
