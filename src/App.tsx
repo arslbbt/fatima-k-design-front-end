@@ -1,12 +1,12 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-
-import HomePage from "@/pages/HomePage";
+import { useAuth } from "@/lib/auth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import { LoginBride } from "@/components/LoginBride";
-import { LoginAdmin } from "@/components/LoginAdmin";
 import { ForgotPassword } from "@/components/ForgotPassword";
+import HomePage from "@/pages/HomePage";
 
 import { BridePortal } from "@/components/BridePortal";
 import { BridePortalAppointments } from "@/components/BridePortalAppointments";
@@ -28,43 +28,139 @@ const queryClient = new QueryClient();
 
 function NotFound() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FAF8F5", fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#FAF8F5",
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 72, fontWeight: 300, color: "#D4A373", lineHeight: 1 }}>404</div>
-        <div style={{ fontSize: 16, color: "#888", marginTop: 12, marginBottom: 24 }}>Page not found</div>
-        <a href="/fatimak-portal/" style={{ fontSize: 13, color: "#A67C52", textDecoration: "none" }}>← Back to home</a>
+        <div
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 72,
+            fontWeight: 300,
+            color: "#D4A373",
+            lineHeight: 1,
+          }}
+        >
+          404
+        </div>
+        <div
+          style={{
+            fontSize: 16,
+            color: "#888",
+            marginTop: 12,
+            marginBottom: 24,
+          }}
+        >
+          Page not found
+        </div>
+        <a
+          href="/fatimak-portal/"
+          style={{ fontSize: 13, color: "#A67C52", textDecoration: "none" }}
+        >
+          ← Back to home
+        </a>
       </div>
     </div>
   );
 }
 
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <HomePage />;
+  return <Redirect to={user.role === "ADMIN" ? "/admin" : "/bride"} />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
+      {/* Root — redirect based on auth state */}
+      <Route path="/" component={RootRedirect} />
 
-      {/* Auth */}
+      {/* Public */}
       <Route path="/login" component={LoginBride} />
-      <Route path="/admin/login" component={LoginAdmin} />
       <Route path="/forgot-password" component={ForgotPassword} />
 
-      {/* Bride Portal */}
-      <Route path="/bride" component={BridePortal} />
-      <Route path="/bride/appointments" component={BridePortalAppointments} />
-      <Route path="/bride/dress-journey" component={BridePortalDressJourney} />
-      <Route path="/bride/inspiration" component={BridePortalInspiration} />
-      <Route path="/bride/fitting-photos" component={BridePortalFittingPhotos} />
-      <Route path="/bride/payments" component={BridePortalPayments} />
-      <Route path="/bride/documents" component={BridePortalDocuments} />
-      <Route path="/bride/profile-setup" component={BrideProfileSetup} />
-      <Route path="/bride/account" component={BrideAccountManagement} />
+      {/* Bride Portal — BRIDE role only */}
+      <Route path="/bride">
+        <ProtectedRoute role="BRIDE">
+          <BridePortal />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/appointments">
+        <ProtectedRoute role="BRIDE">
+          <BridePortalAppointments />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/dress-journey">
+        <ProtectedRoute role="BRIDE">
+          <BridePortalDressJourney />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/inspiration">
+        <ProtectedRoute role="BRIDE">
+          <BridePortalInspiration />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/fitting-photos">
+        <ProtectedRoute role="BRIDE">
+          <BridePortalFittingPhotos />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/payments">
+        <ProtectedRoute role="BRIDE">
+          <BridePortalPayments />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/documents">
+        <ProtectedRoute role="BRIDE">
+          <BridePortalDocuments />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/profile-setup">
+        <ProtectedRoute role="BRIDE">
+          <BrideProfileSetup />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/bride/account">
+        <ProtectedRoute role="BRIDE">
+          <BrideAccountManagement />
+        </ProtectedRoute>
+      </Route>
 
-      {/* Admin */}
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/brides" component={AdminAllBrides} />
-      <Route path="/admin/appointments" component={AdminAppointmentsDesktop} />
-      <Route path="/admin/payments" component={AdminPaymentsDesktop} />
-      <Route path="/admin/documents" component={AdminDocumentsDesktop} />
+      {/* Admin — ADMIN role only */}
+      <Route path="/admin">
+        <ProtectedRoute role="ADMIN">
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/brides">
+        <ProtectedRoute role="ADMIN">
+          <AdminAllBrides />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/appointments">
+        <ProtectedRoute role="ADMIN">
+          <AdminAppointmentsDesktop />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/payments">
+        <ProtectedRoute role="ADMIN">
+          <AdminPaymentsDesktop />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/documents">
+        <ProtectedRoute role="ADMIN">
+          <AdminDocumentsDesktop />
+        </ProtectedRoute>
+      </Route>
 
       <Route component={NotFound} />
     </Switch>

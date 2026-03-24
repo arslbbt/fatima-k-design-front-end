@@ -1,4 +1,14 @@
-const BASE = "http://localhost:3000";
+declare global {
+  interface ImportMetaEnv {
+    readonly VITE_API_BASE_URL: string;
+    [key: string]: string | undefined;
+  }
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
+}
+
+const BASE = import.meta.env.VITE_API_BASE_URL as string;
 
 export class ApiError extends Error {
   constructor(
@@ -46,12 +56,6 @@ export const authApi = {
     request<{ message: string }>("/auth/logout", { method: "POST" }),
 
   me: () => request<User>("/auth/me"),
-
-  register: (data: RegisterPayload) =>
-    request<User>("/auth/register", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
 
   changePassword: (currentPassword: string, newPassword: string) =>
     request<{ message: string }>("/auth/change-password", {
@@ -144,13 +148,6 @@ export interface Appointment {
   createdBy: string;
   createdAt: string;
   bride?: BrideWithProfile;
-}
-
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-  notes?: string;
 }
 
 export interface UpdateBrideProfilePayload {
