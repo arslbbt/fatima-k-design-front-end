@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/Pagination";
 import { AdminLayout } from "@/components/AdminLayout";
 import { AddBrideModal } from "@/components/AddBrideModal";
+import { BrideProfileModal } from "@/components/BrideProfileModal";
 import {
   bridesApi,
   type BrideWithProfile,
@@ -37,6 +38,7 @@ export function AdminAllBrides() {
   const [stageFilter, setStageFilter] = useState<BrideStage | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [viewBride, setViewBride] = useState<BrideWithProfile | null>(null);
 
   const handleSearch = useCallback((val: string) => {
     setSearch(val);
@@ -267,6 +269,7 @@ export function AdminAllBrides() {
                         stageMutation.mutate({ id: bride.id, stage })
                       }
                       stageUpdating={stageMutation.isPending}
+                      onViewProfile={() => setViewBride(bride)}
                     />
                   ))}
                 </div>
@@ -290,6 +293,7 @@ export function AdminAllBrides() {
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
       />
+      <BrideProfileModal bride={viewBride} onClose={() => setViewBride(null)} />
     </AdminLayout>
   );
 }
@@ -298,10 +302,12 @@ function BrideCard({
   bride,
   onStageChange,
   stageUpdating,
+  onViewProfile,
 }: {
   bride: BrideWithProfile;
   onStageChange: (stage: BrideStage) => void;
   stageUpdating: boolean;
+  onViewProfile: () => void;
 }) {
   const profile = bride.brideProfile;
   const currentStage = profile?.stage ?? "CONSULTATION";
@@ -555,6 +561,7 @@ function BrideCard({
           }}
         >
           <button
+            onClick={onViewProfile}
             style={{
               flex: 1,
               display: "flex",
