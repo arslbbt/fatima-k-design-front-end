@@ -25,8 +25,6 @@ import {
 
 type ViewMode = "week" | "month";
 
-// ── Date helpers ──────────────────────────────────────────────────────────────
-
 function startOfDay(d: Date) {
   const r = new Date(d);
   r.setHours(0, 0, 0, 0);
@@ -85,11 +83,10 @@ function fmtWeekRange(d: Date) {
 }
 
 const ACCENT_COLORS = ["#D4A373", "#A67C52", "#8A6840", "#C4956A", "#B87A4F"];
-
-function statusColor(status: string): { bg: string; color: string } {
-  if (status === "CANCELLED") return { bg: "#FFF0F0", color: "#C0392B" };
-  if (status === "COMPLETED") return { bg: "#F0FFF4", color: "#27AE60" };
-  if (status === "RESCHEDULED") return { bg: "#FFF8E7", color: "#B7860B" };
+function statusColor(s: string) {
+  if (s === "CANCELLED") return { bg: "#FFF0F0", color: "#C0392B" };
+  if (s === "COMPLETED") return { bg: "#F0FFF4", color: "#27AE60" };
+  if (s === "RESCHEDULED") return { bg: "#FFF8E7", color: "#B7860B" };
   return { bg: "#F5EFE9", color: "#A67C52" };
 }
 
@@ -104,10 +101,12 @@ export function AdminAppointmentsDesktop() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [editAppointment, setEditAppointment] =
     useState<AppointmentWithBride | null>(null);
+  const [confirmCompleteId, setConfirmCompleteId] = useState<string | null>(
+    null,
+  );
 
   const from = viewMode === "week" ? startOfWeek(cursor) : startOfMonth(cursor);
   const to = viewMode === "week" ? endOfWeek(cursor) : endOfMonth(cursor);
-
   const queryClient = useQueryClient();
 
   const { data: appointments = [], isLoading } = useQuery({
@@ -116,7 +115,6 @@ export function AdminAppointmentsDesktop() {
       appointmentsApi.list({ from: from.toISOString(), to: to.toISOString() }),
   });
 
-  // Auto-select closest upcoming appointment, fall back to last past one
   useEffect(() => {
     if (appointments.length === 0 || selectedId) return;
     const now = Date.now();
@@ -129,8 +127,10 @@ export function AdminAppointmentsDesktop() {
   const markCompleteMutation = useMutation({
     mutationFn: (id: string) =>
       appointmentsApi.update(id, { status: "COMPLETED" }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["appointments"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      setConfirmCompleteId(null);
+    },
   });
 
   const today = new Date();
@@ -153,8 +153,7 @@ export function AdminAppointmentsDesktop() {
   async function openBrideProfile(brideId: string) {
     setProfileLoading(true);
     try {
-      const bride = await bridesApi.get(brideId);
-      setProfileBride(bride);
+      setProfileBride(await bridesApi.get(brideId));
     } finally {
       setProfileLoading(false);
     }
@@ -164,11 +163,16 @@ export function AdminAppointmentsDesktop() {
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + i);
-    const count = appointments.filter((a) =>
-      isSameDay(new Date(a.startTime), d),
-    ).length;
-    return { d, count, isToday: isSameDay(d, today) };
+    return {
+      d,
+      count: appointments.filter((a) => isSameDay(new Date(a.startTime), d))
+        .length,
+      isToday: isSameDay(d, today),
+    };
   });
+
+  const confirmAppt =
+    appointments.find((a) => a.id === confirmCompleteId) ?? null;
 
   return (
     <AdminLayout>
@@ -296,7 +300,7 @@ export function AdminAppointmentsDesktop() {
                       {v}
                     </button>
                   ))}
-                  <button
+                  {/* <button
                     onClick={() => {
                       setCursor(new Date());
                       setSelectedId(null);
@@ -312,11 +316,9 @@ export function AdminAppointmentsDesktop() {
                     }}
                   >
                     Today
-                  </button>
+                  </button> */}
                 </div>
               </div>
-
-              {/* Week day pills */}
               <div style={{ display: "flex", gap: 8 }}>
                 {weekDays.map(({ d, count, isToday }, i) => (
                   <div
@@ -407,7 +409,6 @@ export function AdminAppointmentsDesktop() {
 
           {!isLoading && (
             <div style={{ display: "flex", gap: 20 }}>
-              {/* Left: appointment list */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Today */}
                 {todayAppts.length > 0 && (
@@ -456,9 +457,7 @@ export function AdminAppointmentsDesktop() {
                               appt.id === selectedId ? null : appt.id,
                             )
                           }
-                          onMarkComplete={(id) =>
-                            markCompleteMutation.mutate(id)
-                          }
+                          onMarkComplete={(id) => setConfirmCompleteId(id)}
                         />
                       ))}
                     </div>
@@ -581,15 +580,15 @@ export function AdminAppointmentsDesktop() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    markCompleteMutation.mutate(a.id);
+                                    setConfirmCompleteId(a.id);
                                   }}
                                   style={{
                                     width: 26,
                                     height: 26,
                                     borderRadius: "50%",
-                                    border: "1.5px solid #27AE60",
+                                    border: "1.5px solid #D4A373",
                                     background: "#fff",
-                                    color: "#27AE60",
+                                    color: "#A67C52",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
@@ -636,7 +635,6 @@ export function AdminAppointmentsDesktop() {
                 )}
               </div>
 
-              {/* Right: detail panel */}
               {selected && (
                 <div style={{ width: 280, flexShrink: 0 }}>
                   <DetailPanel
@@ -666,6 +664,146 @@ export function AdminAppointmentsDesktop() {
         bride={profileBride}
         onClose={() => setProfileBride(null)}
       />
+
+      {/* Confirm complete modal */}
+      {confirmCompleteId && confirmAppt && (
+        <>
+          <div
+            onClick={() => setConfirmCompleteId(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.45)",
+              zIndex: 200,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                width: "100%",
+                maxWidth: 400,
+                boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+                padding: "32px 28px",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  background: "#F5EFE9",
+                  border: "2px solid #D4A373",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  fontSize: 22,
+                  color: "#A67C52",
+                }}
+              >
+                ✓
+              </div>
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 22,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  textAlign: "center",
+                  margin: "0 0 8px",
+                }}
+              >
+                Mark as Completed?
+              </h3>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#888",
+                  textAlign: "center",
+                  margin: "0 0 8px",
+                  lineHeight: 1.5,
+                }}
+              >
+                {APPOINTMENT_TITLE_LABELS[confirmAppt.title]} —{" "}
+                {confirmAppt.bride?.name}
+              </p>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "#AAA",
+                  textAlign: "center",
+                  margin: "0 0 24px",
+                }}
+              >
+                {fmtDate(new Date(confirmAppt.startTime))} at{" "}
+                {fmtTime(new Date(confirmAppt.startTime))}
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setConfirmCompleteId(null)}
+                  style={{
+                    flex: 1,
+                    padding: "11px",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    color: "#666",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => markCompleteMutation.mutate(confirmCompleteId)}
+                  disabled={markCompleteMutation.isPending}
+                  style={{
+                    flex: 2,
+                    padding: "11px",
+                    border: "none",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: markCompleteMutation.isPending
+                      ? "#C4A88C"
+                      : "#2C2C2C",
+                    cursor: markCompleteMutation.isPending
+                      ? "not-allowed"
+                      : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                >
+                  {markCompleteMutation.isPending ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Saving…
+                    </>
+                  ) : (
+                    "Yes, Mark Completed"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </AdminLayout>
   );
 }
@@ -779,9 +917,9 @@ function ApptCard({
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                border: "1.5px solid #27AE60",
+                border: "1.5px solid #D4A373",
                 background: "#fff",
-                color: "#27AE60",
+                color: "#A67C52",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -817,7 +955,6 @@ function DetailPanel({
   profileLoading: boolean;
 }) {
   const accent = "#D4A373";
-  const bg = accent + "22";
   const sc = statusColor(appt.status);
 
   return (
@@ -832,7 +969,7 @@ function DetailPanel({
         top: 0,
       }}
     >
-      <div style={{ background: bg, padding: "16px 18px" }}>
+      <div style={{ background: accent + "22", padding: "16px 18px" }}>
         <div
           style={{
             display: "flex",
@@ -868,7 +1005,6 @@ function DetailPanel({
           </button>
         </div>
       </div>
-
       <div
         style={{
           padding: "16px 18px",
@@ -913,11 +1049,11 @@ function DetailPanel({
                 color: "#555",
               }}
             >
-              <MapPin size={13} color="#D4A373" /> {appt.location}
+              <MapPin size={13} color="#D4A373" />
+              {appt.location}
             </div>
           )}
         </div>
-
         {appt.description && (
           <div style={{ borderTop: "1px solid #F0EBE4", paddingTop: 12 }}>
             <div
@@ -937,7 +1073,6 @@ function DetailPanel({
             </div>
           </div>
         )}
-
         {appt.whatToBring && (
           <div style={{ borderTop: "1px solid #F0EBE4", paddingTop: 12 }}>
             <div
@@ -957,7 +1092,6 @@ function DetailPanel({
             </div>
           </div>
         )}
-
         <div
           style={{
             borderTop: "1px solid #F0EBE4",
