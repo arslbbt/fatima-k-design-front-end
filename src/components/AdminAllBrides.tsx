@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Pagination } from "@/components/ui/Pagination";
+
 import { AdminLayout } from "@/components/AdminLayout";
 import { AddBrideModal } from "@/components/AddBrideModal";
 import { BrideProfileModal } from "@/components/BrideProfileModal";
@@ -24,6 +24,7 @@ import {
   BRIDE_STAGE_LABELS,
   BRIDE_STAGE_ORDER,
 } from "@/lib/api";
+import { Pagination } from "./ui/Pagination";
 
 const PAGE_SIZE = 6;
 

@@ -113,7 +113,15 @@ export const bridesApi = {
 // ── Appointments ──────────────────────────────────────────────────────────────
 
 export const appointmentsApi = {
-  list: () => request<Appointment[]>("/appointments"),
+  list: (params?: { from?: string; to?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set("from", params.from);
+    if (params?.to) qs.set("to", params.to);
+    const query = qs.toString();
+    return request<AppointmentWithBride[]>(
+      `/appointments${query ? `?${query}` : ""}`,
+    );
+  },
 
   myAppointments: () => request<Appointment[]>("/appointments/my"),
 
@@ -139,7 +147,26 @@ export const appointmentsApi = {
 
 export type Role = "ADMIN" | "BRIDE";
 export type AppointmentStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED";
-export type AppointmentTitle = "CONSULTATION" | "FITTING" | "FINAL_PICKUP";
+export type AppointmentTitle =
+  | "CONSULTATION"
+  | "FIRST_FITTING"
+  | "SECOND_FITTING"
+  | "THIRD_FITTING"
+  | "FINAL_FITTING"
+  | "ALTERATION"
+  | "COLLECTION_READY"
+  | "CUSTOM";
+
+export const APPOINTMENT_TITLE_LABELS: Record<AppointmentTitle, string> = {
+  CONSULTATION: "Consultation",
+  FIRST_FITTING: "1st Fitting",
+  SECOND_FITTING: "2nd Fitting",
+  THIRD_FITTING: "3rd Fitting",
+  FINAL_FITTING: "Final Fitting",
+  ALTERATION: "Alteration",
+  COLLECTION_READY: "Collection Ready",
+  CUSTOM: "Custom",
+};
 export type BrideStage =
   | "CONSULTATION"
   | "FIRST_FITTING"
@@ -207,6 +234,10 @@ export interface Appointment {
   bride?: BrideWithProfile;
 }
 
+export interface AppointmentWithBride extends Appointment {
+  bride: BrideWithProfile;
+}
+
 export interface RegisterBridePayload {
   name: string;
   email: string;
@@ -246,6 +277,7 @@ export interface PaginatedResponse<T> {
 export interface CreateAppointmentPayload {
   brideId: string;
   title: AppointmentTitle;
+  customTitle?: string;
   description?: string;
   location?: string;
   startTime: string;

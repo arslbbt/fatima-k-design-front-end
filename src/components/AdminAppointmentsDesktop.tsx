@@ -1,199 +1,919 @@
 import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Upload, Plus, Clock, MapPin, ChevronLeft,
-  ChevronRight, FileText, X
+  Plus,
+  Clock,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  X,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminLayout } from "@/components/AdminLayout";
+import { AddAppointmentModal } from "@/components/AddAppointmentModal";
+import {
+  appointmentsApi,
+  APPOINTMENT_TITLE_LABELS,
+  type AppointmentWithBride,
+} from "@/lib/api";
 
-const weekDays = [
-  { short: "MON", date: 23, appts: 0 },
-  { short: "TUE", date: 24, appts: 2, active: true },
-  { short: "WED", date: 25, appts: 1 },
-  { short: "THU", date: 26, appts: 0 },
-  { short: "FRI", date: 27, appts: 1 },
-  { short: "SAT", date: 28, appts: 0 },
-  { short: "SUN", date: 29, appts: 0 },
-];
+type ViewMode = "week" | "month";
 
-const todayAppts = [
-  {
-    id: 1, bride: "Sophie Anderson", initials: "SA", type: "Final Fitting",
-    time: "2:00 PM", duration: "90 min", accentColor: "#D4A373", bgColor: "#F5EFE9",
-    note: "Sophie to bring wedding shoes + veil for hem length. Check lace bodice fit.",
-    tags: ["Couture"],
-  },
-  {
-    id: 2, bride: "Emma Clarke", initials: "EC", type: "2nd Fitting",
-    time: "4:00 PM", duration: "60 min", accentColor: "#A67C52", bgColor: "#EDE4DA",
-    note: "Lace sleeve attachment to review. Zip and busk closure to be fitted.",
-    tags: ["Couture"],
-  },
-];
+// ── Date helpers ──────────────────────────────────────────────────────────────
 
-const upcomingAppts = [
-  { bride: "Mia Chen", initials: "MC", type: "1st Fitting", date: "Fri 27 Mar", time: "3:30 PM", tag: "Couture" },
-  { bride: "Isabelle Martin", initials: "IM", type: "Consultation", date: "Mon 30 Mar", time: "10:00 AM", tag: "Couture" },
-  { bride: "Lily Thompson", initials: "LT", type: "Alterations Review", date: "Mon 30 Mar", time: "2:00 PM", tag: "RTW" },
-  { bride: "Chloe Nguyen", initials: "CN", type: "2nd Fitting", date: "Wed 1 Apr", time: "2:00 PM", tag: "Couture" },
-  { bride: "Grace Kim", initials: "GK", type: "Final Pickup", date: "Thu 2 Apr", time: "11:00 AM", tag: "RTW" },
-];
+function startOfDay(d: Date) {
+  const r = new Date(d);
+  r.setHours(0, 0, 0, 0);
+  return r;
+}
+function endOfDay(d: Date) {
+  const r = new Date(d);
+  r.setHours(23, 59, 59, 999);
+  return r;
+}
+function startOfWeek(d: Date) {
+  const r = new Date(d);
+  const day = r.getDay(); // 0=Sun
+  r.setDate(r.getDate() - (day === 0 ? 6 : day - 1)); // Mon
+  return startOfDay(r);
+}
+function endOfWeek(d: Date) {
+  const r = startOfWeek(d);
+  r.setDate(r.getDate() + 6);
+  return endOfDay(r);
+}
+function startOfMonth(d: Date) {
+  return startOfDay(new Date(d.getFullYear(), d.getMonth(), 1));
+}
+function endOfMonth(d: Date) {
+  return endOfDay(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+}
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+function fmtTime(d: Date) {
+  return d.toLocaleTimeString("en-AU", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+function fmtDate(d: Date) {
+  return d.toLocaleDateString("en-AU", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+function fmtMonthYear(d: Date) {
+  return d.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+}
+function fmtWeekRange(d: Date) {
+  const s = startOfWeek(d);
+  const e = endOfWeek(d);
+  return `${s.getDate()} – ${e.getDate()} ${s.toLocaleDateString("en-AU", { month: "long", year: "numeric" })}`;
+}
+
+const ACCENT_COLORS = ["#D4A373", "#A67C52", "#8A6840", "#C4956A", "#B87A4F"];
 
 export function AdminAppointmentsDesktop() {
-  const [selectedAppt, setSelectedAppt] = useState<number | null>(1);
-  const selected = todayAppts.find(a => a.id === selectedAppt);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [cursor, setCursor] = useState(new Date()); // week or month anchor
+
+  // Compute date range for query
+  const from = viewMode === "week" ? startOfWeek(cursor) : startOfMonth(cursor);
+  const to = viewMode === "week" ? endOfWeek(cursor) : endOfMonth(cursor);
+
+  const { data: appointments = [], isLoading } = useQuery({
+    queryKey: ["appointments", from.toISOString(), to.toISOString()],
+    queryFn: () =>
+      appointmentsApi.list({ from: from.toISOString(), to: to.toISOString() }),
+  });
+
+  const today = new Date();
+  const todayAppts = appointments.filter((a) =>
+    isSameDay(new Date(a.startTime), today),
+  );
+  const restAppts = appointments.filter(
+    (a) => !isSameDay(new Date(a.startTime), today),
+  );
+  const selected = appointments.find((a) => a.id === selectedId) ?? null;
+
+  function navigate(dir: 1 | -1) {
+    const d = new Date(cursor);
+    if (viewMode === "week") d.setDate(d.getDate() + dir * 7);
+    else d.setMonth(d.getMonth() + dir);
+    setCursor(d);
+    setSelectedId(null);
+  }
+
+  // Week strip days
+  const weekStart = startOfWeek(cursor);
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    const count = appointments.filter((a) =>
+      isSameDay(new Date(a.startTime), d),
+    ).length;
+    return { d, count, isToday: isSameDay(d, today) };
+  });
 
   return (
     <AdminLayout>
       <main className="bp-page-main">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
-          <div>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 500, color: "#2C2C2C", margin: "0 0 4px" }}>Appointments</h1>
-            <div style={{ fontSize: 12, color: "#888" }}>Paddington Studio · March 2026</div>
-          </div>
-          <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: "#333", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-            <Plus size={15} /> New Appointment
-          </button>
-        </div>
-
-        {/* Week strip */}
-        <Card style={{ background: "#FFFFFF", border: "1px solid #E8E0D5", boxShadow: "0 1px 6px rgba(0,0,0,0.04)", marginBottom: 24 }}>
-          <CardContent style={{ padding: "16px 20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><ChevronLeft size={18} color="#555" /></button>
-                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 500, color: "#2C2C2C" }}>Week of 23 March 2026</span>
-                <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><ChevronRight size={18} color="#555" /></button>
+          {/* Header */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginBottom: 24,
+            }}
+          >
+            <div>
+              <h1
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 30,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  margin: "0 0 4px",
+                }}
+              >
+                Appointments
+              </h1>
+              <div style={{ fontSize: 12, color: "#888" }}>
+                {appointments.length} appointment
+                {appointments.length !== 1 ? "s" : ""} in view
               </div>
+            </div>
+            <button
+              onClick={() => setAddModalOpen(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 18px",
+                background: "#333",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              <Plus size={15} /> New Appointment
+            </button>
+          </div>
+
+          {/* Week/Month strip */}
+          <Card
+            style={{
+              background: "#fff",
+              border: "1px solid #E8E0D5",
+              boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+              marginBottom: 24,
+            }}
+          >
+            <CardContent style={{ padding: "16px 20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 14,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                    }}
+                  >
+                    <ChevronLeft size={18} color="#555" />
+                  </button>
+                  <span
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontSize: 18,
+                      fontWeight: 500,
+                      color: "#2C2C2C",
+                    }}
+                  >
+                    {viewMode === "week"
+                      ? fmtWeekRange(cursor)
+                      : fmtMonthYear(cursor)}
+                  </span>
+                  <button
+                    onClick={() => navigate(1)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                    }}
+                  >
+                    <ChevronRight size={18} color="#555" />
+                  </button>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {(["week", "month"] as ViewMode[]).map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => {
+                        setViewMode(v);
+                        setCursor(new Date());
+                      }}
+                      style={{
+                        padding: "5px 14px",
+                        borderRadius: 6,
+                        border: "1px solid #E8E0D5",
+                        background: viewMode === v ? "#333" : "#fff",
+                        color: viewMode === v ? "#fff" : "#666",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setCursor(new Date());
+                      setSelectedId(null);
+                    }}
+                    style={{
+                      padding: "5px 14px",
+                      borderRadius: 6,
+                      border: "1px solid #E8E0D5",
+                      background: "#fff",
+                      color: "#A67C52",
+                      fontSize: 11,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Today
+                  </button>
+                </div>
+              </div>
+
+              {/* Week day pills */}
               <div style={{ display: "flex", gap: 8 }}>
-                {["Week", "Month"].map((v, i) => (
-                  <button key={i} style={{ padding: "5px 14px", borderRadius: 6, border: "1px solid #E8E0D5", background: i === 0 ? "#333" : "#fff", color: i === 0 ? "#fff" : "#666", fontSize: 11, cursor: "pointer" }}>{v}</button>
-                ))}
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {weekDays.map((d, i) => (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 9, color: "#AAAAAA", letterSpacing: "0.08em" }}>{d.short}</span>
-                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: d.active ? "#333" : "transparent", border: d.appts > 0 && !d.active ? "2px solid #D4A373" : "2px solid transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 14, fontWeight: d.active ? 600 : 400, color: d.active ? "#fff" : d.appts > 0 ? "#2C2C2C" : "#888" }}>{d.date}</span>
-                  </div>
-                  {d.appts > 0
-                    ? <span style={{ fontSize: 10, background: d.active ? "#D4A373" : "#F0E4D8", color: d.active ? "#fff" : "#A67C52", borderRadius: 10, padding: "1px 7px", fontWeight: 600 }}>{d.appts}</span>
-                    : <span style={{ fontSize: 10, color: "transparent" }}>·</span>
-                  }
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Day schedule + detail panel */}
-        <div style={{ display: "flex", gap: 20 }}>
-
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid #E8E0D5" }}>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 500, color: "#2C2C2C", margin: 0 }}>Tuesday 24 March</h2>
-              <span style={{ fontSize: 12, color: "#888" }}>{todayAppts.length} appointments</span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {todayAppts.map((appt) => (
-                <div
-                  key={appt.id}
-                  onClick={() => setSelectedAppt(appt.id)}
-                  style={{ background: "#FFFFFF", border: `1px solid ${selectedAppt === appt.id ? "#D4A373" : "#E8E0D5"}`, borderRadius: 10, overflow: "hidden", cursor: "pointer", boxShadow: selectedAppt === appt.id ? "0 2px 8px rgba(212,163,115,0.2)" : "0 1px 4px rgba(0,0,0,0.04)", transition: "all 0.15s" }}
-                >
-                  <div style={{ background: appt.bgColor, padding: "10px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-                    <Avatar style={{ width: 34, height: 34, border: "2px solid rgba(255,255,255,0.6)" }}>
-                      <AvatarFallback style={{ background: "#fff", color: appt.accentColor, fontSize: 11, fontWeight: 700 }}>{appt.initials}</AvatarFallback>
-                    </Avatar>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#2C2C2C" }}>{appt.bride}</div>
-                      <div style={{ fontSize: 11, color: "#666" }}>{appt.type}</div>
+                {weekDays.map(({ d, count, isToday }, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 5,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 9,
+                        color: "#AAAAAA",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      {d
+                        .toLocaleDateString("en-AU", { weekday: "short" })
+                        .toUpperCase()}
+                    </span>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        background: isToday ? "#333" : "transparent",
+                        border:
+                          count > 0 && !isToday
+                            ? "2px solid #D4A373"
+                            : "2px solid transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 13,
+                          fontWeight: isToday ? 600 : 400,
+                          color: isToday
+                            ? "#fff"
+                            : count > 0
+                              ? "#2C2C2C"
+                              : "#888",
+                        }}
+                      >
+                        {d.getDate()}
+                      </span>
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#2C2C2C" }}>{appt.time}</div>
-                      <div style={{ fontSize: 10, color: "#888" }}>{appt.duration}</div>
-                    </div>
-                  </div>
-                  {selectedAppt !== appt.id && (
-                    <div style={{ padding: "8px 16px", fontSize: 12, color: "#888888" }}>{appt.note.slice(0, 60)}…</div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ marginTop: 24 }}>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontWeight: 500, color: "#2C2C2C", margin: "0 0 12px", paddingBottom: 8, borderBottom: "1px solid #E8E0D5" }}>Coming Up This Week</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {upcomingAppts.map((a, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "#fff", border: "1px solid #E8E0D5", borderRadius: 8 }}>
-                    <Avatar style={{ width: 30, height: 30 }}>
-                      <AvatarFallback style={{ background: "#E8D8CE", color: "#A67C52", fontSize: 10, fontWeight: 600 }}>{a.initials}</AvatarFallback>
-                    </Avatar>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "#333" }}>{a.bride}</div>
-                      <div style={{ fontSize: 11, color: "#888" }}>{a.type}</div>
-                    </div>
-                    <div style={{ fontSize: 11, color: "#888", textAlign: "right" }}>
-                      <div>{a.date}</div>
-                      <div style={{ color: "#A67C52", fontWeight: 500 }}>{a.time}</div>
-                    </div>
-                    <Badge style={{ background: a.tag === "RTW" ? "#EEEEEE" : "#E8D8CE", color: a.tag === "RTW" ? "#666" : "#A67C52", border: "none", fontSize: 9 }}>{a.tag}</Badge>
+                    {count > 0 ? (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          background: isToday ? "#D4A373" : "#F0E4D8",
+                          color: isToday ? "#fff" : "#A67C52",
+                          borderRadius: 10,
+                          padding: "1px 7px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {count}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 10, color: "transparent" }}>
+                        ·
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Detail panel */}
-          {selected && (
-            <div style={{ width: 280, flexShrink: 0 }}>
-              <div style={{ background: "#FFFFFF", border: "1px solid #E8E0D5", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", position: "sticky", top: 0 }}>
-                <div style={{ background: selected.bgColor, padding: "16px 18px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div>
-                      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 500, color: "#2C2C2C" }}>{selected.type}</div>
-                      <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>{selected.bride}</div>
+          {isLoading && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "40px 0",
+              }}
+            >
+              <Loader2 size={24} className="animate-spin" color="#D4A373" />
+            </div>
+          )}
+
+          {!isLoading && (
+            <div style={{ display: "flex", gap: 20 }}>
+              {/* Left: appointment list */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Today */}
+                {todayAppts.length > 0 && (
+                  <div style={{ marginBottom: 24 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 12,
+                        paddingBottom: 8,
+                        borderBottom: "1px solid #E8E0D5",
+                      }}
+                    >
+                      <h2
+                        style={{
+                          fontFamily: "'Cormorant Garamond', serif",
+                          fontSize: 18,
+                          fontWeight: 500,
+                          color: "#2C2C2C",
+                          margin: 0,
+                        }}
+                      >
+                        Today
+                      </h2>
+                      <span style={{ fontSize: 12, color: "#888" }}>
+                        {todayAppts.length} appointment
+                        {todayAppts.length !== 1 ? "s" : ""}
+                      </span>
                     </div>
-                    <button onClick={() => setSelectedAppt(null)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
-                      <X size={16} color="#888" />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                      }}
+                    >
+                      {todayAppts.map((appt, i) => (
+                        <ApptCard
+                          key={appt.id}
+                          appt={appt}
+                          accent={ACCENT_COLORS[i % ACCENT_COLORS.length]}
+                          selected={selectedId === appt.id}
+                          onClick={() =>
+                            setSelectedId(
+                              appt.id === selectedId ? null : appt.id,
+                            )
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Coming up */}
+                {restAppts.length > 0 && (
+                  <div>
+                    <h3
+                      style={{
+                        fontFamily: "'Cormorant Garamond', serif",
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#2C2C2C",
+                        margin: "0 0 12px",
+                        paddingBottom: 8,
+                        borderBottom: "1px solid #E8E0D5",
+                      }}
+                    >
+                      {viewMode === "week"
+                        ? "Coming Up This Week"
+                        : "This Month"}
+                    </h3>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                      }}
+                    >
+                      {restAppts.map((a, i) => (
+                        <div
+                          key={a.id}
+                          onClick={() =>
+                            setSelectedId(a.id === selectedId ? null : a.id)
+                          }
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: "10px 14px",
+                            background: "#fff",
+                            border: `1px solid ${selectedId === a.id ? "#D4A373" : "#E8E0D5"}`,
+                            borderRadius: 8,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Avatar
+                            style={{ width: 30, height: 30, flexShrink: 0 }}
+                          >
+                            <AvatarFallback
+                              style={{
+                                background: "#E8D8CE",
+                                color: "#A67C52",
+                                fontSize: 10,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {a.bride?.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#333",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {a.bride?.name}
+                            </div>
+                            <div style={{ fontSize: 11, color: "#888" }}>
+                              {APPOINTMENT_TITLE_LABELS[a.title]}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: "#888",
+                              textAlign: "right",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <div>{fmtDate(new Date(a.startTime))}</div>
+                            <div style={{ color: "#A67C52", fontWeight: 500 }}>
+                              {fmtTime(new Date(a.startTime))}
+                            </div>
+                          </div>
+                          <Badge
+                            style={{
+                              background: "#E8D8CE",
+                              color: "#A67C52",
+                              border: "none",
+                              fontSize: 9,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {a.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {appointments.length === 0 && (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "60px 0",
+                      color: "#AAA",
+                    }}
+                  >
+                    <div style={{ fontSize: 14 }}>
+                      No appointments in this period
+                    </div>
+                    <button
+                      onClick={() => setAddModalOpen(true)}
+                      style={{
+                        marginTop: 12,
+                        fontSize: 12,
+                        color: "#A67C52",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      + Schedule one now
                     </button>
                   </div>
-                </div>
-                <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "#555" }}>
-                      <Clock size={13} color="#D4A373" /> {selected.time} · {selected.duration}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "#555" }}>
-                      <MapPin size={13} color="#D4A373" /> Paddington Studio
-                    </div>
-                  </div>
-                  <div style={{ borderTop: "1px solid #F0EBE4", paddingTop: 12 }}>
-                    <div style={{ fontSize: 10, color: "#AAAAAA", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Fitting Notes</div>
-                    <div style={{ fontSize: 12, color: "#555", lineHeight: 1.55 }}>{selected.note}</div>
-                  </div>
-                  <div style={{ borderTop: "1px solid #F0EBE4", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-                    <button style={{ width: "100%", padding: "9px", background: "#333", color: "#fff", border: "none", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer" }}>View Bride Profile</button>
-                    <button style={{ width: "100%", padding: "9px", background: "#F5EFE9", color: "#A67C52", border: "1px solid #E8E0D5", borderRadius: 7, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                      <Upload size={13} /> Upload Photos
-                    </button>
-                    <button style={{ width: "100%", padding: "9px", background: "#FFFFFF", color: "#555", border: "1px solid #E8E0D5", borderRadius: 7, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                      <FileText size={13} /> Add Notes
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
+
+              {/* Right: detail panel */}
+              {selected && (
+                <div style={{ width: 280, flexShrink: 0 }}>
+                  <DetailPanel
+                    appt={selected}
+                    onClose={() => setSelectedId(null)}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
-        </div>
       </main>
+
+      <AddAppointmentModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+      />
     </AdminLayout>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ApptCard({
+  appt,
+  accent,
+  selected,
+  onClick,
+}: {
+  appt: AppointmentWithBride;
+  accent: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const initials =
+    appt.bride?.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? "?";
+  const bg = accent + "22"; // light tint
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: "#fff",
+        border: `1px solid ${selected ? accent : "#E8E0D5"}`,
+        borderRadius: 10,
+        overflow: "hidden",
+        cursor: "pointer",
+        boxShadow: selected
+          ? `0 2px 8px ${accent}33`
+          : "0 1px 4px rgba(0,0,0,0.04)",
+        transition: "all 0.15s",
+      }}
+    >
+      <div
+        style={{
+          background: bg,
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <Avatar
+          style={{
+            width: 34,
+            height: 34,
+            border: "2px solid rgba(255,255,255,0.6)",
+            flexShrink: 0,
+          }}
+        >
+          <AvatarFallback
+            style={{
+              background: "#fff",
+              color: accent,
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#2C2C2C",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {appt.bride?.name}
+          </div>
+          <div style={{ fontSize: 11, color: "#666" }}>
+            {APPOINTMENT_TITLE_LABELS[appt.title]}
+          </div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#2C2C2C" }}>
+            {fmtTime(new Date(appt.startTime))}
+          </div>
+          <div style={{ fontSize: 10, color: "#888" }}>
+            {Math.round(
+              (new Date(appt.endTime).getTime() -
+                new Date(appt.startTime).getTime()) /
+                60000,
+            )}{" "}
+            min
+          </div>
+        </div>
+      </div>
+      {!selected && appt.description && (
+        <div style={{ padding: "8px 16px", fontSize: 12, color: "#888" }}>
+          {appt.description.slice(0, 70)}…
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DetailPanel({
+  appt,
+  onClose,
+}: {
+  appt: AppointmentWithBride;
+  onClose: () => void;
+}) {
+  const accent = "#D4A373";
+  const bg = accent + "22";
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #E8E0D5",
+        borderRadius: 12,
+        overflow: "hidden",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        position: "sticky",
+        top: 0,
+      }}
+    >
+      <div style={{ background: bg, padding: "16px 18px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 18,
+                fontWeight: 500,
+                color: "#2C2C2C",
+              }}
+            >
+              {APPOINTMENT_TITLE_LABELS[appt.title]}
+            </div>
+            <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>
+              {appt.bride?.name}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 2,
+            }}
+          >
+            <X size={16} color="#888" />
+          </button>
+        </div>
+      </div>
+      <div
+        style={{
+          padding: "16px 18px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              fontSize: 12,
+              color: "#555",
+            }}
+          >
+            <Clock size={13} color="#D4A373" />
+            {fmtTime(new Date(appt.startTime))} –{" "}
+            {fmtTime(new Date(appt.endTime))}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              fontSize: 12,
+              color: "#555",
+            }}
+          >
+            <Clock size={13} color="transparent" />
+            {fmtDate(new Date(appt.startTime))}
+          </div>
+          {appt.location && (
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                fontSize: 12,
+                color: "#555",
+              }}
+            >
+              <MapPin size={13} color="#D4A373" /> {appt.location}
+            </div>
+          )}
+        </div>
+
+        {appt.description && (
+          <div style={{ borderTop: "1px solid #F0EBE4", paddingTop: 12 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: "#AAAAAA",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.07em",
+                marginBottom: 6,
+              }}
+            >
+              Description
+            </div>
+            <div style={{ fontSize: 12, color: "#555", lineHeight: 1.55 }}>
+              {appt.description}
+            </div>
+          </div>
+        )}
+
+        {appt.whatToBring && (
+          <div style={{ borderTop: "1px solid #F0EBE4", paddingTop: 12 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: "#AAAAAA",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.07em",
+                marginBottom: 6,
+              }}
+            >
+              What to Bring
+            </div>
+            <div style={{ fontSize: 12, color: "#555", lineHeight: 1.55 }}>
+              {appt.whatToBring}
+            </div>
+          </div>
+        )}
+
+        <div
+          style={{
+            borderTop: "1px solid #F0EBE4",
+            paddingTop: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          <Badge
+            style={{
+              alignSelf: "flex-start",
+              background:
+                appt.status === "CANCELLED"
+                  ? "#FFF0F0"
+                  : appt.status === "COMPLETED"
+                    ? "#F0FFF4"
+                    : "#F5EFE9",
+              color:
+                appt.status === "CANCELLED"
+                  ? "#C0392B"
+                  : appt.status === "COMPLETED"
+                    ? "#27AE60"
+                    : "#A67C52",
+              border: "none",
+              fontSize: 10,
+            }}
+          >
+            {appt.status}
+          </Badge>
+          <button
+            style={{
+              width: "100%",
+              padding: "9px",
+              background: "#333",
+              color: "#fff",
+              border: "none",
+              borderRadius: 7,
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            View Bride Profile
+          </button>
+          <button
+            style={{
+              width: "100%",
+              padding: "9px",
+              background: "#F5EFE9",
+              color: "#A67C52",
+              border: "1px solid #E8E0D5",
+              borderRadius: 7,
+              fontSize: 12,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            <Upload size={13} /> Upload Photos
+          </button>
+          <button
+            style={{
+              width: "100%",
+              padding: "9px",
+              background: "#fff",
+              color: "#555",
+              border: "1px solid #E8E0D5",
+              borderRadius: 7,
+              fontSize: 12,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            <FileText size={13} /> Add Notes
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
