@@ -1,14 +1,12 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Plus,
   Clock,
   MapPin,
   ChevronLeft,
   ChevronRight,
-  FileText,
   X,
-  Upload,
   Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -41,8 +39,8 @@ function endOfDay(d: Date) {
 }
 function startOfWeek(d: Date) {
   const r = new Date(d);
-  const day = r.getDay(); // 0=Sun
-  r.setDate(r.getDate() - (day === 0 ? 6 : day - 1)); // Mon
+  const day = r.getDay();
+  r.setDate(r.getDate() - (day === 0 ? 6 : day - 1));
   return startOfDay(r);
 }
 function endOfWeek(d: Date) {
@@ -88,24 +86,51 @@ function fmtWeekRange(d: Date) {
 
 const ACCENT_COLORS = ["#D4A373", "#A67C52", "#8A6840", "#C4956A", "#B87A4F"];
 
+function statusColor(status: string): { bg: string; color: string } {
+  if (status === "CANCELLED") return { bg: "#FFF0F0", color: "#C0392B" };
+  if (status === "COMPLETED") return { bg: "#F0FFF4", color: "#27AE60" };
+  if (status === "RESCHEDULED") return { bg: "#FFF8E7", color: "#B7860B" };
+  return { bg: "#F5EFE9", color: "#A67C52" };
+}
+
 export function AdminAppointmentsDesktop() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("month");
-  const [cursor, setCursor] = useState(new Date()); // week or month anchor
+  const [cursor, setCursor] = useState(new Date());
   const [profileBride, setProfileBride] = useState<BrideWithProfile | null>(
     null,
   );
   const [profileLoading, setProfileLoading] = useState(false);
+  const [editAppointment, setEditAppointment] =
+    useState<AppointmentWithBride | null>(null);
 
-  // Compute date range for query
   const from = viewMode === "week" ? startOfWeek(cursor) : startOfMonth(cursor);
   const to = viewMode === "week" ? endOfWeek(cursor) : endOfMonth(cursor);
+
+  const queryClient = useQueryClient();
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ["appointments", from.toISOString(), to.toISOString()],
     queryFn: () =>
       appointmentsApi.list({ from: from.toISOString(), to: to.toISOString() }),
+  });
+
+  // Auto-select closest upcoming appointment, fall back to last past one
+  useEffect(() => {
+    if (appointments.length === 0 || selectedId) return;
+    const now = Date.now();
+    const upcoming = appointments.find(
+      (a) => new Date(a.startTime).getTime() >= now,
+    );
+    setSelectedId((upcoming ?? appointments[appointments.length - 1]).id);
+  }, [appointments]);
+
+  const markCompleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      appointmentsApi.update(id, { status: "COMPLETED" }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
 
   const today = new Date();
@@ -135,7 +160,6 @@ export function AdminAppointmentsDesktop() {
     }
   }
 
-  // Week strip days
   const weekStart = startOfWeek(cursor);
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
@@ -272,7 +296,7 @@ export function AdminAppointmentsDesktop() {
                       {v}
                     </button>
                   ))}
-                  {/* <button
+                  <button
                     onClick={() => {
                       setCursor(new Date());
                       setSelectedId(null);
@@ -288,7 +312,7 @@ export function AdminAppointmentsDesktop() {
                     }}
                   >
                     Today
-                  </button> */}
+                  </button>
                 </div>
               </div>
 
@@ -432,6 +456,9 @@ export function AdminAppointmentsDesktop() {
                               appt.id === selectedId ? null : appt.id,
                             )
                           }
+                          onMarkComplete={(id) =>
+                            markCompleteMutation.mutate(id)
+                          }
                         />
                       ))}
                     </div>
@@ -463,85 +490,120 @@ export function AdminAppointmentsDesktop() {
                         gap: 8,
                       }}
                     >
-                      {restAppts.map((a, i) => (
-                        <div
-                          key={a.id}
-                          onClick={() =>
-                            setSelectedId(a.id === selectedId ? null : a.id)
-                          }
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            padding: "10px 14px",
-                            background: "#fff",
-                            border: `1px solid ${selectedId === a.id ? "#D4A373" : "#E8E0D5"}`,
-                            borderRadius: 8,
-                            cursor: "pointer",
-                          }}
-                        >
-                          <Avatar
-                            style={{ width: 30, height: 30, flexShrink: 0 }}
+                      {restAppts.map((a) => {
+                        const isDone =
+                          a.status === "COMPLETED" || a.status === "CANCELLED";
+                        const sc = statusColor(a.status);
+                        return (
+                          <div
+                            key={a.id}
+                            onClick={() =>
+                              setSelectedId(a.id === selectedId ? null : a.id)
+                            }
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                              padding: "10px 14px",
+                              background: "#fff",
+                              border: `1px solid ${selectedId === a.id ? "#D4A373" : "#E8E0D5"}`,
+                              borderRadius: 8,
+                              cursor: "pointer",
+                            }}
                           >
-                            <AvatarFallback
-                              style={{
-                                background: "#E8D8CE",
-                                color: "#A67C52",
-                                fontSize: 10,
-                                fontWeight: 600,
-                              }}
+                            <Avatar
+                              style={{ width: 30, height: 30, flexShrink: 0 }}
                             >
-                              {a.bride?.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .slice(0, 2)
-                                .toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div style={{ flex: 1, minWidth: 0 }}>
+                              <AvatarFallback
+                                style={{
+                                  background: "#E8D8CE",
+                                  color: "#A67C52",
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {a.bride?.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .slice(0, 2)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: "#333",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {a.bride?.name}
+                              </div>
+                              <div style={{ fontSize: 11, color: "#888" }}>
+                                {APPOINTMENT_TITLE_LABELS[a.title]}
+                              </div>
+                            </div>
                             <div
                               style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: "#333",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
+                                fontSize: 11,
+                                color: "#888",
+                                textAlign: "right",
+                                flexShrink: 0,
                               }}
                             >
-                              {a.bride?.name}
+                              <div>{fmtDate(new Date(a.startTime))}</div>
+                              <div
+                                style={{ color: "#A67C52", fontWeight: 500 }}
+                              >
+                                {fmtTime(new Date(a.startTime))}
+                              </div>
                             </div>
-                            <div style={{ fontSize: 11, color: "#888" }}>
-                              {APPOINTMENT_TITLE_LABELS[a.title]}
-                            </div>
+                            <Badge
+                              style={{
+                                background: sc.bg,
+                                color: sc.color,
+                                border: "none",
+                                fontSize: 9,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {a.status}
+                            </Badge>
+                            {!isDone && (
+                              <div
+                                title="Mark as Completed"
+                                style={{ flexShrink: 0 }}
+                              >
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markCompleteMutation.mutate(a.id);
+                                  }}
+                                  style={{
+                                    width: 26,
+                                    height: 26,
+                                    borderRadius: "50%",
+                                    border: "1.5px solid #27AE60",
+                                    background: "#fff",
+                                    color: "#27AE60",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    fontSize: 13,
+                                  }}
+                                >
+                                  ✓
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: "#888",
-                              textAlign: "right",
-                              flexShrink: 0,
-                            }}
-                          >
-                            <div>{fmtDate(new Date(a.startTime))}</div>
-                            <div style={{ color: "#A67C52", fontWeight: 500 }}>
-                              {fmtTime(new Date(a.startTime))}
-                            </div>
-                          </div>
-                          <Badge
-                            style={{
-                              background: "#E8D8CE",
-                              color: "#A67C52",
-                              border: "none",
-                              fontSize: 9,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {a.status}
-                          </Badge>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -581,6 +643,7 @@ export function AdminAppointmentsDesktop() {
                     appt={selected}
                     onClose={() => setSelectedId(null)}
                     onViewBride={() => openBrideProfile(selected.bride.id)}
+                    onEdit={() => setEditAppointment(selected)}
                     profileLoading={profileLoading}
                   />
                 </div>
@@ -591,8 +654,12 @@ export function AdminAppointmentsDesktop() {
       </main>
 
       <AddAppointmentModal
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        open={addModalOpen || !!editAppointment}
+        onClose={() => {
+          setAddModalOpen(false);
+          setEditAppointment(null);
+        }}
+        editAppointment={editAppointment}
       />
 
       <BrideProfileModal
@@ -610,11 +677,13 @@ function ApptCard({
   accent,
   selected,
   onClick,
+  onMarkComplete,
 }: {
   appt: AppointmentWithBride;
   accent: string;
   selected: boolean;
   onClick: () => void;
+  onMarkComplete: (id: string) => void;
 }) {
   const initials =
     appt.bride?.name
@@ -623,7 +692,8 @@ function ApptCard({
       .join("")
       .slice(0, 2)
       .toUpperCase() ?? "?";
-  const bg = accent + "22"; // light tint
+  const bg = accent + "22";
+  const isDone = appt.status === "COMPLETED" || appt.status === "CANCELLED";
 
   return (
     <div
@@ -698,6 +768,31 @@ function ApptCard({
             min
           </div>
         </div>
+        {!isDone && (
+          <div title="Mark as Completed" style={{ flexShrink: 0 }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkComplete(appt.id);
+              }}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                border: "1.5px solid #27AE60",
+                background: "#fff",
+                color: "#27AE60",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: 14,
+              }}
+            >
+              ✓
+            </button>
+          </div>
+        )}
       </div>
       {!selected && appt.description && (
         <div style={{ padding: "8px 16px", fontSize: 12, color: "#888" }}>
@@ -712,15 +807,18 @@ function DetailPanel({
   appt,
   onClose,
   onViewBride,
+  onEdit,
   profileLoading,
 }: {
   appt: AppointmentWithBride;
   onClose: () => void;
   onViewBride: () => void;
+  onEdit: () => void;
   profileLoading: boolean;
 }) {
   const accent = "#D4A373";
   const bg = accent + "22";
+  const sc = statusColor(appt.status);
 
   return (
     <div
@@ -770,6 +868,7 @@ function DetailPanel({
           </button>
         </div>
       </div>
+
       <div
         style={{
           padding: "16px 18px",
@@ -871,18 +970,8 @@ function DetailPanel({
           <Badge
             style={{
               alignSelf: "flex-start",
-              background:
-                appt.status === "CANCELLED"
-                  ? "#FFF0F0"
-                  : appt.status === "COMPLETED"
-                    ? "#F0FFF4"
-                    : "#F5EFE9",
-              color:
-                appt.status === "CANCELLED"
-                  ? "#C0392B"
-                  : appt.status === "COMPLETED"
-                    ? "#27AE60"
-                    : "#A67C52",
+              background: sc.bg,
+              color: sc.color,
               border: "none",
               fontSize: 10,
             }}
@@ -890,14 +979,30 @@ function DetailPanel({
             {appt.status}
           </Badge>
           <button
-            onClick={onViewBride}
-            disabled={profileLoading}
+            onClick={onEdit}
             style={{
               width: "100%",
               padding: "9px",
               background: "#333",
               color: "#fff",
               border: "none",
+              borderRadius: 7,
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Edit Appointment
+          </button>
+          <button
+            onClick={onViewBride}
+            disabled={profileLoading}
+            style={{
+              width: "100%",
+              padding: "9px",
+              background: "#F5EFE9",
+              color: "#A67C52",
+              border: "1px solid #E8E0D5",
               borderRadius: 7,
               fontSize: 12,
               fontWeight: 500,

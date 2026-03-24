@@ -146,7 +146,11 @@ export const appointmentsApi = {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type Role = "ADMIN" | "BRIDE";
-export type AppointmentStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED";
+export type AppointmentStatus =
+  | "SCHEDULED"
+  | "RESCHEDULED"
+  | "COMPLETED"
+  | "CANCELLED";
 export type AppointmentTitle =
   | "CONSULTATION"
   | "FIRST_FITTING"

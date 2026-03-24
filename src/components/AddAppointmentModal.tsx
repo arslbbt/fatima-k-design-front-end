@@ -6,13 +6,17 @@ import {
   bridesApi,
   ApiError,
   type AppointmentTitle,
+  type AppointmentStatus,
+  type AppointmentWithBride,
   type CreateAppointmentPayload,
+  type UpdateAppointmentPayload,
   APPOINTMENT_TITLE_LABELS,
 } from "@/lib/api";
 
 interface AddAppointmentModalProps {
   open: boolean;
   onClose: () => void;
+  editAppointment?: AppointmentWithBride | null;
 }
 
 const TITLE_OPTIONS: AppointmentTitle[] = [
@@ -26,6 +30,12 @@ const TITLE_OPTIONS: AppointmentTitle[] = [
   "CUSTOM",
 ];
 
+const STATUS_OPTIONS: { value: AppointmentStatus; label: string }[] = [
+  { value: "SCHEDULED", label: "Scheduled" },
+  { value: "RESCHEDULED", label: "Rescheduled" },
+  { value: "CANCELLED", label: "Cancelled" },
+];
+
 interface FormState {
   brideId: string;
   title: AppointmentTitle;
@@ -36,6 +46,7 @@ interface FormState {
   startTime: string;
   endTime: string;
   whatToBring: string;
+  status: AppointmentStatus;
 }
 
 interface FormErrors {
@@ -57,11 +68,21 @@ const EMPTY: FormState = {
   startTime: "",
   endTime: "",
   whatToBring: "",
+  status: "SCHEDULED",
 };
 
-function validate(form: FormState): FormErrors {
+function toLocalDate(iso: string) {
+  const d = new Date(iso);
+  return d.toISOString().split("T")[0];
+}
+function toLocalTime(iso: string) {
+  const d = new Date(iso);
+  return d.toTimeString().slice(0, 5);
+}
+
+function validate(form: FormState, isEdit: boolean): FormErrors {
   const errors: FormErrors = {};
-  if (!form.brideId) errors.brideId = "Please select a bride";
+  if (!isEdit && !form.brideId) errors.brideId = "Please select a bride";
   if (!form.title) errors.title = "Please select an appointment type";
   if (form.title === "CUSTOM" && !form.customTitle.trim())
     errors.customTitle = "Please enter a custom title";
@@ -76,19 +97,35 @@ function validate(form: FormState): FormErrors {
 export function AddAppointmentModal({
   open,
   onClose,
+  editAppointment,
 }: AddAppointmentModalProps) {
   const queryClient = useQueryClient();
+  const isEdit = !!editAppointment;
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // Pre-fill form when editing
   useEffect(() => {
-    if (open) {
+    if (open && editAppointment) {
+      setForm({
+        brideId: editAppointment.bride.id,
+        title: editAppointment.title,
+        customTitle: "",
+        description: editAppointment.description ?? "",
+        location: editAppointment.location ?? "",
+        date: toLocalDate(editAppointment.startTime),
+        startTime: toLocalTime(editAppointment.startTime),
+        endTime: toLocalTime(editAppointment.endTime),
+        whatToBring: editAppointment.whatToBring ?? "",
+        status: editAppointment.status,
+      });
+    } else if (open) {
       setForm(EMPTY);
-      setErrors({});
-      setApiError(null);
     }
-  }, [open]);
+    setErrors({});
+    setApiError(null);
+  }, [open, editAppointment]);
 
   useEffect(() => {
     if (!open) return;
@@ -99,15 +136,15 @@ export function AddAppointmentModal({
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  // Load brides for selector
+  // Load brides for selector (create mode only)
   const { data: bridesData } = useQuery({
     queryKey: ["brides-all"],
     queryFn: () => bridesApi.list({ limit: 100 }),
-    enabled: open,
+    enabled: open && !isEdit,
   });
   const brides = bridesData?.data ?? [];
 
-  const mutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: (payload: CreateAppointmentPayload) =>
       appointmentsApi.create(payload),
     onSuccess: () => {
@@ -116,12 +153,26 @@ export function AddAppointmentModal({
     },
     onError: (err) => {
       setApiError(
-        err instanceof ApiError
-          ? err.message
-          : "Something went wrong. Please try again.",
+        err instanceof ApiError ? err.message : "Something went wrong.",
       );
     },
   });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: UpdateAppointmentPayload) =>
+      appointmentsApi.update(editAppointment!.id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      onClose();
+    },
+    onError: (err) => {
+      setApiError(
+        err instanceof ApiError ? err.message : "Something went wrong.",
+      );
+    },
+  });
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -132,7 +183,7 @@ export function AddAppointmentModal({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validate(form);
+    const errs = validate(form, isEdit);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
@@ -141,17 +192,40 @@ export function AddAppointmentModal({
     const startTime = new Date(`${form.date}T${form.startTime}`).toISOString();
     const endTime = new Date(`${form.date}T${form.endTime}`).toISOString();
 
-    const payload: CreateAppointmentPayload = {
-      brideId: form.brideId,
-      title: form.title,
-      ...(form.title === "CUSTOM" && { customTitle: form.customTitle.trim() }),
-      ...(form.description.trim() && { description: form.description.trim() }),
-      ...(form.location.trim() && { location: form.location.trim() }),
-      startTime,
-      endTime,
-      ...(form.whatToBring.trim() && { whatToBring: form.whatToBring.trim() }),
-    };
-    mutation.mutate(payload);
+    if (isEdit) {
+      const payload: UpdateAppointmentPayload = {
+        title: form.title,
+        ...(form.description.trim() && {
+          description: form.description.trim(),
+        }),
+        ...(form.location.trim() && { location: form.location.trim() }),
+        startTime,
+        endTime,
+        ...(form.whatToBring.trim() && {
+          whatToBring: form.whatToBring.trim(),
+        }),
+        status: form.status,
+      };
+      updateMutation.mutate(payload);
+    } else {
+      const payload: CreateAppointmentPayload = {
+        brideId: form.brideId,
+        title: form.title,
+        ...(form.title === "CUSTOM" && {
+          customTitle: form.customTitle.trim(),
+        }),
+        ...(form.description.trim() && {
+          description: form.description.trim(),
+        }),
+        ...(form.location.trim() && { location: form.location.trim() }),
+        startTime,
+        endTime,
+        ...(form.whatToBring.trim() && {
+          whatToBring: form.whatToBring.trim(),
+        }),
+      };
+      createMutation.mutate(payload);
+    }
   }
 
   if (!open) return null;
@@ -219,11 +293,12 @@ export function AddAppointmentModal({
                   margin: "0 0 4px",
                 }}
               >
-                New Appointment
+                {isEdit ? "Edit Appointment" : "New Appointment"}
               </h2>
               <p style={{ fontSize: 12, color: "#AAA", margin: 0 }}>
-                A confirmation email with calendar invite will be sent to the
-                bride.
+                {isEdit
+                  ? `Editing appointment for ${editAppointment?.bride.name}`
+                  : "A confirmation email with calendar invite will be sent to the bride."}
               </p>
             </div>
             <button
@@ -268,21 +343,23 @@ export function AddAppointmentModal({
               </div>
             )}
 
-            {/* Bride selector */}
-            <Field label="Bride *" error={errors.brideId}>
-              <select
-                value={form.brideId}
-                onChange={(e) => set("brideId", e.target.value)}
-                style={inputStyle(!!errors.brideId)}
-              >
-                <option value="">Select a bride…</option>
-                {brides.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
+            {/* Bride selector — create mode only */}
+            {!isEdit && (
+              <Field label="Bride *" error={errors.brideId}>
+                <select
+                  value={form.brideId}
+                  onChange={(e) => set("brideId", e.target.value)}
+                  style={inputStyle(!!errors.brideId)}
+                >
+                  <option value="">Select a bride…</option>
+                  {brides.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
 
             {/* Appointment type */}
             <Field label="Appointment Type *" error={errors.title}>
@@ -301,7 +378,7 @@ export function AddAppointmentModal({
               </select>
             </Field>
 
-            {/* Custom title — shown only when CUSTOM selected */}
+            {/* Custom title */}
             {form.title === "CUSTOM" && (
               <Field label="Custom Title *" error={errors.customTitle}>
                 <input
@@ -325,7 +402,7 @@ export function AddAppointmentModal({
                 <input
                   type="date"
                   value={form.date}
-                  min={today}
+                  min={isEdit ? undefined : today}
                   onChange={(e) => set("date", e.target.value)}
                   style={inputStyle(!!errors.date)}
                 />
@@ -347,6 +424,25 @@ export function AddAppointmentModal({
                 />
               </Field>
             </div>
+
+            {/* Status — edit mode only */}
+            {isEdit && (
+              <Field label="Status">
+                <select
+                  value={form.status}
+                  onChange={(e) =>
+                    set("status", e.target.value as AppointmentStatus)
+                  }
+                  style={inputStyle(false)}
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
 
             {/* Location */}
             <Field label="Location">
@@ -408,7 +504,7 @@ export function AddAppointmentModal({
               </button>
               <button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={isPending}
                 style={{
                   flex: 2,
                   padding: "11px",
@@ -417,18 +513,21 @@ export function AddAppointmentModal({
                   fontSize: 13,
                   fontWeight: 600,
                   color: "#fff",
-                  background: mutation.isPending ? "#C4A88C" : "#2C2C2C",
-                  cursor: mutation.isPending ? "not-allowed" : "pointer",
+                  background: isPending ? "#C4A88C" : "#2C2C2C",
+                  cursor: isPending ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
                 }}
               >
-                {mutation.isPending ? (
+                {isPending ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" /> Scheduling…
+                    <Loader2 size={15} className="animate-spin" />{" "}
+                    {isEdit ? "Saving…" : "Scheduling…"}
                   </>
+                ) : isEdit ? (
+                  "Save Changes"
                 ) : (
                   "Schedule Appointment"
                 )}
