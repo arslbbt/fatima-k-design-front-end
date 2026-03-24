@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/Pagination";
 import { AdminLayout } from "@/components/AdminLayout";
+import { AddBrideModal } from "@/components/AddBrideModal";
 import {
   bridesApi,
   type BrideWithProfile,
@@ -23,7 +24,7 @@ import {
   BRIDE_STAGE_ORDER,
 } from "@/lib/api";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 6;
 
 const stageFilters: Array<{ label: string; value: BrideStage | "ALL" }> = [
   { label: "All Stages", value: "ALL" },
@@ -35,6 +36,7 @@ export function AdminAllBrides() {
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<BrideStage | "ALL">("ALL");
   const [page, setPage] = useState(1);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   const handleSearch = useCallback((val: string) => {
     setSearch(val);
@@ -99,6 +101,7 @@ export function AdminAllBrides() {
               </p>
             </div>
             <button
+              onClick={() => setAddModalOpen(true)}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -282,6 +285,11 @@ export function AdminAllBrides() {
           )}
         </div>
       </main>
+
+      <AddBrideModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+      />
     </AdminLayout>
   );
 }

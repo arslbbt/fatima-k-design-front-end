@@ -64,6 +64,16 @@ export const authApi = {
     }),
 };
 
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+export const adminApi = {
+  registerBride: (data: RegisterBridePayload) =>
+    request<BrideWithProfile>("/admin/register-bride", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+};
+
 // ── Brides ────────────────────────────────────────────────────────────────────
 
 export const bridesApi = {
@@ -195,6 +205,16 @@ export interface Appointment {
   createdBy: string;
   createdAt: string;
   bride?: BrideWithProfile;
+}
+
+export interface RegisterBridePayload {
+  name: string;
+  email: string;
+  password: string;
+  weddingDate?: string;
+  phone?: string;
+  stylePreferences?: string;
+  notes?: string;
 }
 
 export interface UpdateBrideProfilePayload {
