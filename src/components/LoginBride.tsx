@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Redirect } from "wouter";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
@@ -11,16 +11,20 @@ export function LoginBride() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { login } = useAuth();
-  const [, navigate] = useLocation();
+  const { login, user, loading: authLoading } = useAuth();
+
+  // Once auth state is set, redirect away from login
+  if (!authLoading && user) {
+    return <Redirect to={user.role === "ADMIN" ? "/admin" : "/bride"} />;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const user = await login(email, password);
-      navigate(user.role === "ADMIN" ? "/admin" : "/bride");
+      await login(email, password);
+      // No navigate() here — the user state update above handles the redirect
     } catch (err) {
       if (err instanceof ApiError) {
         setError(
