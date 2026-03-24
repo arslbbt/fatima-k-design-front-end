@@ -75,9 +75,27 @@ export const bridesApi = {
       body: JSON.stringify(data),
     }),
 
-  list: () => request<BrideWithProfile[]>("/brides"),
+  list: (params?: ListBridesParams) => {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set("search", params.search);
+    if (params?.stage) qs.set("stage", params.stage);
+    if (params?.stylePreferences)
+      qs.set("stylePreferences", params.stylePreferences);
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    const query = qs.toString();
+    return request<PaginatedResponse<BrideWithProfile>>(
+      `/brides${query ? `?${query}` : ""}`,
+    );
+  },
 
   get: (id: string) => request<BrideWithProfile>(`/brides/${id}`),
+
+  updateStage: (id: string, stage: BrideStage) =>
+    request<BrideWithProfile>(`/brides/${id}/stage`, {
+      method: "PATCH",
+      body: JSON.stringify({ stage }),
+    }),
 
   remove: (id: string) => request<void>(`/brides/${id}`, { method: "DELETE" }),
 };
@@ -112,6 +130,34 @@ export const appointmentsApi = {
 export type Role = "ADMIN" | "BRIDE";
 export type AppointmentStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED";
 export type AppointmentTitle = "CONSULTATION" | "FITTING" | "FINAL_PICKUP";
+export type BrideStage =
+  | "CONSULTATION"
+  | "FIRST_FITTING"
+  | "SECOND_FITTING"
+  | "THIRD_FITTING"
+  | "FINAL_FITTING"
+  | "ALTERATION"
+  | "COLLECTION_READY";
+
+export const BRIDE_STAGE_LABELS: Record<BrideStage, string> = {
+  CONSULTATION: "Consultation",
+  FIRST_FITTING: "1st Fitting",
+  SECOND_FITTING: "2nd Fitting",
+  THIRD_FITTING: "3rd Fitting",
+  FINAL_FITTING: "Final Fitting",
+  ALTERATION: "Alteration",
+  COLLECTION_READY: "Collection Ready",
+};
+
+export const BRIDE_STAGE_ORDER: BrideStage[] = [
+  "CONSULTATION",
+  "FIRST_FITTING",
+  "SECOND_FITTING",
+  "THIRD_FITTING",
+  "FINAL_FITTING",
+  "ALTERATION",
+  "COLLECTION_READY",
+];
 
 export interface User {
   id: string;
@@ -128,6 +174,7 @@ export interface BrideProfile {
   phone: string | null;
   stylePreferences: string | null;
   notes: string | null;
+  stage: BrideStage;
   createdAt: string;
 }
 
@@ -156,6 +203,24 @@ export interface UpdateBrideProfilePayload {
   phone?: string;
   stylePreferences?: string;
   notes?: string;
+}
+
+export interface ListBridesParams {
+  search?: string;
+  stage?: BrideStage;
+  stylePreferences?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface CreateAppointmentPayload {
