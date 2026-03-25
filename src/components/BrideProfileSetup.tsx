@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
 import { CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 import { bridesApi, ApiError, type UpdateBrideProfilePayload } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
 
 const styleOptions = [
   "Classic & Timeless",
@@ -81,7 +82,6 @@ const labelStyle: React.CSSProperties = {
 export function BrideProfileSetup() {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>(1);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   // Form state
@@ -130,8 +130,10 @@ export function BrideProfileSetup() {
       bridesApi.updateMe(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bride-me"] });
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been saved successfully.",
+      });
     },
     onError: (err) => {
       setApiError(
@@ -705,7 +707,7 @@ export function BrideProfileSetup() {
                     alignItems: "center",
                     gap: 6,
                     padding: "11px 22px",
-                    background: saveSuccess ? "#A67C52" : "#2C2C2C",
+                    background: "#2C2C2C",
                     color: "#fff",
                     border: "none",
                     borderRadius: 8,
@@ -713,16 +715,11 @@ export function BrideProfileSetup() {
                     fontWeight: 600,
                     cursor: mutation.isPending ? "not-allowed" : "pointer",
                     opacity: mutation.isPending ? 0.8 : 1,
-                    transition: "background 0.3s",
                   }}
                 >
                   {mutation.isPending ? (
                     <>
                       <Loader2 size={14} className="animate-spin" /> Saving…
-                    </>
-                  ) : saveSuccess ? (
-                    <>
-                      <CheckCircle2 size={15} /> Saved!
                     </>
                   ) : (
                     "Save profile"
