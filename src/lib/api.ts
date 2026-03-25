@@ -219,6 +219,11 @@ export interface BrideProfile {
   userId: string;
   weddingDate: string | null;
   phone: string | null;
+  address: string | null;
+  partnerName: string | null;
+  venueName: string | null;
+  guestCount: string | null;
+  dietaryNotes: string | null;
   stylePreferences: string | null;
   notes: string | null;
   stage: BrideStage;
@@ -260,10 +265,16 @@ export interface RegisterBridePayload {
 
 export interface UpdateBrideProfilePayload {
   name?: string;
+  email?: string;
   weddingDate?: string;
   phone?: string;
+  address?: string;
+  partnerName?: string;
+  venueName?: string;
+  guestCount?: string;
+  dietaryNotes?: string;
   stylePreferences?: string;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface ListBridesParams {
