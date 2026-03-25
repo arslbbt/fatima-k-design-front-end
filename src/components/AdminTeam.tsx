@@ -738,7 +738,7 @@ export function AdminTeam() {
   const [deleting, setDeleting] = useState<User | null>(null);
   const [resetting, setResetting] = useState<UserWithProfile | null>(null);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ADMIN");
   const [page, setPage] = useState(1);
   const LIMIT = 10;
 
@@ -797,7 +797,7 @@ export function AdminTeam() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
-              marginBottom: 24,
+              marginBottom: 10,
             }}
           >
             <div>
@@ -841,7 +841,7 @@ export function AdminTeam() {
             style={{
               display: "flex",
               gap: 12,
-              marginBottom: 20,
+              marginBottom: 10,
               flexWrap: "wrap",
             }}
           >
@@ -950,7 +950,7 @@ export function AdminTeam() {
                       display: "flex",
                       alignItems: "center",
                       gap: 14,
-                      padding: "14px 22px",
+                      padding: "10px 22px",
                       borderBottom:
                         i < users.length - 1 ? "1px solid #F0EBE4" : "none",
                     }}
@@ -1119,8 +1119,10 @@ export function AdminTeam() {
           {totalPages > 1 && (
             <div style={{ marginTop: 20 }}>
               <Pagination
-                currentPage={page}
+                page={page}
                 totalPages={totalPages}
+                total={total}
+                limit={LIMIT}
                 onPageChange={setPage}
               />
             </div>
