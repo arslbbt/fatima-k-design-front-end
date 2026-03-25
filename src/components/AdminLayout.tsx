@@ -25,7 +25,16 @@ const navItems = [
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const initials =
+    user?.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ?? "FK";
+  const displayName = user?.name ?? "Admin";
 
   return (
     <div
@@ -38,7 +47,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         color: "#333333",
       }}
     >
-      {/* ── Header ── */}
+      {/* Header */}
       <header
         style={{
           height: 64,
@@ -49,7 +58,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           padding: "0 24px",
           flexShrink: 0,
           zIndex: 20,
-          position: "relative",
+          position: "sticky",
+          top: 0,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -111,12 +121,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 fontWeight: 600,
               }}
             >
-              FK
+              {initials}
             </AvatarFallback>
           </Avatar>
           <div className="bp-hide-mobile">
             <div style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>
-              Fatima K
+              {displayName}
             </div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
               Studio Owner
@@ -125,16 +135,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* ── Body ── */}
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
-        {/* Overlay (mobile) */}
+      {/* Body */}
+      <div style={{ display: "flex", flex: 1, position: "relative" }}>
         {drawerOpen && (
           <div
             onClick={() => setDrawerOpen(false)}
@@ -147,7 +149,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           />
         )}
 
-        {/* ── Sidebar ── */}
+        {/* Sidebar — sticky, full viewport height minus header */}
         <aside
           className={`bp-sidebar${drawerOpen ? " bp-sidebar--open" : ""}`}
           style={{
@@ -158,6 +160,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             flexDirection: "column",
             gap: 4,
             zIndex: 31,
+            overflowY: "auto",
+            flexShrink: 0,
           }}
         >
           <div
@@ -264,7 +268,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        {/* ── Page content ── */}
+        {/* Page content */}
         {children}
       </div>
     </div>

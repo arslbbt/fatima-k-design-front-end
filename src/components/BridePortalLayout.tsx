@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { bridesApi } from "@/lib/api";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/bride" },
@@ -37,7 +39,37 @@ const bottomNavItems = [
 export function BridePortalLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const { data: me } = useQuery({
+    queryKey: ["bride-me"],
+    queryFn: () => bridesApi.me(),
+    enabled: !!user,
+  });
+
+  const initials =
+    me?.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ??
+    user?.name.slice(0, 2).toUpperCase() ??
+    "?";
+  const displayName = me?.name ?? user?.name ?? "";
+  const weddingDate = me?.brideProfile?.weddingDate
+    ? new Date(me.brideProfile.weddingDate)
+    : null;
+  const weddingDateStr = weddingDate
+    ? weddingDate.toLocaleDateString("en-AU", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+  const daysUntil = weddingDate
+    ? Math.ceil((weddingDate.getTime() - Date.now()) / 86400000)
+    : null;
 
   return (
     <div
@@ -50,7 +82,7 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
         color: "#333333",
       }}
     >
-      {/* ── Header ── */}
+      {/* Header */}
       <header
         style={{
           height: 64,
@@ -62,7 +94,8 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
           padding: "0 24px",
           flexShrink: 0,
           zIndex: 20,
-          position: "relative",
+          position: "sticky",
+          top: 0,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -105,19 +138,21 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            className="bp-hide-mobile"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 13,
-              color: "#888888",
-            }}
-          >
-            <Heart size={14} fill="#D4A373" color="#D4A373" />
-            <span>47 days to go</span>
-          </div>
+          {daysUntil !== null && daysUntil > 0 && (
+            <div
+              className="bp-hide-mobile"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 13,
+                color: "#888888",
+              }}
+            >
+              <Heart size={14} fill="#D4A373" color="#D4A373" />
+              <span>{daysUntil} days to go</span>
+            </div>
+          )}
           <button
             style={{
               position: "relative",
@@ -128,18 +163,6 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
             }}
           >
             <Bell size={18} color="#666" />
-            <span
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                width: 7,
-                height: 7,
-                background: "#D4A373",
-                borderRadius: "50%",
-                border: "1.5px solid white",
-              }}
-            />
           </button>
           <Link href="/bride/account">
             <div
@@ -154,11 +177,13 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
             >
               <div className="bp-hide-mobile" style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: "#333" }}>
-                  Sophie Anderson
+                  {displayName}
                 </div>
-                <div style={{ fontSize: 11, color: "#AAA" }}>
-                  Wedding · 4 May 2026
-                </div>
+                {weddingDateStr && (
+                  <div style={{ fontSize: 11, color: "#AAA" }}>
+                    Wedding · {weddingDateStr}
+                  </div>
+                )}
               </div>
               <Avatar
                 style={{ width: 36, height: 36, border: "1.5px solid #E8D8CE" }}
@@ -171,7 +196,7 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
                     fontWeight: 600,
                   }}
                 >
-                  SA
+                  {initials}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -179,16 +204,8 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* ── Body ── */}
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
-        {/* Overlay behind drawer (mobile) */}
+      {/* Body */}
+      <div style={{ display: "flex", flex: 1, position: "relative" }}>
         {drawerOpen && (
           <div
             onClick={() => setDrawerOpen(false)}
@@ -201,7 +218,7 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
           />
         )}
 
-        {/* ── Sidebar ── */}
+        {/* Sidebar — sticky, full viewport height minus header */}
         <aside
           className={`bp-sidebar${drawerOpen ? " bp-sidebar--open" : ""}`}
           style={{
@@ -212,6 +229,8 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
             flexDirection: "column",
             gap: 4,
             zIndex: 31,
+            overflowY: "auto",
+            flexShrink: 0,
           }}
         >
           <div
@@ -262,7 +281,6 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
             );
           })}
 
-          {/* Bottom nav: profile + account */}
           <div
             style={{
               marginTop: "auto",
@@ -299,38 +317,6 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-
-            {/* User card */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginTop: 8,
-              }}
-            >
-              <Avatar
-                style={{ width: 34, height: 34, border: "1.5px solid #E8D8CE" }}
-              >
-                <AvatarFallback
-                  style={{
-                    background: "#E8D8CE",
-                    color: "#A67C52",
-                    fontSize: 11,
-                    fontWeight: 600,
-                  }}
-                >
-                  SA
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 500, color: "#333" }}>
-                  Sophie Anderson
-                </div>
-                <div style={{ fontSize: 10, color: "#AAA" }}>4 May 2026</div>
-              </div>
-            </div>
-
             <button
               onClick={async () => {
                 await logout();
@@ -358,7 +344,7 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        {/* ── Page content ── */}
+        {/* Page content */}
         {children}
       </div>
     </div>
