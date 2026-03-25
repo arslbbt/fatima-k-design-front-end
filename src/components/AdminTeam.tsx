@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
@@ -24,6 +24,7 @@ import {
   BRIDE_STAGE_LABELS,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/hooks/use-toast";
 
 // ── Add / Edit Admin Modal ────────────────────────────────────────────────────
@@ -742,12 +743,7 @@ export function AdminTeam() {
   const [page, setPage] = useState(1);
   const LIMIT = 10;
 
-  // Debounce search
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350);
-    return () => clearTimeout(t);
-  }, [search]);
+  const debouncedSearch = useDebounce(search);
 
   useEffect(() => {
     setPage(1);

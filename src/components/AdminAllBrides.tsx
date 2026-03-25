@@ -25,6 +25,7 @@ import {
   BRIDE_STAGE_ORDER,
 } from "@/lib/api";
 import { Pagination } from "./ui/Pagination";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const PAGE_SIZE = 6;
 
@@ -41,6 +42,8 @@ export function AdminAllBrides() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [viewBride, setViewBride] = useState<BrideWithProfile | null>(null);
 
+  const debouncedSearch = useDebounce(search);
+
   const handleSearch = useCallback((val: string) => {
     setSearch(val);
     setPage(1);
@@ -52,10 +55,10 @@ export function AdminAllBrides() {
   }, []);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["brides", { search, stage: stageFilter, page }],
+    queryKey: ["brides", { search: debouncedSearch, stage: stageFilter, page }],
     queryFn: () =>
       bridesApi.list({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         stage: stageFilter === "ALL" ? undefined : stageFilter,
         page,
         limit: PAGE_SIZE,
