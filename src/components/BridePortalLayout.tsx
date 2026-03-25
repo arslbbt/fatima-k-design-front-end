@@ -175,7 +175,7 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
                 cursor: "pointer",
               }}
             >
-              <div className="bp-hide-mobile" style={{ textAlign: "right" }}>
+              <div className="bp-hide-mobile flex flex-col" style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: "#333" }}>
                   {displayName}
                 </div>

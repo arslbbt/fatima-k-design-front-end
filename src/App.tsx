@@ -23,6 +23,7 @@ import { AdminAllBrides } from "@/components/AdminAllBrides";
 import { AdminAppointmentsDesktop } from "@/components/AdminAppointmentsDesktop";
 import { AdminPaymentsDesktop } from "@/components/AdminPaymentsDesktop";
 import { AdminDocumentsDesktop } from "@/components/AdminDocumentsDesktop";
+import { AdminSettings } from "@/components/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -61,7 +62,7 @@ function NotFound() {
           Page not found
         </div>
         <a
-          href="/fatimak-portal/"
+          href="/"
           style={{ fontSize: 13, color: "#A67C52", textDecoration: "none" }}
         >
           ← Back to home
@@ -159,6 +160,11 @@ function Router() {
       <Route path="/admin/documents">
         <ProtectedRoute role="ADMIN">
           <AdminDocumentsDesktop />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/settings">
+        <ProtectedRoute role="ADMIN">
+          <AdminSettings />
         </ProtectedRoute>
       </Route>
 

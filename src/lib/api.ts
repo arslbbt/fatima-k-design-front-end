@@ -67,6 +67,14 @@ export const authApi = {
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
 export const adminApi = {
+  me: () => request<User>("/admin/me"),
+
+  updateMe: (data: { name?: string; email?: string }) =>
+    request<User>("/admin/me", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   registerBride: (data: RegisterBridePayload) =>
     request<BrideWithProfile>("/admin/register-bride", {
       method: "POST",
