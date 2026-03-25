@@ -259,7 +259,8 @@ export interface RegisterBridePayload {
   password: string;
   weddingDate?: string;
   phone?: string;
-  stylePreferences?: string;
+  partnerName?: string;
+  venueName?: string;
   notes?: string;
 }
 

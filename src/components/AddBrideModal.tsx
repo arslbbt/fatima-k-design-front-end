@@ -14,7 +14,8 @@ interface FormState {
   password: string;
   weddingDate: string;
   phone: string;
-  stylePreferences: string;
+  partnerName: string;
+  venueName: string;
   notes: string;
 }
 
@@ -31,7 +32,8 @@ const EMPTY: FormState = {
   password: "",
   weddingDate: "",
   phone: "",
-  stylePreferences: "",
+  partnerName: "",
+  venueName: "",
   notes: "",
 };
 
@@ -125,9 +127,8 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
       password: form.password,
       weddingDate: form.weddingDate,
       ...(form.phone.trim() && { phone: form.phone.trim() }),
-      ...(form.stylePreferences.trim() && {
-        stylePreferences: form.stylePreferences.trim(),
-      }),
+      ...(form.partnerName.trim() && { partnerName: form.partnerName.trim() }),
+      ...(form.venueName.trim() && { venueName: form.venueName.trim() }),
       ...(form.notes.trim() && { notes: form.notes.trim() }),
     };
     mutation.mutate(payload);
@@ -335,15 +336,31 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
               </Field>
             </div>
 
-            {/* Style Preferences */}
-            <Field label="Style Preferences">
-              <input
-                value={form.stylePreferences}
-                onChange={(e) => set("stylePreferences", e.target.value)}
-                placeholder="e.g. Romantic, flowy, lace details"
-                style={inputStyle(false)}
-              />
-            </Field>
+            {/* Row: Partner Name + Venue Name */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 14,
+              }}
+            >
+              <Field label="Partner's Name">
+                <input
+                  value={form.partnerName}
+                  onChange={(e) => set("partnerName", e.target.value)}
+                  placeholder="e.g. James"
+                  style={inputStyle(false)}
+                />
+              </Field>
+              <Field label="Venue Name">
+                <input
+                  value={form.venueName}
+                  onChange={(e) => set("venueName", e.target.value)}
+                  placeholder="e.g. Pasadena Estate"
+                  style={inputStyle(false)}
+                />
+              </Field>
+            </div>
 
             {/* Notes */}
             <Field label="Notes">
