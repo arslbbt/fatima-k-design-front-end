@@ -107,6 +107,24 @@ export const adminApi = {
 
   removeAdmin: (id: string) =>
     request<{ message: string }>(`/admin/${id}`, { method: "DELETE" }),
+
+  // All users with pagination + filters
+  listUsers: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: "ADMIN" | "BRIDE";
+  }) => {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.search) qs.set("search", params.search);
+    if (params?.role) qs.set("role", params.role);
+    const q = qs.toString();
+    return request<PaginatedResponse<UserWithProfile>>(
+      `/admin/users${q ? `?${q}` : ""}`,
+    );
+  },
 };
 
 // ── Brides ────────────────────────────────────────────────────────────────────
@@ -280,6 +298,10 @@ export interface Appointment {
 
 export interface AppointmentWithBride extends Appointment {
   bride: BrideWithProfile;
+}
+
+export interface UserWithProfile extends User {
+  brideProfile?: { stage: BrideStage; weddingDate: string | null } | null;
 }
 
 export interface RegisterBridePayload {

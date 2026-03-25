@@ -21,7 +21,7 @@ const navItems = [
   { icon: Calendar, label: "Appointments", href: "/admin/appointments" },
   { icon: CreditCard, label: "Payments", href: "/admin/payments" },
   { icon: FileText, label: "Documents", href: "/admin/documents" },
-  { icon: UserCog, label: "Admin Team", href: "/admin/team" },
+  { icon: UserCog, label: "User Management", href: "/admin/team" },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
