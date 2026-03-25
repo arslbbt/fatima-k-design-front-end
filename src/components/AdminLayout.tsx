@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   LogOut,
+  UserCog,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth";
@@ -20,6 +21,7 @@ const navItems = [
   { icon: Calendar, label: "Appointments", href: "/admin/appointments" },
   { icon: CreditCard, label: "Payments", href: "/admin/payments" },
   { icon: FileText, label: "Documents", href: "/admin/documents" },
+  { icon: UserCog, label: "Admin Team", href: "/admin/team" },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

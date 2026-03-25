@@ -86,6 +86,27 @@ export const adminApi = {
       method: "PATCH",
       body: JSON.stringify({ newPassword }),
     }),
+
+  // Admin management
+  listAdmins: () => request<User[]>("/admin/list"),
+
+  createAdmin: (data: { name: string; email: string; password: string }) =>
+    request<User>("/admin/create", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updateAdmin: (
+    id: string,
+    data: { name?: string; email?: string; password?: string },
+  ) =>
+    request<User>(`/admin/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  removeAdmin: (id: string) =>
+    request<{ message: string }>(`/admin/${id}`, { method: "DELETE" }),
 };
 
 // ── Brides ────────────────────────────────────────────────────────────────────
