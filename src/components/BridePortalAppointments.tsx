@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   CheckCircle2,
@@ -99,27 +99,27 @@ function fmtFullDate(iso: string) {
 
 export function BridePortalAppointments() {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [autoExpanded, setAutoExpanded] = useState(false);
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ["my-appointments"],
     queryFn: () => appointmentsApi.myAppointments(),
-    // auto-expand first upcoming on load
-    select: (data) => {
-      if (expanded === null) {
-        const first = data.find(
-          (a) =>
-            new Date(a.startTime) >= new Date() && a.status !== "CANCELLED",
-        );
-        if (first) setExpanded(first.id);
-      }
-      return data;
-    },
   });
+
+  // Auto-expand first upcoming card only on initial load
+  useEffect(() => {
+    if (autoExpanded || appointments.length === 0) return;
+    const first = appointments.find(
+      (a) => new Date(a.startTime) >= new Date() && a.status !== "CANCELLED",
+    );
+    if (first) setExpanded(first.id);
+    setAutoExpanded(true);
+  }, [appointments]);
 
   const now = new Date();
   const upcoming = appointments.filter(
     (a) =>
-      (new Date(a.startTime) >= now || a.status === "RESCHEDULED") &&
+      new Date(a.startTime) >= now &&
       a.status !== "CANCELLED" &&
       a.status !== "COMPLETED",
   );
