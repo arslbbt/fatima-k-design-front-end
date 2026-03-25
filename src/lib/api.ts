@@ -72,6 +72,12 @@ export const adminApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+  resetUserPassword: (userId: string, newPassword: string) =>
+    request<{ message: string }>(`/admin/users/${userId}/reset-password`, {
+      method: "PATCH",
+      body: JSON.stringify({ newPassword }),
+    }),
 };
 
 // ── Brides ────────────────────────────────────────────────────────────────────
