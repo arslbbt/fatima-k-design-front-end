@@ -15,13 +15,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminLayout } from "@/components/AdminLayout";
-import {
-  documentsApi,
-  bridesApi,
-  ApiError,
-  type Document,
-  type BrideWithProfile,
-} from "@/lib/api";
+import { documentsApi, bridesApi, ApiError, type Document } from "@/lib/api";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/hooks/use-toast";
 
@@ -34,7 +28,7 @@ function UploadModal({
 }: {
   open: boolean;
   onClose: () => void;
-  brides: BrideWithProfile[];
+  brides: { id: string; name: string }[];
 }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -375,11 +369,10 @@ export function AdminDocumentsDesktop() {
   const [showUpload, setShowUpload] = useState(false);
   const debouncedSearch = useDebounce(search);
 
-  const { data: bridesData } = useQuery({
-    queryKey: ["brides-all-docs"],
-    queryFn: () => bridesApi.list({ limit: 100 }),
+  const { data: brides = [] } = useQuery({
+    queryKey: ["brides-names"],
+    queryFn: () => bridesApi.names(),
   });
-  const brides = bridesData?.data ?? [];
 
   // Single API call — filter by brideId and/or search on the backend
   const { data: allDocs = [], isLoading } = useQuery({
@@ -433,7 +426,7 @@ export function AdminDocumentsDesktop() {
           {/* Left panel */}
           <div
             style={{
-              width: 400,
+              width: 480,
               borderRight: "1px solid #E8E0D5",
               display: "flex",
               flexDirection: "column",
@@ -491,8 +484,10 @@ export function AdminDocumentsDesktop() {
                 style={{
                   display: "flex",
                   gap: 5,
-                  flexWrap: "wrap",
                   marginBottom: 10,
+                  overflowX: "auto",
+                  paddingBottom: 4,
+                  scrollbarWidth: "none",
                 }}
               >
                 <button
@@ -505,11 +500,13 @@ export function AdminDocumentsDesktop() {
                     color: selectedBrideId === "ALL" ? "#fff" : "#666",
                     fontSize: 10,
                     cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
                   }}
                 >
                   All Brides
                 </button>
-                {brides.slice(0, 5).map((b) => (
+                {brides.map((b) => (
                   <button
                     key={b.id}
                     onClick={() => setSelectedBrideId(b.id)}
@@ -522,6 +519,7 @@ export function AdminDocumentsDesktop() {
                       fontSize: 10,
                       cursor: "pointer",
                       whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                   >
                     {b.name.split(" ")[0]}

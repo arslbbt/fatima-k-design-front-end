@@ -137,12 +137,11 @@ export function AddAppointmentModal({
   }, [open, onClose]);
 
   // Load brides for selector (create mode only)
-  const { data: bridesData } = useQuery({
-    queryKey: ["brides-all"],
-    queryFn: () => bridesApi.list({ limit: 100 }),
+  const { data: brides = [] } = useQuery({
+    queryKey: ["brides-names"],
+    queryFn: () => bridesApi.names(),
     enabled: open && !isEdit,
   });
-  const brides = bridesData?.data ?? [];
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateAppointmentPayload) =>

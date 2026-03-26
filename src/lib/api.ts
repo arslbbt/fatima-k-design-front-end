@@ -138,6 +138,9 @@ export const bridesApi = {
       body: JSON.stringify(data),
     }),
 
+  // Lightweight — only id + name, no pagination. Use for dropdowns.
+  names: () => request<{ id: string; name: string }[]>("/brides/names"),
+
   list: (params?: ListBridesParams) => {
     const qs = new URLSearchParams();
     if (params?.search) qs.set("search", params.search);
