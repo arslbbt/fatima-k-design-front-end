@@ -1,127 +1,364 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Camera, Download, ZoomIn, ChevronLeft, ChevronRight, X
+  Camera,
+  Download,
+  ZoomIn,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
-
-const albums = [
-  {
-    id: 1,
-    label: "Consultation",
-    date: "5 Dec 2025",
-    count: 2,
-    colors: ["#F0E4D8", "#DDD0C0"],
-    note: "Initial mood board and fabric swatches reviewed together.",
-  },
-  {
-    id: 2,
-    label: "1st Fitting — Toile",
-    date: "20 Jan 2026",
-    count: 4,
-    colors: ["#EDE4DA", "#DDD4CA", "#F5EFE9", "#E8D8CE"],
-    note: "Muslin mock-up fitted — neckline adjusted to sweetheart.",
-  },
-  {
-    id: 3,
-    label: "2nd Fitting — Lace",
-    date: "10 Feb 2026",
-    count: 6,
-    colors: ["#F5EFE9", "#E8D8CE", "#EDE4DA", "#F0E4D8", "#E8D0C0", "#DDD4CA"],
-    note: "Chantilly lace overlay attached. Train and bustle fitted.",
-  },
-];
-
-const lightboxPhotos = [
-  { bg: "#F5EFE9", label: "Front view" },
-  { bg: "#E8D8CE", label: "Back detail" },
-  { bg: "#EDE4DA", label: "Lace sleeve close-up" },
-  { bg: "#F0E4D8", label: "Train drape" },
-  { bg: "#E8D0C0", label: "Side profile" },
-  { bg: "#DDD4CA", label: "Bustle mechanism" },
-];
+import { fittingsApi, type Fitting } from "@/lib/api";
 
 export function BridePortalFittingPhotos() {
-  const [activeAlbum, setActiveAlbum] = useState<number | null>(null);
+  const [activeFitting, setActiveFitting] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
-  const album = albums.find(a => a.id === activeAlbum);
+  const { data: fittings = [], isLoading } = useQuery({
+    queryKey: ["fittings-mine"],
+    queryFn: () => fittingsApi.listMine(),
+  });
+
+  const fitting = fittings.find((f) => f.id === activeFitting) ?? null;
+  const totalPhotos = fittings.reduce((sum, f) => sum + f.photos.length, 0);
+  const latestDate = fittings.length
+    ? new Date(fittings[fittings.length - 1].createdAt).toLocaleDateString(
+        "en-AU",
+        { day: "numeric", month: "short", year: "numeric" },
+      )
+    : "—";
+
+  const photos = fitting?.photos ?? [];
 
   return (
     <BridePortalLayout>
-      {/* Lightbox overlay */}
-      {lightboxIdx !== null && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <button onClick={() => setLightboxIdx(null)} style={{ position: "absolute", top: 24, right: 28, background: "none", border: "none", cursor: "pointer", color: "#fff" }}><X size={24} /></button>
-          <button onClick={() => setLightboxIdx(i => i !== null && i > 0 ? i - 1 : i)} style={{ position: "absolute", left: 28, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}><ChevronLeft size={22} /></button>
-          <div style={{ background: lightboxPhotos[lightboxIdx]?.bg, width: 360, height: 480, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10 }}>
-            <Camera size={40} color="rgba(212,163,115,0.4)" />
-            <span style={{ fontSize: 13, color: "rgba(212,163,115,0.7)" }}>{lightboxPhotos[lightboxIdx]?.label}</span>
+      {/* Lightbox */}
+      {lightboxIdx !== null && photos[lightboxIdx] && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.88)",
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <button
+            onClick={() => setLightboxIdx(null)}
+            style={{
+              position: "absolute",
+              top: 24,
+              right: 28,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            <X size={24} />
+          </button>
+          <button
+            onClick={() =>
+              setLightboxIdx((i) => (i !== null && i > 0 ? i - 1 : i))
+            }
+            style={{
+              position: "absolute",
+              left: 28,
+              background: "rgba(255,255,255,0.08)",
+              border: "none",
+              borderRadius: "50%",
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <img
+            src={photos[lightboxIdx].imageUrl}
+            alt={`Photo ${lightboxIdx + 1}`}
+            style={{
+              maxWidth: "80vw",
+              maxHeight: "80vh",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+          <button
+            onClick={() =>
+              setLightboxIdx((i) =>
+                i !== null && i < photos.length - 1 ? i + 1 : i,
+              )
+            }
+            style={{
+              position: "absolute",
+              right: 28,
+              background: "rgba(255,255,255,0.08)",
+              border: "none",
+              borderRadius: "50%",
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            <ChevronRight size={22} />
+          </button>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 24,
+              fontSize: 12,
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            {(lightboxIdx ?? 0) + 1} / {photos.length}
           </div>
-          <button onClick={() => setLightboxIdx(i => i !== null && i < lightboxPhotos.length - 1 ? i + 1 : i)} style={{ position: "absolute", right: 28, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}><ChevronRight size={22} /></button>
-          <div style={{ position: "absolute", bottom: 24, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{(lightboxIdx ?? 0) + 1} / {lightboxPhotos.length} — {lightboxPhotos[lightboxIdx]?.label}</div>
         </div>
       )}
 
       <main className="bp-page-main">
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
-
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 500, color: "#2C2C2C", margin: "0 0 6px" }}>
-              {activeAlbum ? (
-                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <button onClick={() => setActiveAlbum(null)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "#A67C52", fontSize: 14, fontFamily: "'DM Sans', sans-serif", padding: 0 }}>
+            <h1
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 32,
+                fontWeight: 500,
+                color: "#2C2C2C",
+                margin: "0 0 6px",
+              }}
+            >
+              {activeFitting ? (
+                <span
+                  style={{ display: "flex", alignItems: "center", gap: 10 }}
+                >
+                  <button
+                    onClick={() => {
+                      setActiveFitting(null);
+                      setLightboxIdx(null);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      color: "#A67C52",
+                      fontSize: 14,
+                      fontFamily: "'DM Sans', sans-serif",
+                      padding: 0,
+                    }}
+                  >
                     <ChevronLeft size={16} /> All Albums
                   </button>
                   <span style={{ color: "#DDD" }}>·</span>
-                  {album?.label}
+                  Fitting #{fitting?.fittingNumber}
                 </span>
-              ) : "Fitting Photos"}
+              ) : (
+                "Fitting Photos"
+              )}
             </h1>
             <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
-              {activeAlbum ? album?.date + " — " + album?.note : "Photos from your fittings, shared by Fatima after each session"}
+              {activeFitting
+                ? `${new Date(fitting!.createdAt).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}${fitting?.notes ? " — " + fitting.notes : ""}`
+                : "Photos from your fittings, shared by Fatima after each session"}
             </p>
           </div>
 
-          {!activeAlbum ? (
+          {isLoading && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "60px 0",
+              }}
+            >
+              <Loader2 size={24} className="animate-spin" color="#D4A373" />
+            </div>
+          )}
+
+          {!isLoading && !activeFitting && (
             <>
+              {/* Stats */}
               <div style={{ display: "flex", gap: 16, marginBottom: 28 }}>
                 {[
-                  { label: "Total Photos", value: "12" },
-                  { label: "Fittings Documented", value: "3" },
-                  { label: "Latest Update", value: "10 Feb 2026" },
+                  { label: "Total Photos", value: String(totalPhotos) },
+                  {
+                    label: "Fittings Documented",
+                    value: String(fittings.length),
+                  },
+                  { label: "Latest Update", value: latestDate },
                 ].map((stat, i) => (
-                  <Card key={i} style={{ flex: 1, background: "#FFFFFF", border: "1px solid #E8E0D5", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                  <Card
+                    key={i}
+                    style={{
+                      flex: 1,
+                      background: "#FFFFFF",
+                      border: "1px solid #E8E0D5",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                    }}
+                  >
                     <CardContent style={{ padding: "16px 20px" }}>
-                      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 500, color: "#D4A373" }}>{stat.value}</div>
-                      <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{stat.label}</div>
+                      <div
+                        style={{
+                          fontFamily: "'Cormorant Garamond', serif",
+                          fontSize: 26,
+                          fontWeight: 500,
+                          color: "#D4A373",
+                        }}
+                      >
+                        {stat.value}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "#888", marginTop: 2 }}
+                      >
+                        {stat.label}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {albums.map((alb) => (
+              {fittings.length === 0 && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "60px 0",
+                    color: "#AAA",
+                    fontSize: 13,
+                  }}
+                >
+                  No fitting photos yet — Fatima will add them after each
+                  session.
+                </div>
+              )}
+
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                {fittings.map((f) => (
                   <Card
-                    key={alb.id}
-                    onClick={() => setActiveAlbum(alb.id)}
-                    style={{ background: "#FFFFFF", border: "1px solid #E8E0D5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", cursor: "pointer", overflow: "hidden" }}
+                    key={f.id}
+                    onClick={() => setActiveFitting(f.id)}
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #E8E0D5",
+                      boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+                      cursor: "pointer",
+                      overflow: "hidden",
+                    }}
                   >
                     <CardContent style={{ padding: 0, display: "flex" }}>
-                      <div style={{ display: "flex", width: 200, flexShrink: 0 }}>
-                        {alb.colors.slice(0, 3).map((bg, k) => (
-                          <div key={k} style={{ flex: 1, background: bg, minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Camera size={16} color="rgba(212,163,115,0.25)" />
+                      {/* Photo strip preview */}
+                      <div
+                        style={{ display: "flex", width: 200, flexShrink: 0 }}
+                      >
+                        {f.photos.slice(0, 3).map((p, k) => (
+                          <div
+                            key={k}
+                            style={{
+                              flex: 1,
+                              minHeight: 120,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <img
+                              src={p.imageUrl}
+                              alt=""
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
                           </div>
                         ))}
+                        {f.photos.length === 0 && (
+                          <div
+                            style={{
+                              flex: 1,
+                              background: "#F5EFE9",
+                              minHeight: 120,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Camera size={20} color="rgba(212,163,115,0.4)" />
+                          </div>
+                        )}
                       </div>
-                      <div style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", justifyContent: "center", borderLeft: "1px solid #F0EBE4" }}>
-                        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 500, color: "#2C2C2C", marginBottom: 6 }}>{alb.label}</div>
-                        <div style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>{alb.date} · {alb.note}</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <Badge style={{ background: "#F5EFE9", color: "#A67C52", border: "none", fontSize: 10 }}>{alb.count} photos</Badge>
-                          <span style={{ fontSize: 12, color: "#D4A373" }}>View album →</span>
+                      <div
+                        style={{
+                          flex: 1,
+                          padding: "20px 24px",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          borderLeft: "1px solid #F0EBE4",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            fontSize: 20,
+                            fontWeight: 500,
+                            color: "#2C2C2C",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Fitting #{f.fittingNumber}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "#888",
+                            marginBottom: 10,
+                          }}
+                        >
+                          {new Date(f.createdAt).toLocaleDateString("en-AU", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                          {f.notes ? " — " + f.notes : ""}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <Badge
+                            style={{
+                              background: "#F5EFE9",
+                              color: "#A67C52",
+                              border: "none",
+                              fontSize: 10,
+                            }}
+                          >
+                            {f.photos.length} photo
+                            {f.photos.length !== 1 ? "s" : ""}
+                          </Badge>
+                          <span style={{ fontSize: 12, color: "#D4A373" }}>
+                            View album →
+                          </span>
                         </div>
                       </div>
                     </CardContent>
@@ -129,32 +366,128 @@ export function BridePortalFittingPhotos() {
                 ))}
               </div>
             </>
-          ) : (
+          )}
+
+          {!isLoading && activeFitting && fitting && (
             <div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-                <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 16px", background: "#fff", border: "1px solid #E8E0D5", borderRadius: 8, fontSize: 12, color: "#555", cursor: "pointer" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginBottom: 16,
+                }}
+              >
+                <a
+                  href={photos[0]?.imageUrl}
+                  download
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "8px 16px",
+                    background: "#fff",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: "#555",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                  }}
+                >
                   <Download size={13} /> Download All
-                </button>
+                </a>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                {lightboxPhotos.map((photo, i) => (
+
+              {photos.length === 0 && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "60px 0",
+                    color: "#AAA",
+                    fontSize: 13,
+                  }}
+                >
+                  No photos in this fitting yet.
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 12,
+                }}
+              >
+                {photos.map((photo, i) => (
                   <div
-                    key={i}
+                    key={photo.id}
                     onClick={() => setLightboxIdx(i)}
-                    style={{ borderRadius: 10, overflow: "hidden", border: "1px solid #E8E0D5", cursor: "pointer", position: "relative", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}
+                    style={{
+                      borderRadius: 10,
+                      overflow: "hidden",
+                      border: "1px solid #E8E0D5",
+                      cursor: "pointer",
+                      position: "relative",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                    }}
                   >
-                    <div style={{ background: photo.bg, aspectRatio: "3/4", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Camera size={22} color="rgba(212,163,115,0.3)" />
+                    <div style={{ aspectRatio: "3/4", overflow: "hidden" }}>
+                      <img
+                        src={photo.imageUrl}
+                        alt={`Photo ${i + 1}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
                     </div>
-                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <div style={{ background: "rgba(0,0,0,0.35)", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.7 }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.opacity = "1")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.opacity = "0")
+                      }
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "opacity 0.15s",
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "rgba(0,0,0,0.35)",
+                          borderRadius: "50%",
+                          width: 36,
+                          height: 36,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
                         <ZoomIn size={16} color="#fff" />
                       </div>
                     </div>
-                    <div style={{ background: "#fff", padding: "8px 12px" }}>
-                      <div style={{ fontSize: 11, color: "#555" }}>{photo.label}</div>
-                      <div style={{ fontSize: 10, color: "#AAAAAA" }}>{album?.date}</div>
-                    </div>
+                    {photo.caption && (
+                      <div style={{ background: "#fff", padding: "8px 12px" }}>
+                        <div style={{ fontSize: 11, color: "#555" }}>
+                          {photo.caption}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

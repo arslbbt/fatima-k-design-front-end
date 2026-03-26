@@ -11,6 +11,8 @@ import {
   X,
   LogOut,
   UserCog,
+  Camera,
+  Image,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth";
@@ -19,8 +21,10 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
   { icon: Users, label: "All Brides", href: "/admin/brides" },
   { icon: Calendar, label: "Appointments", href: "/admin/appointments" },
-  { icon: CreditCard, label: "Payments", href: "/admin/payments" },
+  { icon: Camera, label: "Fitting Photos", href: "/admin/fittings" },
+  { icon: Image, label: "Inspiration", href: "/admin/inspo" },
   { icon: FileText, label: "Documents", href: "/admin/documents" },
+  { icon: CreditCard, label: "Payments", href: "/admin/payments" },
   { icon: UserCog, label: "User Management", href: "/admin/team" },
 ];
 

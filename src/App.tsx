@@ -25,6 +25,8 @@ import { AdminPaymentsDesktop } from "@/components/AdminPaymentsDesktop";
 import { AdminDocumentsDesktop } from "@/components/AdminDocumentsDesktop";
 import { AdminSettings } from "@/components/AdminSettings";
 import { AdminTeam } from "@/components/AdminTeam";
+import { AdminFittings } from "@/components/AdminFittings";
+import { AdminInspo } from "@/components/AdminInspo";
 
 const queryClient = new QueryClient();
 
@@ -171,6 +173,16 @@ function Router() {
       <Route path="/admin/team">
         <ProtectedRoute role="ADMIN">
           <AdminTeam />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/fittings">
+        <ProtectedRoute role="ADMIN">
+          <AdminFittings />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/inspo">
+        <ProtectedRoute role="ADMIN">
+          <AdminInspo />
         </ProtectedRoute>
       </Route>
 

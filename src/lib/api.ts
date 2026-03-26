@@ -367,3 +367,133 @@ export interface UpdateAppointmentPayload {
   whatToBring?: string;
   status?: AppointmentStatus;
 }
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+
+export interface Document {
+  id: string;
+  brideId: string;
+  title: string;
+  fileUrl: string;
+  fileType: "pdf" | "docx";
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+export const documentsApi = {
+  listMine: () => request<Document[]>("/documents/my"),
+
+  listForBride: (brideId: string) =>
+    request<Document[]>(`/documents/bride/${brideId}`),
+
+  upload: (brideId: string, file: File, title: string) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("title", title);
+    return fetch(`${BASE}/documents/bride/${brideId}`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, body.message ?? res.statusText);
+      }
+      return res.json() as Promise<Document>;
+    });
+  },
+
+  remove: (id: string) =>
+    request<{ message: string }>(`/documents/${id}`, { method: "DELETE" }),
+};
+
+// ── Fittings ──────────────────────────────────────────────────────────────────
+
+export interface FittingPhoto {
+  id: string;
+  fittingId: string;
+  imageUrl: string;
+  caption: string | null;
+  uploadedAt: string;
+}
+
+export interface Fitting {
+  id: string;
+  brideId: string;
+  appointmentId: string | null;
+  fittingNumber: number;
+  notes: string | null;
+  createdAt: string;
+  photos: FittingPhoto[];
+}
+
+export const fittingsApi = {
+  listForBride: (brideId: string) =>
+    request<Fitting[]>(`/fittings/bride/${brideId}`),
+
+  listMine: () => request<Fitting[]>(`/fittings/bride/me`),
+
+  create: (brideId: string, appointmentId?: string, notes?: string) =>
+    request<Fitting>(`/fittings/bride/${brideId}`, {
+      method: "POST",
+      body: JSON.stringify({ appointmentId, notes }),
+    }),
+
+  uploadPhotos: (fittingId: string, files: File[]) => {
+    const form = new FormData();
+    files.forEach((f) => form.append("files", f));
+    return fetch(`${BASE}/fittings/${fittingId}/photos`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, body.message ?? res.statusText);
+      }
+      return res.json() as Promise<FittingPhoto[]>;
+    });
+  },
+
+  deletePhoto: (photoId: string) =>
+    request<{ message: string }>(`/fittings/photos/${photoId}`, {
+      method: "DELETE",
+    }),
+};
+
+// ── Inspo ─────────────────────────────────────────────────────────────────────
+
+export interface InspoUpload {
+  id: string;
+  brideId: string;
+  imageUrl: string;
+  caption: string | null;
+  uploadedAt: string;
+}
+
+export const inspoApi = {
+  listMine: () => request<InspoUpload[]>("/inspo/my"),
+
+  listForBride: (brideId: string) =>
+    request<InspoUpload[]>(`/inspo/bride/${brideId}`),
+
+  upload: (files: File[], caption?: string) => {
+    const form = new FormData();
+    files.forEach((f) => form.append("files", f));
+    if (caption) form.append("caption", caption);
+    return fetch(`${BASE}/inspo`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, body.message ?? res.statusText);
+      }
+      return res.json() as Promise<InspoUpload[]>;
+    });
+  },
+
+  remove: (id: string) =>
+    request<{ message: string }>(`/inspo/${id}`, { method: "DELETE" }),
+};
