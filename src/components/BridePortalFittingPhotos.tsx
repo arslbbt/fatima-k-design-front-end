@@ -421,6 +421,7 @@ export function BridePortalFittingPhotos() {
                 {photos.map((photo, i) => (
                   <div
                     key={photo.id}
+                    className="photo-card"
                     onClick={() => setLightboxIdx(i)}
                     style={{
                       borderRadius: 10,
@@ -443,20 +444,7 @@ export function BridePortalFittingPhotos() {
                       />
                     </div>
                     <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        opacity: 0,
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.opacity = "1")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.opacity = "0")
-                      }
+                      className="zoom-overlay"
                       style={{
                         position: "absolute",
                         inset: 0,
@@ -464,7 +452,9 @@ export function BridePortalFittingPhotos() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        opacity: 0,
                         transition: "opacity 0.15s",
+                        pointerEvents: "none",
                       }}
                     >
                       <div

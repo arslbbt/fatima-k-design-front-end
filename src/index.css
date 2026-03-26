@@ -458,3 +458,8 @@
     padding: 16px 14px;
   }
 }
+
+/* Photo card zoom overlay — show on parent hover */
+.photo-card:hover .zoom-overlay {
+  opacity: 1 !important;
+}

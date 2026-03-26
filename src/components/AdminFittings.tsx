@@ -729,6 +729,7 @@ export function AdminFittings() {
                   {photos.map((photo, i) => (
                     <div
                       key={photo.id}
+                      className="photo-card"
                       style={{
                         borderRadius: 10,
                         overflow: "hidden",
@@ -742,6 +743,7 @@ export function AdminFittings() {
                           aspectRatio: "3/4",
                           overflow: "hidden",
                           cursor: "pointer",
+                          position: "relative",
                         }}
                         onClick={() => setLightboxIdx(i)}
                       >
@@ -754,25 +756,22 @@ export function AdminFittings() {
                             objectFit: "cover",
                           }}
                         />
+                        {/* Zoom overlay — scoped inside the image div only */}
                         <div
+                          className="zoom-overlay"
                           style={{
                             position: "absolute",
                             inset: 0,
-                            background: "rgba(0,0,0,0.15)",
+                            background: "rgba(0,0,0,0.25)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             opacity: 0,
                             transition: "opacity 0.15s",
+                            pointerEvents: "none",
                           }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.opacity = "1")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.opacity = "0")
-                          }
                         >
-                          <ZoomIn size={20} color="#fff" />
+                          <ZoomIn size={22} color="#fff" />
                         </div>
                       </div>
                       <div
@@ -784,13 +783,16 @@ export function AdminFittings() {
                         }}
                       >
                         <button
-                          onClick={() => deletePhotoMutation.mutate(photo.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deletePhotoMutation.mutate(photo.id);
+                          }}
                           disabled={deletePhotoMutation.isPending}
                           style={{
                             background: "none",
                             border: "none",
                             cursor: "pointer",
-                            padding: 2,
+                            padding: 4,
                           }}
                         >
                           <Trash2 size={13} color="#CC4444" />
