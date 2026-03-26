@@ -724,6 +724,7 @@ export function AdminFittings() {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr 1fr 1fr",
                     gap: 12,
+                    alignItems: "start",
                   }}
                 >
                   {photos.map((photo, i) => (
@@ -734,16 +735,18 @@ export function AdminFittings() {
                         borderRadius: 10,
                         overflow: "hidden",
                         border: "1px solid #E8E0D5",
-                        position: "relative",
                         boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                        display: "flex",
+                        flexDirection: "column",
                       }}
                     >
                       <div
                         style={{
-                          aspectRatio: "3/4",
+                          height: 280,
                           overflow: "hidden",
                           cursor: "pointer",
                           position: "relative",
+                          flexShrink: 0,
                         }}
                         onClick={() => setLightboxIdx(i)}
                       >
@@ -754,6 +757,7 @@ export function AdminFittings() {
                             width: "100%",
                             height: "100%",
                             objectFit: "cover",
+                            display: "block",
                           }}
                         />
                         {/* Zoom overlay — scoped inside the image div only */}
@@ -780,6 +784,7 @@ export function AdminFittings() {
                           padding: "6px 10px",
                           display: "flex",
                           justifyContent: "flex-end",
+                          flexShrink: 0,
                         }}
                       >
                         <button
@@ -806,7 +811,7 @@ export function AdminFittings() {
                     style={{
                       borderRadius: 10,
                       border: "1.5px dashed #E8E0D5",
-                      aspectRatio: "3/4",
+                      height: 316,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
