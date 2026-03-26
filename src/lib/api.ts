@@ -381,9 +381,18 @@ export interface Document {
   fileType: "pdf" | "docx";
   uploadedAt: string;
   uploadedBy: string;
+  bride?: { id: string; name: string; email: string };
 }
 
 export const documentsApi = {
+  listAll: (params?: { brideId?: string; search?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.brideId) qs.set("brideId", params.brideId);
+    if (params?.search) qs.set("search", params.search);
+    const q = qs.toString();
+    return request<Document[]>(`/documents${q ? `?${q}` : ""}`);
+  },
+
   listMine: () => request<Document[]>("/documents/my"),
 
   listForBride: (brideId: string) =>

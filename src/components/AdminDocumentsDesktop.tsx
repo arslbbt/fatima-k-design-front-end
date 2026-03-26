@@ -381,24 +381,21 @@ export function AdminDocumentsDesktop() {
   });
   const brides = bridesData?.data ?? [];
 
-  // Load docs for selected bride or all
+  // Single API call — filter by brideId and/or search on the backend
   const { data: allDocs = [], isLoading } = useQuery({
-    queryKey: ["admin-docs", selectedBrideId],
+    queryKey: ["admin-docs", selectedBrideId, debouncedSearch],
     queryFn: () =>
-      selectedBrideId === "ALL"
-        ? Promise.all(brides.map((b) => documentsApi.listForBride(b.id))).then(
-            (r) => r.flat(),
-          )
-        : documentsApi.listForBride(selectedBrideId),
-    enabled: selectedBrideId === "ALL" ? brides.length > 0 : true,
+      documentsApi.listAll({
+        brideId: selectedBrideId === "ALL" ? undefined : selectedBrideId,
+        search: debouncedSearch || undefined,
+      }),
   });
 
-  const filtered = allDocs.filter((d) =>
-    d.title.toLowerCase().includes(debouncedSearch.toLowerCase()),
-  );
-
+  const filtered = allDocs;
   const doc = filtered.find((d) => d.id === selectedDoc) ?? null;
-  const docBride = doc ? brides.find((b) => b.id === doc.brideId) : null;
+  // Use bride data embedded in the doc response
+  const docBride =
+    doc?.bride ?? (doc ? brides.find((b) => b.id === doc.brideId) : null);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => documentsApi.remove(id),
@@ -547,7 +544,7 @@ export function AdminDocumentsDesktop() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search documents…"
+                  placeholder="Search by title, bride name or email…"
                   style={{
                     border: "none",
                     outline: "none",
@@ -585,7 +582,7 @@ export function AdminDocumentsDesktop() {
                 </div>
               )}
               {filtered.map((d) => {
-                const bride = brides.find((b) => b.id === d.brideId);
+                const bride = d.bride ?? brides.find((b) => b.id === d.brideId);
                 const isSelected = selectedDoc === d.id;
                 return (
                   <div
