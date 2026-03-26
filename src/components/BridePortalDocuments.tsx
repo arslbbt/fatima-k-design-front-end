@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
-import { documentsApi, type Document } from "@/lib/api";
+import { documentsApi } from "@/lib/api";
+import { downloadFile } from "@/lib/downloadFile";
 
 export function BridePortalDocuments() {
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -24,7 +25,6 @@ export function BridePortalDocuments() {
     pdf: "#F5EFE9",
     docx: "#F0F0FF",
   };
-
   const typeLabel: Record<string, string> = {
     pdf: "PDF",
     docx: "Word Document",
@@ -208,10 +208,15 @@ export function BridePortalDocuments() {
                       </div>
 
                       <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                        <a
-                          href={doc.fileUrl}
-                          download={doc.title}
-                          onClick={(e) => e.stopPropagation()}
+                        {/* Download — fetch as blob to force download even for PDFs */}
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            await downloadFile(
+                              doc.fileUrl,
+                              `${doc.title}.${doc.fileType}`,
+                            );
+                          }}
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -223,11 +228,11 @@ export function BridePortalDocuments() {
                             borderRadius: 7,
                             fontSize: 12,
                             cursor: "pointer",
-                            textDecoration: "none",
                           }}
                         >
                           <Download size={13} /> Download
-                        </a>
+                        </button>
+                        {/* View — open in new tab */}
                         <a
                           href={doc.fileUrl}
                           target="_blank"
@@ -291,7 +296,7 @@ export function BridePortalDocuments() {
                           {doc.fileType === "pdf"
                             ? "PDF document"
                             : "Word document"}{" "}
-                          — click Download or View to open.
+                          — click Download to save or View to open in a new tab.
                         </p>
                       </div>
                     )}

@@ -266,7 +266,24 @@ function UploadModal({
               accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               style={{ display: "none" }}
               onChange={(e) => {
-                if (e.target.files?.[0]) setFile(e.target.files[0]);
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const allowed = [
+                  "application/pdf",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ];
+                if (!allowed.includes(f.type)) {
+                  setError(
+                    "Only PDF and Word documents (.pdf, .docx) are allowed.",
+                  );
+                  return;
+                }
+                if (f.size > 20 * 1024 * 1024) {
+                  setError("File size must not exceed 20MB.");
+                  return;
+                }
+                setFile(f);
+                setError(null);
               }}
             />
 
@@ -727,9 +744,15 @@ export function AdminDocumentsDesktop() {
                   >
                     <Eye size={13} /> View
                   </a>
-                  <a
-                    href={doc.fileUrl}
-                    download={doc.title}
+                  <button
+                    onClick={async () => {
+                      const { downloadFile } =
+                        await import("@/lib/downloadFile");
+                      await downloadFile(
+                        doc.fileUrl,
+                        `${doc.title}.${doc.fileType}`,
+                      );
+                    }}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -741,11 +764,10 @@ export function AdminDocumentsDesktop() {
                       fontSize: 12,
                       color: "#555",
                       cursor: "pointer",
-                      textDecoration: "none",
                     }}
                   >
                     <Download size={13} /> Download
-                  </a>
+                  </button>
                   <button
                     onClick={() => deleteMutation.mutate(doc.id)}
                     disabled={deleteMutation.isPending}
