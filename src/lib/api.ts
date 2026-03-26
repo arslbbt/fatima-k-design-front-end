@@ -178,6 +178,9 @@ export const appointmentsApi = {
 
   myAppointments: () => request<Appointment[]>("/appointments/my"),
 
+  listForBride: (brideId: string) =>
+    request<Appointment[]>(`/appointments/bride/${brideId}`),
+
   get: (id: string) => request<Appointment>(`/appointments/${id}`),
 
   create: (data: CreateAppointmentPayload) =>
@@ -433,7 +436,7 @@ export const fittingsApi = {
 
   listMine: () => request<Fitting[]>(`/fittings/bride/me`),
 
-  create: (brideId: string, appointmentId?: string, notes?: string) =>
+  create: (brideId: string, appointmentId: string, notes?: string) =>
     request<Fitting>(`/fittings/bride/${brideId}`, {
       method: "POST",
       body: JSON.stringify({ appointmentId, notes }),

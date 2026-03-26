@@ -1,19 +1,39 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Image as ImageIcon, ChevronLeft, X, Loader2 } from "lucide-react";
+import {
+  Image as ImageIcon,
+  ChevronLeft,
+  X,
+  Loader2,
+  Search,
+} from "lucide-react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Pagination } from "@/components/ui/Pagination";
 import { inspoApi, bridesApi } from "@/lib/api";
+import { useDebounce } from "@/hooks/useDebounce";
+
+const BRIDE_PAGE_SIZE = 20;
 
 export function AdminInspo() {
   const [selectedBrideId, setSelectedBrideId] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [brideSearch, setBrideSearch] = useState("");
+  const [bridePage, setBridePage] = useState(1);
+
+  const debouncedSearch = useDebounce(brideSearch);
 
   const { data: bridesData } = useQuery({
-    queryKey: ["brides-all-inspo"],
-    queryFn: () => bridesApi.list({ limit: 100 }),
+    queryKey: ["brides-inspo-list", debouncedSearch, bridePage],
+    queryFn: () =>
+      bridesApi.list({
+        search: debouncedSearch || undefined,
+        page: bridePage,
+        limit: BRIDE_PAGE_SIZE,
+      }),
   });
   const brides = bridesData?.data ?? [];
+  const bridesMeta = bridesData?.meta;
 
   const { data: uploads = [], isLoading } = useQuery({
     queryKey: ["inspo-admin", selectedBrideId],
@@ -154,9 +174,39 @@ export function AdminInspo() {
 
           {!selectedBrideId && (
             <div>
-              <div style={{ fontSize: 12, color: "#888", marginBottom: 14 }}>
-                Select a bride to view their inspiration board:
+              {/* Search */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "#fff",
+                  border: "1px solid #E8E0D5",
+                  borderRadius: 8,
+                  padding: "9px 14px",
+                  marginBottom: 16,
+                  maxWidth: 360,
+                }}
+              >
+                <Search size={14} color="#AAA" />
+                <input
+                  value={brideSearch}
+                  onChange={(e) => {
+                    setBrideSearch(e.target.value);
+                    setBridePage(1);
+                  }}
+                  placeholder="Search brides…"
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    fontSize: 13,
+                    color: "#333",
+                    background: "transparent",
+                    flex: 1,
+                  }}
+                />
               </div>
+
               <div
                 style={{
                   display: "grid",
@@ -220,6 +270,16 @@ export function AdminInspo() {
                   </div>
                 ))}
               </div>
+
+              {bridesMeta && bridesMeta.totalPages > 1 && (
+                <Pagination
+                  page={bridePage}
+                  totalPages={bridesMeta.totalPages}
+                  total={bridesMeta.total}
+                  limit={BRIDE_PAGE_SIZE}
+                  onPageChange={setBridePage}
+                />
+              )}
             </div>
           )}
 

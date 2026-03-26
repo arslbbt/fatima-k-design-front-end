@@ -9,20 +9,25 @@ import {
   Loader2,
   ChevronLeft,
   ZoomIn,
-  AlertCircle,
+  Search,
 } from "lucide-react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/Pagination";
 import {
   fittingsApi,
   bridesApi,
+  appointmentsApi,
   ApiError,
-  type Fitting,
+  APPOINTMENT_TITLE_LABELS,
   type BrideWithProfile,
 } from "@/lib/api";
+import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/hooks/use-toast";
+
+const BRIDE_PAGE_SIZE = 20;
 
 export function AdminFittings() {
   const queryClient = useQueryClient();
@@ -32,15 +37,25 @@ export function AdminFittings() {
   const [activeFittingId, setActiveFittingId] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [creatingFitting, setCreatingFitting] = useState(false);
   const [newFittingNotes, setNewFittingNotes] = useState("");
+  const [newFittingApptId, setNewFittingApptId] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [brideSearch, setBrideSearch] = useState("");
+  const [bridePage, setBridePage] = useState(1);
+
+  const debouncedSearch = useDebounce(brideSearch);
 
   const { data: bridesData } = useQuery({
-    queryKey: ["brides-all-fittings"],
-    queryFn: () => bridesApi.list({ limit: 100 }),
+    queryKey: ["brides-fittings-list", debouncedSearch, bridePage],
+    queryFn: () =>
+      bridesApi.list({
+        search: debouncedSearch || undefined,
+        page: bridePage,
+        limit: BRIDE_PAGE_SIZE,
+      }),
   });
   const brides = bridesData?.data ?? [];
+  const bridesMeta = bridesData?.meta;
 
   const { data: fittings = [], isLoading: fittingsLoading } = useQuery({
     queryKey: ["fittings-admin", selectedBrideId],
@@ -48,6 +63,16 @@ export function AdminFittings() {
     enabled: !!selectedBrideId,
   });
 
+  // Load bride's appointments for the create form dropdown
+  const { data: brideAppointments = [] } = useQuery({
+    queryKey: ["bride-appts-for-fitting", selectedBrideId],
+    queryFn: () => appointmentsApi.listForBride(selectedBrideId!),
+    enabled: !!selectedBrideId && showCreateForm,
+  });
+
+  const eligibleAppts = brideAppointments.filter((a) =>
+    ["SCHEDULED", "RESCHEDULED", "COMPLETED"].includes(a.status),
+  );
   const activeFitting = fittings.find((f) => f.id === activeFittingId) ?? null;
   const selectedBride = brides.find((b) => b.id === selectedBrideId) ?? null;
   const photos = activeFitting?.photos ?? [];
@@ -56,7 +81,7 @@ export function AdminFittings() {
     mutationFn: () =>
       fittingsApi.create(
         selectedBrideId!,
-        undefined,
+        newFittingApptId,
         newFittingNotes || undefined,
       ),
     onSuccess: () => {
@@ -65,6 +90,7 @@ export function AdminFittings() {
       });
       toast({ title: "Fitting created" });
       setNewFittingNotes("");
+      setNewFittingApptId("");
       setShowCreateForm(false);
     },
     onError: (err) =>
@@ -247,9 +273,39 @@ export function AdminFittings() {
           {/* Bride selector */}
           {!selectedBrideId && (
             <div>
-              <div style={{ fontSize: 12, color: "#888", marginBottom: 14 }}>
-                Select a bride to manage their fittings:
+              {/* Search */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "#fff",
+                  border: "1px solid #E8E0D5",
+                  borderRadius: 8,
+                  padding: "9px 14px",
+                  marginBottom: 16,
+                  maxWidth: 360,
+                }}
+              >
+                <Search size={14} color="#AAA" />
+                <input
+                  value={brideSearch}
+                  onChange={(e) => {
+                    setBrideSearch(e.target.value);
+                    setBridePage(1);
+                  }}
+                  placeholder="Search brides…"
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    fontSize: 13,
+                    color: "#333",
+                    background: "transparent",
+                    flex: 1,
+                  }}
+                />
               </div>
+
               <div
                 style={{
                   display: "grid",
@@ -313,6 +369,16 @@ export function AdminFittings() {
                   </div>
                 ))}
               </div>
+
+              {bridesMeta && bridesMeta.totalPages > 1 && (
+                <Pagination
+                  page={bridePage}
+                  totalPages={bridesMeta.totalPages}
+                  total={bridesMeta.total}
+                  limit={BRIDE_PAGE_SIZE}
+                  onPageChange={setBridePage}
+                />
+              )}
             </div>
           )}
 
@@ -397,6 +463,55 @@ export function AdminFittings() {
                   >
                     Create New Fitting
                   </div>
+
+                  {/* Appointment selector — mandatory */}
+                  <div style={{ marginBottom: 12 }}>
+                    <label
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#555",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                        display: "block",
+                        marginBottom: 5,
+                      }}
+                    >
+                      Appointment *
+                    </label>
+                    <select
+                      value={newFittingApptId}
+                      onChange={(e) => setNewFittingApptId(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "9px 12px",
+                        border: `1px solid ${!newFittingApptId && createMutation.isError ? "#F5C6C6" : "#E8E0D5"}`,
+                        borderRadius: 7,
+                        fontSize: 13,
+                        color: newFittingApptId ? "#333" : "#AAA",
+                        background: "#FDFBF8",
+                        outline: "none",
+                        boxSizing: "border-box" as const,
+                      }}
+                    >
+                      <option value="">Select an appointment…</option>
+                      {eligibleAppts.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {APPOINTMENT_TITLE_LABELS[a.title]} —{" "}
+                          {new Date(a.startTime).toLocaleDateString("en-AU", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}{" "}
+                          ({a.status})
+                        </option>
+                      ))}
+                      {eligibleAppts.length === 0 && (
+                        <option disabled>No eligible appointments found</option>
+                      )}
+                    </select>
+                  </div>
+
                   <div style={{ marginBottom: 12 }}>
                     <label
                       style={{
@@ -424,7 +539,7 @@ export function AdminFittings() {
                         color: "#333",
                         background: "#FDFBF8",
                         outline: "none",
-                        boxSizing: "border-box",
+                        boxSizing: "border-box" as const,
                       }}
                     />
                   </div>
@@ -444,17 +559,26 @@ export function AdminFittings() {
                       Cancel
                     </button>
                     <button
-                      onClick={() => createMutation.mutate()}
-                      disabled={createMutation.isPending}
+                      onClick={() => {
+                        if (!newFittingApptId) {
+                          toast({
+                            title: "Appointment required",
+                            description: "Please select an appointment.",
+                          });
+                          return;
+                        }
+                        createMutation.mutate();
+                      }}
+                      disabled={createMutation.isPending || !newFittingApptId}
                       style={{
                         padding: "8px 16px",
-                        background: "#2C2C2C",
+                        background: !newFittingApptId ? "#CCC" : "#2C2C2C",
                         color: "#fff",
                         border: "none",
                         borderRadius: 7,
                         fontSize: 12,
                         fontWeight: 600,
-                        cursor: "pointer",
+                        cursor: !newFittingApptId ? "not-allowed" : "pointer",
                         display: "flex",
                         alignItems: "center",
                         gap: 6,
