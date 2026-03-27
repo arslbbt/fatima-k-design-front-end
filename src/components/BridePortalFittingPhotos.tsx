@@ -9,6 +9,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import JSZip from "jszip";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
@@ -17,6 +18,7 @@ import { fittingsApi, type Fitting } from "@/lib/api";
 export function BridePortalFittingPhotos() {
   const [activeFitting, setActiveFitting] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [downloadingZip, setDownloadingZip] = useState(false);
 
   const { data: fittings = [], isLoading } = useQuery({
     queryKey: ["fittings-mine"],
@@ -33,6 +35,36 @@ export function BridePortalFittingPhotos() {
     : "—";
 
   const photos = fitting?.photos ?? [];
+
+  async function downloadAllAsZip() {
+    if (!photos.length || !fitting) return;
+    setDownloadingZip(true);
+    try {
+      const zip = new JSZip();
+      await Promise.all(
+        photos.map(async (photo, i) => {
+          const res = await fetch(photo.imageUrl, { credentials: "include" });
+          const blob = await res.blob();
+          const ext = blob.type === "image/png" ? "png" : "jpg";
+          zip.file(
+            `fitting-${fitting.fittingNumber}-photo-${i + 1}.${ext}`,
+            blob,
+          );
+        }),
+      );
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fitting-${fitting.fittingNumber}-photos.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently fail — user can download individually
+    } finally {
+      setDownloadingZip(false);
+    }
+  }
 
   return (
     <BridePortalLayout>
@@ -377,9 +409,9 @@ export function BridePortalFittingPhotos() {
                   marginBottom: 16,
                 }}
               >
-                <a
-                  href={photos[0]?.imageUrl}
-                  download
+                <button
+                  onClick={downloadAllAsZip}
+                  disabled={downloadingZip}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -390,12 +422,20 @@ export function BridePortalFittingPhotos() {
                     borderRadius: 8,
                     fontSize: 12,
                     color: "#555",
-                    cursor: "pointer",
-                    textDecoration: "none",
+                    cursor: downloadingZip ? "not-allowed" : "pointer",
+                    opacity: downloadingZip ? 0.7 : 1,
                   }}
                 >
-                  <Download size={13} /> Download All
-                </a>
+                  {downloadingZip ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" /> Zipping…
+                    </>
+                  ) : (
+                    <>
+                      <Download size={13} /> Download All
+                    </>
+                  )}
+                </button>
               </div>
 
               {photos.length === 0 && (

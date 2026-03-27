@@ -269,13 +269,16 @@ export function BridePortalInspiration() {
                             ? "0 2px 12px rgba(212,163,115,0.25)"
                             : "0 1px 4px rgba(0,0,0,0.05)",
                         transition: "all 0.15s",
+                        display: "flex",
+                        flexDirection: "column",
                       }}
                     >
                       <div
                         style={{
-                          aspectRatio: "3/4",
+                          height: 280,
                           overflow: "hidden",
                           position: "relative",
+                          flexShrink: 0,
                         }}
                       >
                         <img
@@ -285,6 +288,7 @@ export function BridePortalInspiration() {
                             width: "100%",
                             height: "100%",
                             objectFit: "cover",
+                            display: "block",
                           }}
                         />
                       </div>
@@ -327,7 +331,7 @@ export function BridePortalInspiration() {
                     style={{
                       borderRadius: 10,
                       border: "1.5px dashed #E8E0D5",
-                      aspectRatio: "3/4",
+                      height: 256,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -372,7 +376,7 @@ export function BridePortalInspiration() {
                     <CardContent style={{ padding: 0 }}>
                       <div
                         style={{
-                          aspectRatio: "3/4",
+                          height: 260,
                           borderRadius: "10px 10px 0 0",
                           overflow: "hidden",
                         }}

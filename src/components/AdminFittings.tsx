@@ -10,7 +10,9 @@ import {
   ChevronLeft,
   ZoomIn,
   Search,
+  Download,
 } from "lucide-react";
+import JSZip from "jszip";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +44,10 @@ export function AdminFittings() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [brideSearch, setBrideSearch] = useState("");
   const [bridePage, setBridePage] = useState(1);
+  const [confirmDeletePhotoId, setConfirmDeletePhotoId] = useState<
+    string | null
+  >(null);
+  const [downloadingZip, setDownloadingZip] = useState(false);
 
   const debouncedSearch = useDebounce(brideSearch);
 
@@ -107,6 +113,7 @@ export function AdminFittings() {
       queryClient.invalidateQueries({
         queryKey: ["fittings-admin", selectedBrideId],
       });
+      setConfirmDeletePhotoId(null);
       toast({ title: "Photo deleted" });
     },
     onError: (err) =>
@@ -116,6 +123,39 @@ export function AdminFittings() {
           err instanceof ApiError ? err.message : "Something went wrong.",
       }),
   });
+
+  async function downloadAllAsZip() {
+    if (!photos.length || !activeFitting) return;
+    setDownloadingZip(true);
+    try {
+      const zip = new JSZip();
+      await Promise.all(
+        photos.map(async (photo, i) => {
+          const res = await fetch(photo.imageUrl, { credentials: "include" });
+          const blob = await res.blob();
+          const ext = blob.type === "image/png" ? "png" : "jpg";
+          zip.file(
+            `fitting-${activeFitting.fittingNumber}-photo-${i + 1}.${ext}`,
+            blob,
+          );
+        }),
+      );
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fitting-${activeFitting.fittingNumber}-photos.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({
+        title: "Download failed",
+        description: "Could not download photos.",
+      });
+    } finally {
+      setDownloadingZip(false);
+    }
+  }
 
   async function handleUpload(files: FileList | null) {
     if (!files?.length || !activeFittingId) return;
@@ -752,7 +792,7 @@ export function AdminFittings() {
                 >
                   <ChevronLeft size={15} /> {selectedBride?.name}'s Fittings
                 </button>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span
                     style={{
                       fontFamily: "'Cormorant Garamond', serif",
@@ -763,6 +803,37 @@ export function AdminFittings() {
                   >
                     Fitting #{activeFitting.fittingNumber}
                   </span>
+                  {photos.length > 0 && (
+                    <button
+                      onClick={downloadAllAsZip}
+                      disabled={downloadingZip}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "8px 14px",
+                        background: "#F5EFE9",
+                        color: "#A67C52",
+                        border: "1px solid #E8D8CE",
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 500,
+                        cursor: downloadingZip ? "not-allowed" : "pointer",
+                        opacity: downloadingZip ? 0.7 : 1,
+                      }}
+                    >
+                      {downloadingZip ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />{" "}
+                          Zipping…
+                        </>
+                      ) : (
+                        <>
+                          <Download size={13} /> Download All
+                        </>
+                      )}
+                    </button>
+                  )}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
@@ -914,9 +985,8 @@ export function AdminFittings() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            deletePhotoMutation.mutate(photo.id);
+                            setConfirmDeletePhotoId(photo.id);
                           }}
-                          disabled={deletePhotoMutation.isPending}
                           style={{
                             background: "none",
                             border: "none",
@@ -968,6 +1038,106 @@ export function AdminFittings() {
           )}
         </div>
       </main>
+
+      {/* Confirm delete photo modal — same design as inspiration page */}
+      {confirmDeletePhotoId && (
+        <>
+          <div
+            onClick={() => setConfirmDeletePhotoId(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.45)",
+              zIndex: 200,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                width: "100%",
+                maxWidth: 380,
+                padding: "28px 24px",
+                textAlign: "center",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 22,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  margin: "0 0 8px",
+                }}
+              >
+                Delete this photo?
+              </h3>
+              <p style={{ fontSize: 13, color: "#888", margin: "0 0 24px" }}>
+                This cannot be undone.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setConfirmDeletePhotoId(null)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    color: "#666",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() =>
+                    deletePhotoMutation.mutate(confirmDeletePhotoId)
+                  }
+                  disabled={deletePhotoMutation.isPending}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "none",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: "#CC4444",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  {deletePhotoMutation.isPending ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" /> Deleting…
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </AdminLayout>
   );
 }
