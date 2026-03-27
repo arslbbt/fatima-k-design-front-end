@@ -111,6 +111,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             Admin
           </span>
         </div>
+          <Link href="/admin/settings">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Avatar
             style={{
@@ -139,6 +140,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </div>
+        </Link>
       </header>
 
       {/* Body */}

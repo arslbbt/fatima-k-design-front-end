@@ -26,6 +26,7 @@ import {
 } from "@/lib/api";
 import { Pagination } from "./ui/Pagination";
 import { useDebounce } from "@/hooks/useDebounce";
+import { Link } from "wouter";
 
 const PAGE_SIZE = 6;
 
@@ -597,7 +598,7 @@ function BrideCard({
               cursor: "pointer",
             }}
           >
-            <Calendar size={12} />
+            <Link href="/admin/appointments"><Calendar size={12} /></Link> 
           </button>
           <button
             style={{
@@ -612,7 +613,7 @@ function BrideCard({
               cursor: "pointer",
             }}
           >
-            <CreditCard size={12} />
+             <Link href="/admin/payments"><CreditCard size={12} /></Link>
           </button>
           <button
             style={{
@@ -627,7 +628,7 @@ function BrideCard({
               cursor: "pointer",
             }}
           >
-            <FileText size={12} />
+            <Link href="/admin/documents"><FileText size={12} /></Link>
           </button>
         </div>
       </CardContent>
