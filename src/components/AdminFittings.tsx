@@ -13,6 +13,8 @@ import {
   Download,
 } from "lucide-react";
 import JSZip from "jszip";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -566,22 +568,35 @@ export function AdminFittings() {
                     >
                       Notes (optional)
                     </label>
-                    <input
-                      value={newFittingNotes}
-                      onChange={(e) => setNewFittingNotes(e.target.value)}
-                      placeholder="e.g. Toile fitting — sweetheart neckline adjusted"
+                    <div
                       style={{
-                        width: "100%",
-                        padding: "9px 12px",
                         border: "1px solid #E8E0D5",
                         borderRadius: 7,
-                        fontSize: 13,
-                        color: "#333",
+                        overflow: "hidden",
                         background: "#FDFBF8",
-                        outline: "none",
-                        boxSizing: "border-box" as const,
                       }}
-                    />
+                    >
+                      <ReactQuill
+                        value={newFittingNotes}
+                        onChange={setNewFittingNotes}
+                        placeholder="e.g. Toile fitting — sweetheart neckline adjusted"
+                        modules={{
+                          toolbar: [
+                            ["bold", "italic", "underline"],
+                            [{ list: "ordered" }, { list: "bullet" }],
+                            ["clean"],
+                          ],
+                        }}
+                        formats={[
+                          "bold",
+                          "italic",
+                          "underline",
+                          "list",
+                          "bullet",
+                        ]}
+                        style={{ fontSize: 13 }}
+                      />
+                    </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button

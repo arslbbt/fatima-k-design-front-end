@@ -73,6 +73,7 @@
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.8",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "react-quill": "^2.0.0"
   }
 }

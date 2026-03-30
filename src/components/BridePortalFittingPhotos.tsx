@@ -207,8 +207,18 @@ export function BridePortalFittingPhotos() {
             </h1>
             <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
               {activeFitting
-                ? `${new Date(fitting!.createdAt).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}${fitting?.notes ? " — " + fitting.notes : ""}`
+                ? new Date(fitting!.createdAt).toLocaleDateString("en-AU", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
                 : "Photos from your fittings, shared by Fatima after each session"}
+              {activeFitting && fitting?.notes && (
+                <span
+                  style={{ marginLeft: 4 }}
+                  dangerouslySetInnerHTML={{ __html: " — " + fitting.notes }}
+                />
+              )}
             </p>
           </div>
 
@@ -360,7 +370,7 @@ export function BridePortalFittingPhotos() {
                           style={{
                             fontSize: 12,
                             color: "#888",
-                            marginBottom: 10,
+                            marginBottom: f.notes ? 6 : 10,
                           }}
                         >
                           {new Date(f.createdAt).toLocaleDateString("en-AU", {
@@ -368,8 +378,19 @@ export function BridePortalFittingPhotos() {
                             month: "long",
                             year: "numeric",
                           })}
-                          {f.notes ? " — " + f.notes : ""}
                         </div>
+                        {f.notes && (
+                          <div
+                            className="fitting-notes"
+                            style={{
+                              fontSize: 12,
+                              color: "#666",
+                              marginBottom: 10,
+                              lineHeight: 1.5,
+                            }}
+                            dangerouslySetInnerHTML={{ __html: f.notes }}
+                          />
+                        )}
                         <div
                           style={{
                             display: "flex",

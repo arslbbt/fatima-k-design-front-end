@@ -463,3 +463,60 @@
 .photo-card:hover .zoom-overlay {
   opacity: 1 !important;
 }
+
+/* ── React Quill theme overrides ── */
+.ql-toolbar.ql-snow {
+  border: none !important;
+  border-bottom: 1px solid #e8e0d5 !important;
+  background: #faf8f5;
+  padding: 6px 10px !important;
+  font-family: "DM Sans", sans-serif;
+}
+.ql-container.ql-snow {
+  border: none !important;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+}
+.ql-editor {
+  min-height: 100px;
+  padding: 10px 12px !important;
+  color: #333;
+}
+.ql-editor.ql-blank::before {
+  color: #aaaaaa;
+  font-style: normal !important;
+}
+.ql-toolbar .ql-stroke {
+  stroke: #666 !important;
+}
+.ql-toolbar .ql-fill {
+  fill: #666 !important;
+}
+.ql-toolbar button:hover .ql-stroke,
+.ql-toolbar button.ql-active .ql-stroke {
+  stroke: #a67c52 !important;
+}
+.ql-toolbar button:hover .ql-fill,
+.ql-toolbar button.ql-active .ql-fill {
+  fill: #a67c52 !important;
+}
+
+/* ── Fitting notes HTML rendering ── */
+.fitting-notes ul,
+.fitting-notes ol {
+  padding-left: 18px;
+  margin: 4px 0;
+}
+.fitting-notes li {
+  margin-bottom: 2px;
+}
+.fitting-notes strong {
+  font-weight: 600;
+  color: #444;
+}
+.fitting-notes em {
+  font-style: italic;
+}
+.fitting-notes p {
+  margin: 0 0 4px;
+}
