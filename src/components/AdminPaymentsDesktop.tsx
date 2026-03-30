@@ -329,6 +329,8 @@ export function AdminPaymentsDesktop() {
                   alignItems: "flex-end",
                   height: 120,
                   paddingBottom: 10,
+                  overflow: "visible",
+                  position: "relative",
                 }}
               >
                 {monthlyRevenue?.map((m, i) => {
@@ -338,14 +340,75 @@ export function AdminPaymentsDesktop() {
                   return (
                     <div
                       key={i}
+                      title={
+                        m.amount > 0
+                          ? `$${m.amount.toLocaleString()}`
+                          : "No revenue"
+                      }
                       style={{
                         flex: 1,
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         gap: 8,
+                        position: "relative",
+                        cursor: m.amount > 0 ? "default" : "default",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (m.amount > 0) {
+                          const tip =
+                            e.currentTarget.querySelector<HTMLElement>(
+                              ".bar-tip",
+                            );
+                          if (tip) tip.style.opacity = "1";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        const tip =
+                          e.currentTarget.querySelector<HTMLElement>(
+                            ".bar-tip",
+                          );
+                        if (tip) tip.style.opacity = "0";
                       }}
                     >
+                      {/* Tooltip */}
+                      {m.amount > 0 && (
+                        <div
+                          className="bar-tip"
+                          style={{
+                            position: "absolute",
+                            bottom: "calc(100% - 20px)",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            background: "#2C2C2C",
+                            color: "#fff",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            whiteSpace: "nowrap",
+                            opacity: 0,
+                            transition: "opacity 0.15s",
+                            pointerEvents: "none",
+                            zIndex: 10,
+                          }}
+                        >
+                          ${m.amount.toLocaleString()}
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              width: 0,
+                              height: 0,
+                              borderLeft: "4px solid transparent",
+                              borderRight: "4px solid transparent",
+                              borderTop: "4px solid #2C2C2C",
+                            }}
+                          />
+                        </div>
+                      )}
                       <div
                         style={{
                           width: "100%",
