@@ -1,69 +1,32 @@
 import {
-  CheckCircle2, Clock, AlertCircle, Download, Lock
+  CheckCircle2, Clock, AlertCircle, Download, Info
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { paymentsApi, Payment } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
 
-const payments = [
-  {
-    id: 1,
-    label: "Booking Deposit",
-    description: "Secures your design slot with Fatima K",
-    amount: 1500,
-    due: "5 Dec 2025",
-    paid: "5 Dec 2025",
-    status: "paid",
-    receipt: true,
-  },
-  {
-    id: 2,
-    label: "Fabrication Payment",
-    description: "Fabric and lace procurement — 40% of balance",
-    amount: 3200,
-    due: "20 Jan 2026",
-    paid: "19 Jan 2026",
-    status: "paid",
-    receipt: true,
-  },
-  {
-    id: 3,
-    label: "Mid-Construction Payment",
-    description: "Atelier labour — second stage milestone",
-    amount: 2800,
-    due: "10 Feb 2026",
-    paid: "10 Feb 2026",
-    status: "paid",
-    receipt: true,
-  },
-  {
-    id: 4,
-    label: "Pre-Collection Payment",
-    description: "Final balance before gown collection",
-    amount: 2500,
-    due: "24 Mar 2026",
-    paid: null,
-    status: "due",
-    receipt: false,
-  },
-  {
-    id: 5,
-    label: "Alternations (if required)",
-    description: "Post-wedding alterations — billed after event",
-    amount: null,
-    due: "TBD",
-    paid: null,
-    status: "upcoming",
-    receipt: false,
-  },
-];
-
-const total = 10000;
-const paid = payments.filter(p => p.status === "paid").reduce((s, p) => s + (p.amount || 0), 0);
-const outstanding = payments.filter(p => p.status === "due").reduce((s, p) => s + (p.amount || 0), 0);
-const paidPct = Math.round((paid / total) * 100);
+const PAYMENT_TYPE_LABELS: Record<string, string> = {
+  BOOKING_DEPOSIT: "Booking Deposit",
+  FABRICATION: "Fabrication",
+  CONSTRUCTION: "Construction",
+  FINAL_BALANCE: "Final Balance",
+};
 
 export function BridePortalPayments() {
+  const { data: payments, isLoading } = useQuery({
+    queryKey: ["payments", "me"],
+    queryFn: () => paymentsApi.listMine(),
+  });
+
+  const total = payments?.reduce((s, p) => s + Number(p.amount), 0) || 0;
+  const paid = payments?.filter(p => p.status === "PAID").reduce((s, p) => s + Number(p.amount), 0) || 0;
+  const outstanding = payments?.filter(p => p.status !== "PAID").reduce((s, p) => s + Number(p.amount), 0) || 0;
+  const paidPct = total > 0 ? Math.round((paid / total) * 100) : 0;
+
+  const nextPayment = payments?.find(p => p.status !== "PAID");
+
   return (
     <BridePortalLayout>
       <main className="bp-page-main">
@@ -71,14 +34,14 @@ export function BridePortalPayments() {
 
           <div style={{ marginBottom: 28 }}>
             <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 500, color: "#2C2C2C", margin: "0 0 6px" }}>Payments</h1>
-            <p style={{ fontSize: 13, color: "#888", margin: 0 }}>Your payment schedule for the Chantilly lace gown</p>
+            <p style={{ fontSize: 13, color: "#888", margin: 0 }}>Your payment schedule and collection status</p>
           </div>
 
           <div style={{ display: "flex", gap: 16, marginBottom: 28 }}>
             {[
               { label: "Total Gown Value", value: `$${total.toLocaleString()}`, sub: "Custom couture", accent: false },
               { label: "Paid to Date", value: `$${paid.toLocaleString()}`, sub: `${paidPct}% complete`, accent: false },
-              { label: "Outstanding", value: `$${outstanding.toLocaleString()}`, sub: "Due 24 Mar 2026", accent: true },
+              { label: "Outstanding", value: `$${outstanding.toLocaleString()}`, sub: nextPayment ? `Due ${new Date(nextPayment.dueDate!).toLocaleDateString()}` : "No pending payments", accent: true },
             ].map((s, i) => (
               <Card key={i} style={{ flex: 1, background: s.accent ? "linear-gradient(135deg, #FFF4EC, #FDE8D4)" : "#FFFFFF", border: `1px solid ${s.accent ? "#F5D5B0" : "#E8E0D5"}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
                 <CardContent style={{ padding: "20px 22px" }}>
@@ -111,63 +74,52 @@ export function BridePortalPayments() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-            {payments.map((pmt) => {
-              const isPaid = pmt.status === "paid";
-              const isDue = pmt.status === "due";
-              const isUpcoming = pmt.status === "upcoming";
+            {isLoading ? (
+               <div style={{ textAlign: "center", padding: 40, color: "#888" }}>Loading schedule...</div>
+            ) : payments?.length === 0 ? (
+               <div style={{ textAlign: "center", padding: 40, color: "#888", background: "#fff", borderRadius: 12, border: "1px dashed #E8E0D5" }}>No payment requests yet</div>
+            ) : (
+              payments?.map((pmt) => {
+              const isPaid = pmt.status === "PAID";
+              const isDue = pmt.status === "PENDING" || pmt.status === "OVERDUE";
 
               return (
-                <Card key={pmt.id} style={{ background: "#FFFFFF", border: `1px solid ${isDue ? "#F5D5B0" : "#E8E0D5"}`, boxShadow: isDue ? "0 2px 10px rgba(200,130,60,0.1)" : "0 1px 4px rgba(0,0,0,0.04)", opacity: isUpcoming ? 0.65 : 1 }}>
+                <Card key={pmt.id} style={{ background: "#FFFFFF", border: `1px solid ${pmt.status === 'OVERDUE' ? "#F5C0C0" : isDue ? "#F5D5B0" : "#E8E0D5"}`, boxShadow: isDue ? "0 2px 10px rgba(200,130,60,0.1)" : "0 1px 4px rgba(0,0,0,0.04)" }}>
                   <CardContent style={{ padding: "18px 22px", display: "flex", alignItems: "center", gap: 18 }}>
 
                     <div style={{ width: 40, height: 40, borderRadius: "50%", background: isPaid ? "#E8F4E8" : isDue ? "#FEF3E8" : "#F3F3F3", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       {isPaid && <CheckCircle2 size={20} color="#4CAF50" />}
-                      {isDue && <AlertCircle size={20} color="#E07020" />}
-                      {isUpcoming && <Clock size={20} color="#AAAAAA" />}
+                      {isDue && <AlertCircle size={20} color={pmt.status === 'OVERDUE' ? "#C04040" : "#E07020"} />}
                     </div>
 
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 3 }}>
-                        <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 500, color: "#2C2C2C" }}>{pmt.label}</span>
+                        <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 500, color: "#2C2C2C" }}>{PAYMENT_TYPE_LABELS[pmt.paymentType]}</span>
                         {isPaid && <Badge style={{ background: "#E8F4E8", color: "#3A7A3A", border: "none", fontSize: 9 }}>Paid</Badge>}
-                        {isDue && <Badge style={{ background: "#FEF0E0", color: "#C07840", border: "none", fontSize: 9 }}>Due</Badge>}
-                        {isUpcoming && <Badge style={{ background: "#F3F3F3", color: "#888", border: "none", fontSize: 9 }}>Upcoming</Badge>}
+                        {pmt.status === 'PENDING' && <Badge style={{ background: "#FEF0E0", color: "#C07840", border: "none", fontSize: 9 }}>Due</Badge>}
+                        {pmt.status === 'OVERDUE' && <Badge style={{ background: "#FDE8E8", color: "#C04040", border: "none", fontSize: 9 }}>Overdue</Badge>}
                       </div>
-                      <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>{pmt.description}</div>
+                      <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>{pmt.notes}</div>
                       <div style={{ display: "flex", gap: 16, fontSize: 11, color: "#AAAAAA" }}>
-                        <span>Due {pmt.due}</span>
-                        {isPaid && pmt.paid && <span style={{ color: "#4CAF50" }}>✓ Paid {pmt.paid}</span>}
+                        <span>Due {pmt.dueDate ? new Date(pmt.dueDate).toLocaleDateString() : 'TBD'}</span>
+                        {isPaid && pmt.paidDate && <span style={{ color: "#4CAF50" }}>✓ Paid {new Date(pmt.paidDate).toLocaleDateString()}</span>}
                       </div>
                     </div>
 
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      {pmt.amount ? (
-                        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, color: isPaid ? "#888" : isDue ? "#C07840" : "#BBBBBB", marginBottom: 8 }}>
-                          ${pmt.amount.toLocaleString()}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 12, color: "#BBBBBB", marginBottom: 8 }}>TBD</div>
-                      )}
-                      {isPaid && pmt.receipt && (
-                        <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", background: "#F5EFE9", color: "#A67C52", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>
-                          <Download size={11} /> Receipt
-                        </button>
-                      )}
-                      {isDue && (
-                        <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", background: "#333", color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
-                          Pay Now
-                        </button>
-                      )}
+                      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, color: isPaid ? "#888" : isDue ? "#C07840" : "#BBBBBB" }}>
+                         ${Number(pmt.amount).toLocaleString()}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               );
-            })}
+            }))}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", background: "#F5F5F5", borderRadius: 10, marginBottom: 32 }}>
-            <Lock size={14} color="#AAAAAA" />
-            <span style={{ fontSize: 12, color: "#888" }}>Payments are processed securely via Stripe. Your card details are never stored by Fatima K. All transactions are encrypted and PCI-DSS compliant.</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", background: "#FDF9F5", border: "1px solid #F5D5B0", borderRadius: 10, marginBottom: 32 }}>
+            <Info size={16} color="#C07840" />
+            <span style={{ fontSize: 13, color: "#C07840" }}>Payments are collected manually by Fatima K Design. Once paid, the admin will update your portal status. Please contact us for payment instructions.</span>
           </div>
 
         </div>

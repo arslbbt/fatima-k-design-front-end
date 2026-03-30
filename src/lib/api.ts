@@ -202,6 +202,72 @@ export const appointmentsApi = {
     request<void>(`/appointments/${id}`, { method: "DELETE" }),
 };
 
+// ── Payments ──────────────────────────────────────────────────────────────────
+
+export type PaymentType = "BOOKING_DEPOSIT" | "FABRICATION" | "CONSTRUCTION" | "FINAL_BALANCE";
+export type PaymentStatus = "PAID" | "PENDING" | "OVERDUE";
+
+export interface Payment {
+  id: string;
+  brideId: string;
+  amount: number;
+  paymentType: PaymentType;
+  status: PaymentStatus;
+  dueDate: string | null;
+  paidDate: string | null;
+  reminderSentAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  bride?: {
+    id: string;
+    name: string;
+    email: string;
+    brideProfile?: {
+      stylePreferences: string | null;
+    } | null;
+  };
+}
+
+export const paymentsApi = {
+  create: (data: { brideId: string; amount: number; paymentType: PaymentType; dueDate: string; notes?: string }) =>
+    request<Payment>("/payments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  listAdmin: (params?: { page?: number; limit?: number; search?: string; status?: PaymentStatus }) => {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.search) qs.set("search", params.search);
+    if (params?.status) qs.set("status", params.status);
+    const query = qs.toString();
+    return request<PaginatedResponse<Payment>>(`/payments/admin${query ? `?${query}` : ""}`);
+  },
+
+  listBridesTracking: (params?: { page?: number; limit?: number; search?: string; status?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.search) qs.set("search", params.search);
+    if (params?.status) qs.set("status", params.status);
+    const query = qs.toString();
+    return request<PaginatedResponse<any>>(`/payments/brides-tracking${query ? `?${query}` : ""}`);
+  },
+
+  getAllBridesTracking: () => request<any[]>("/payments/brides-tracking/all"),
+
+  getRevenueOverview: () => request<{ revenueCollected: number; outstanding: number; paymentsDue: number; overdueCount: number }>("/payments/revenue-overview"),
+
+  getMonthlyRevenue: (year?: number) => request<{ name: string; amount: number }[]>(`/payments/monthly-revenue${year ? `?year=${year}` : ""}`),
+
+  markAsPaid: (id: string) => request<Payment>(`/payments/${id}/mark-paid`, { method: "PATCH" }),
+
+  sendReminder: (id: string) => request<{ reminderSentAt: string }>(`/payments/${id}/remind`, { method: "POST" }),
+
+  listMine: () => request<Payment[]>("/payments/me"),
+};
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type Role = "ADMIN" | "BRIDE";
@@ -344,7 +410,7 @@ export interface ListBridesParams {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
+  items: T[];
   meta: {
     total: number;
     page: number;
