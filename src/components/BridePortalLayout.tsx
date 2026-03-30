@@ -162,7 +162,7 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
               cursor: "pointer",
             }}
           >
-            <Bell size={18} color="#666" />
+            {/* <Bell size={18} color="#666" /> */}
           </button>
           <Link href="/bride/account">
             <div
