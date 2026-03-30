@@ -11,12 +11,14 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { paymentsApi } from "@/lib/api";
+import type { Payment } from "@/lib/api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Pagination } from "@/components/ui/Pagination";
 import { CreatePaymentModal } from "./CreatePaymentModal";
+import { PaymentReceiptModal } from "./PaymentReceiptModal";
 
 const statusConfig: Record<
   string,
@@ -70,6 +72,11 @@ export function AdminPaymentsDesktop() {
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
+  const [receiptPayment, setReceiptPayment] = useState<Payment | null>(null);
+  const [receiptBride, setReceiptBride] = useState<{
+    name: string;
+    email: string;
+  } | null>(null);
 
   const { data: overview } = useQuery({
     queryKey: ["payments", "revenue"],
@@ -879,6 +886,13 @@ export function AdminPaymentsDesktop() {
                                       <div style={{ display: "flex", gap: 8 }}>
                                         {isPaid ? (
                                           <button
+                                            onClick={() => {
+                                              setReceiptPayment(pmt);
+                                              setReceiptBride({
+                                                name: bride.name,
+                                                email: bride.email,
+                                              });
+                                            }}
                                             style={{
                                               display: "flex",
                                               alignItems: "center",
@@ -951,6 +965,16 @@ export function AdminPaymentsDesktop() {
       </main>
 
       <CreatePaymentModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+
+      <PaymentReceiptModal
+        payment={receiptPayment}
+        brideName={receiptBride?.name ?? ""}
+        brideEmail={receiptBride?.email ?? ""}
+        onClose={() => {
+          setReceiptPayment(null);
+          setReceiptBride(null);
+        }}
+      />
     </AdminLayout>
   );
 }
