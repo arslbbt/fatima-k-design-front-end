@@ -121,8 +121,8 @@ export function CreatePaymentModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!brideId) {
-      setError("Please select a client.");
+    if (!isEdit && !brideId) {
+      setError("Please select a bride.");
       return;
     }
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -277,21 +277,24 @@ export function CreatePaymentModal({
               </div>
             )}
 
-            <div>
-              <label style={lbl}>Client *</label>
-              <select
-                value={brideId}
-                onChange={(e) => setBrideId(e.target.value)}
-                style={inp}
-              >
-                <option value="">Select a bride</option>
-                {brides.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Bride selector — create mode only */}
+            {!isEdit && (
+              <div>
+                <label style={lbl}>Client *</label>
+                <select
+                  value={brideId}
+                  onChange={(e) => setBrideId(e.target.value)}
+                  style={inp}
+                >
+                  <option value="">Select a bride</option>
+                  {brides.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label style={lbl}>Payment Label *</label>

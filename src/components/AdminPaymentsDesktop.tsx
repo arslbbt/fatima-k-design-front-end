@@ -82,6 +82,9 @@ export function AdminPaymentsDesktop() {
     email: string;
   } | null>(null);
   const [editPayment, setEditPayment] = useState<any | null>(null);
+  const [confirmDeletePaymentId, setConfirmDeletePaymentId] = useState<
+    string | null
+  >(null);
 
   const { data: overview } = useQuery({
     queryKey: ["payments", "revenue"],
@@ -909,7 +912,7 @@ export function AdminPaymentsDesktop() {
                                   {!isPaid && (
                                     <button
                                       onClick={() =>
-                                        deleteMutation.mutate(pmt.id)
+                                        setConfirmDeletePaymentId(pmt.id)
                                       }
                                       title="Delete payment"
                                       style={{
@@ -1111,6 +1114,98 @@ export function AdminPaymentsDesktop() {
           setReceiptBride(null);
         }}
       />
+
+      {/* Confirm delete payment */}
+      {confirmDeletePaymentId && (
+        <>
+          <div
+            onClick={() => setConfirmDeletePaymentId(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.45)",
+              zIndex: 200,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                width: "100%",
+                maxWidth: 380,
+                padding: "28px 24px",
+                textAlign: "center",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 22,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  margin: "0 0 8px",
+                }}
+              >
+                Delete this payment?
+              </h3>
+              <p style={{ fontSize: 13, color: "#888", margin: "0 0 24px" }}>
+                This cannot be undone.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setConfirmDeletePaymentId(null)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    color: "#666",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    deleteMutation.mutate(confirmDeletePaymentId);
+                    setConfirmDeletePaymentId(null);
+                  }}
+                  disabled={deleteMutation.isPending}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "none",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: "#CC4444",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </AdminLayout>
   );
 }
