@@ -110,51 +110,9 @@ export function AdminDashboard() {
                 <Link href="/admin/brides" className="text-sm text-[#A67C52] hover:underline">View all</Link>
               </div>
 
-              <div className="flex border border-[#E8E0D5] rounded-lg overflow-hidden bg-[#F5EFE9] p-1 gap-1">
-                <button
-                  onClick={() => setBrideTab("couture")}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all"
-                  style={{
-                    background: brideTab === "couture" ? "#fff" : "transparent",
-                    color: brideTab === "couture" ? "#2C2C2C" : "#888888",
-                    boxShadow: brideTab === "couture" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                  }}
-                >
-                  <span>✦</span>
-                  Couture Brides
-                  <span style={{ background: brideTab === "couture" ? "#D4A373" : "#E0D8D0", color: brideTab === "couture" ? "#fff" : "#888", fontSize: 11, borderRadius: 10, padding: "1px 7px", fontWeight: 600 }}>
-                    {coutureBrides.length}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setBrideTab("rtw")}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all"
-                  style={{
-                    background: brideTab === "rtw" ? "#fff" : "transparent",
-                    color: brideTab === "rtw" ? "#2C2C2C" : "#888888",
-                    boxShadow: brideTab === "rtw" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                  }}
-                >
-                  <span>◆</span>
-                  Ready to Wear
-                  <span style={{ background: brideTab === "rtw" ? "#555" : "#E0D8D0", color: brideTab === "rtw" ? "#fff" : "#888", fontSize: 11, borderRadius: 10, padding: "1px 7px", fontWeight: 600 }}>
-                    {rtwBrides.length}
-                  </span>
-                </button>
-              </div>
+             
 
-              <div
-                className="text-xs px-3 py-2 rounded-md"
-                style={{
-                  background: brideTab === "couture" ? "linear-gradient(135deg, #F0E4D8, #EAD9CC)" : "#F5F5F5",
-                  color: brideTab === "couture" ? "#A67C52" : "#666",
-                  border: `1px solid ${brideTab === "couture" ? "#E8D0C0" : "#E0E0E0"}`,
-                }}
-              >
-                {brideTab === "couture"
-                  ? "Bespoke gowns — designed and made to measure for each bride"
-                  : "Selected styles with a personal alterations and fitting service"}
-              </div>
+             
 
               <Card className="bg-white border-[#E8E0D5] shadow-sm overflow-hidden">
                 <Table>
