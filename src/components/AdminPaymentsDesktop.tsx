@@ -886,10 +886,18 @@ export function AdminPaymentsDesktop() {
 
                             return stepsPayments.map((pmt: any) => {
                               const isPaid = pmt.status === "PAID";
+
+                              const now = new Date();
+                              const today = new Date(
+                                now.getFullYear(),
+                                now.getMonth(),
+                                now.getDate(),
+                              );
+
                               const isOverdue =
                                 pmt.status === "PENDING" &&
                                 pmt.dueDate &&
-                                new Date(pmt.dueDate) < new Date();
+                                new Date(pmt.dueDate) < today;
 
                               return (
                                 <div
