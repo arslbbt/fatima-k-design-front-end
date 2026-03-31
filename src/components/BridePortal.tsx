@@ -83,6 +83,34 @@ type JourneyEvent = {
 };
 
 function JourneyCard({ events }: { events: JourneyEvent[] }) {
+  // If no events, show Consultation as the current stage
+  if (events.length === 0) {
+    return (
+      <div className="relative mt-4 space-y-4">
+        <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-[#F5EFE9]" />
+        <div className="flex items-center gap-3 relative">
+          <div className="w-4 h-4 rounded-full border-2 border-[#D4A373] bg-white flex items-center justify-center z-10 shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#D4A373]" />
+          </div>
+          <span className="text-sm font-medium text-[#333333]">
+            Consultation
+          </span>
+        </div>
+        {["1st Fitting", "2nd Fitting", "Final Fitting", "Pickup"].map(
+          (label) => (
+            <div key={label} className="flex items-center gap-3 relative">
+              <Circle
+                size={16}
+                className="text-[#E8E0D5] bg-white rounded-full z-10 shrink-0"
+              />
+              <span className="text-sm text-[#AAAAAA]">{label}</span>
+            </div>
+          ),
+        )}
+      </div>
+    );
+  }
+
   // Show max 5 events: last 2 completed + current + next 2 upcoming
   const completed = events.filter((e) => e.type === "completed");
   const current = events.find((e) => e.type === "in-progress");
