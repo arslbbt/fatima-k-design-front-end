@@ -98,14 +98,17 @@ export function CreatePaymentModal({
   });
 
   const mutation = useMutation({
-    mutationFn: (data: any) =>
-      isEdit
-        ? paymentsApi.update(editPayment!.id, {
-            amount: parseFloat(amount),
-            dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-            notes: notes || undefined,
-          })
-        : paymentsApi.create(data),
+    mutationFn: async (data: any) => {
+      if (isEdit) {
+        return paymentsApi.update(editPayment!.id, {
+          amount: parseFloat(amount),
+          dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+          notes: notes || undefined,
+          markAsPaid: markAsPaid || undefined,
+        });
+      }
+      return paymentsApi.create(data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       toast({

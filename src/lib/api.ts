@@ -325,7 +325,12 @@ export const paymentsApi = {
 
   update: (
     id: string,
-    data: { amount?: number; dueDate?: string; notes?: string },
+    data: {
+      amount?: number;
+      dueDate?: string;
+      notes?: string;
+      markAsPaid?: boolean;
+    },
   ) =>
     request<Payment>(`/payments/${id}`, {
       method: "PATCH",
