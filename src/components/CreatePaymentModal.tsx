@@ -7,6 +7,13 @@ import { toast } from "@/hooks/use-toast";
 interface CreatePaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editPayment?: {
+    id: string;
+    paymentType: string;
+    amount: number;
+    dueDate: string | null;
+    notes: string | null;
+  } | null;
 }
 
 const PAYMENT_LABELS: { value: PaymentType; label: string }[] = [
@@ -40,8 +47,10 @@ const lbl: React.CSSProperties = {
 export function CreatePaymentModal({
   open,
   onOpenChange,
+  editPayment,
 }: CreatePaymentModalProps) {
   const queryClient = useQueryClient();
+  const isEdit = !!editPayment;
   const [brideId, setBrideId] = useState("");
   const [paymentType, setPaymentType] =
     useState<PaymentType>("BOOKING_DEPOSIT");
@@ -53,15 +62,25 @@ export function CreatePaymentModal({
 
   useEffect(() => {
     if (open) {
-      setBrideId("");
-      setPaymentType("BOOKING_DEPOSIT");
-      setAmount("");
-      setDueDate("");
-      setNotes("");
-      setMarkAsPaid(false);
+      if (editPayment) {
+        setPaymentType(editPayment.paymentType as PaymentType);
+        setAmount(String(Number(editPayment.amount)));
+        setDueDate(
+          editPayment.dueDate ? editPayment.dueDate.split("T")[0] : "",
+        );
+        setNotes(editPayment.notes ?? "");
+        setMarkAsPaid(false);
+      } else {
+        setBrideId("");
+        setPaymentType("BOOKING_DEPOSIT");
+        setAmount("");
+        setDueDate("");
+        setNotes("");
+        setMarkAsPaid(false);
+      }
       setError(null);
     }
-  }, [open]);
+  }, [open, editPayment]);
 
   useEffect(() => {
     if (!open) return;
@@ -79,7 +98,14 @@ export function CreatePaymentModal({
   });
 
   const mutation = useMutation({
-    mutationFn: (data: any) => paymentsApi.create(data),
+    mutationFn: (data: any) =>
+      isEdit
+        ? paymentsApi.update(editPayment!.id, {
+            amount: parseFloat(amount),
+            dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+            notes: notes || undefined,
+          })
+        : paymentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       toast({
@@ -203,7 +229,7 @@ export function CreatePaymentModal({
                   margin: 0,
                 }}
               >
-                Create Payment
+                {isEdit ? "Edit Payment" : "Create Payment"}
               </h2>
             </div>
             <button
@@ -442,8 +468,11 @@ export function CreatePaymentModal({
               >
                 {mutation.isPending ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" /> Creating…
+                    <Loader2 size={15} className="animate-spin" />{" "}
+                    {isEdit ? "Saving…" : "Creating…"}
                   </>
+                ) : isEdit ? (
+                  "Save Changes"
                 ) : (
                   "Create Payment"
                 )}

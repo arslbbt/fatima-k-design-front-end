@@ -323,10 +323,22 @@ export const paymentsApi = {
   markAsPaid: (id: string) =>
     request<Payment>(`/payments/${id}/mark-paid`, { method: "PATCH" }),
 
+  update: (
+    id: string,
+    data: { amount?: number; dueDate?: string; notes?: string },
+  ) =>
+    request<Payment>(`/payments/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   sendReminder: (id: string) =>
     request<{ reminderSentAt: string }>(`/payments/${id}/remind`, {
       method: "POST",
     }),
+
+  remove: (id: string) =>
+    request<{ message: string }>(`/payments/${id}`, { method: "DELETE" }),
 
   listMine: () => request<Payment[]>("/payments/me"),
 };

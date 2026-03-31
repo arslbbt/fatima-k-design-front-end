@@ -8,9 +8,12 @@ import {
   Search,
   PlusCircle,
   FileText,
+  Trash2,
+  X,
+  Loader2,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { paymentsApi } from "@/lib/api";
+import { paymentsApi, ApiError } from "@/lib/api";
 import type { Payment } from "@/lib/api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +22,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { Pagination } from "@/components/ui/Pagination";
 import { CreatePaymentModal } from "./CreatePaymentModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
+import { toast } from "@/hooks/use-toast";
 
 const statusConfig: Record<
   string,
@@ -77,6 +81,7 @@ export function AdminPaymentsDesktop() {
     name: string;
     email: string;
   } | null>(null);
+  const [editPayment, setEditPayment] = useState<any | null>(null);
 
   const { data: overview } = useQuery({
     queryKey: ["payments", "revenue"],
@@ -108,9 +113,27 @@ export function AdminPaymentsDesktop() {
 
   const remindMutation = useMutation({
     mutationFn: (id: string) => paymentsApi.sendReminder(id),
+    onSuccess: () => toast({ title: "Reminder sent" }),
+    onError: (err) =>
+      toast({
+        title: "Error",
+        description:
+          err instanceof ApiError ? err.message : "Failed to send reminder.",
+      }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => paymentsApi.remove(id),
     onSuccess: () => {
-      alert("Reminder sent successfully!");
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      toast({ title: "Payment deleted" });
     },
+    onError: (err) =>
+      toast({
+        title: "Error",
+        description:
+          err instanceof ApiError ? err.message : "Something went wrong.",
+      }),
   });
 
   const peakMonthObj = monthlyRevenue?.reduce(
@@ -753,16 +776,26 @@ export function AdminPaymentsDesktop() {
                               display: "flex",
                               alignItems: "center",
                               gap: 8,
-                              color: "#C07840",
-                              background: "#FFF9F4",
+                              color:
+                                bride.status === "overdue"
+                                  ? "#C04040"
+                                  : "#C07840",
+                              background:
+                                bride.status === "overdue"
+                                  ? "#FDE8E8"
+                                  : "#FFF9F4",
                               padding: "6px 12px",
                               borderRadius: 6,
                               fontSize: 12,
                               fontWeight: 500,
+                              border: `1px solid ${bride.status === "overdue" ? "#F5C0C0" : "#F5D5B0"}`,
                             }}
                           >
-                            <AlertCircle size={14} /> Tracking milestones for{" "}
-                            {bride.name}
+                            <AlertCircle size={14} />{" "}
+                            {bride.status === "overdue"
+                              ? "Overdue"
+                              : "Payment Due"}{" "}
+                            — {bride.name}
                           </div>
                           <button
                             onClick={(e) => {
@@ -792,13 +825,13 @@ export function AdminPaymentsDesktop() {
                           </button>
                         </div>
 
-                        {/* FULL ROW SCROLL START */}
+                        {/* Payment cards — min 4 visible, horizontally scrollable */}
                         <div
                           style={{
                             display: "flex",
-                            gap: 16,
+                            gap: 12,
                             overflowX: "auto",
-                            paddingBottom: 16,
+                            paddingBottom: 8,
                             scrollbarWidth: "thin",
                             scrollbarColor: "#E8E0D5 transparent",
                           }}
@@ -811,49 +844,40 @@ export function AdminPaymentsDesktop() {
 
                             if (stepsPayments.length === 0) {
                               return (
-                                <Card
+                                <div
                                   key={step}
                                   style={{
                                     flexShrink: 0,
-                                    width: 240,
-                                    background: "#fff",
-                                    border: "1px solid #F0EBE4",
-                                    opacity: 0.6,
+                                    width: "calc(25% - 9px)",
+                                    minWidth: 180,
+                                    background: "#FAFAFA",
+                                    border: "1px dashed #E8E0D5",
+                                    borderRadius: 10,
+                                    padding: "14px 16px",
+                                    opacity: 0.5,
                                   }}
                                 >
-                                  <CardContent style={{ padding: "16px" }}>
-                                    <Badge
-                                      style={{
-                                        background: "#F5F5F5",
-                                        color: "#AAA",
-                                        border: "none",
-                                        fontSize: 9,
-                                        marginBottom: 8,
-                                      }}
-                                    >
-                                      None
-                                    </Badge>
-                                    <div
-                                      style={{
-                                        fontSize: 13,
-                                        fontWeight: 600,
-                                        color: "#333",
-                                        marginBottom: 4,
-                                      }}
-                                    >
-                                      {PAYMENT_TYPE_LABELS[step]}
-                                    </div>
-                                    <div
-                                      style={{
-                                        fontSize: 10,
-                                        color: "#DDD",
-                                        fontStyle: "italic",
-                                      }}
-                                    >
-                                      Not yet requested
-                                    </div>
-                                  </CardContent>
-                                </Card>
+                                  <div
+                                    style={{
+                                      fontSize: 9,
+                                      color: "#AAA",
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                      marginBottom: 6,
+                                    }}
+                                  >
+                                    Not requested
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: 13,
+                                      fontWeight: 600,
+                                      color: "#CCC",
+                                    }}
+                                  >
+                                    {PAYMENT_TYPE_LABELS[step]}
+                                  </div>
+                                </div>
                               );
                             }
 
@@ -865,143 +889,183 @@ export function AdminPaymentsDesktop() {
                                 new Date(pmt.dueDate) < new Date();
 
                               return (
-                                <Card
+                                <div
                                   key={pmt.id}
                                   style={{
                                     flexShrink: 0,
-                                    width: 240,
+                                    width: "calc(25% - 9px)",
+                                    minWidth: 180,
                                     background: "#fff",
-                                    border: "1px solid #F0EBE4",
-                                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                                    border: `1px solid ${isOverdue ? "#F5C0C0" : "#F0EBE4"}`,
+                                    borderRadius: 10,
+                                    padding: "14px 16px",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 0,
+                                    position: "relative",
                                   }}
                                 >
-                                  <CardContent style={{ padding: "16px" }}>
-                                    <div
+                                  {/* Delete icon — top right, only for unpaid */}
+                                  {!isPaid && (
+                                    <button
+                                      onClick={() =>
+                                        deleteMutation.mutate(pmt.id)
+                                      }
+                                      title="Delete payment"
+                                      style={{
+                                        position: "absolute",
+                                        top: 10,
+                                        right: 10,
+                                        background: "none",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        padding: 2,
+                                        opacity: 0.4,
+                                      }}
+                                      onMouseEnter={(e) =>
+                                        (e.currentTarget.style.opacity = "1")
+                                      }
+                                      onMouseLeave={(e) =>
+                                        (e.currentTarget.style.opacity = "0.4")
+                                      }
+                                    >
+                                      <Trash2 size={12} color="#C04040" />
+                                    </button>
+                                  )}
+
+                                  {/* Status badge */}
+                                  <div style={{ marginBottom: 8 }}>
+                                    <span
+                                      style={{
+                                        fontSize: 9,
+                                        fontWeight: 600,
+                                        padding: "2px 8px",
+                                        borderRadius: 10,
+                                        background: isPaid
+                                          ? "#ECFDF5"
+                                          : isOverdue
+                                            ? "#FEF2F2"
+                                            : "#FFFBEB",
+                                        color: isPaid
+                                          ? "#059669"
+                                          : isOverdue
+                                            ? "#DC2626"
+                                            : "#D97706",
+                                      }}
+                                    >
+                                      {isPaid
+                                        ? "Paid"
+                                        : isOverdue
+                                          ? "Overdue"
+                                          : "Pending"}
+                                    </span>
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      fontSize: 13,
+                                      fontWeight: 600,
+                                      color: "#333",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    {PAYMENT_TYPE_LABELS[step]}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontFamily: "'Cormorant Garamond', serif",
+                                      fontSize: 18,
+                                      color: "#2C2C2C",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    ${Number(pmt.amount).toLocaleString()}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: 10,
+                                      color: "#AAA",
+                                      marginBottom: 12,
+                                    }}
+                                  >
+                                    {isPaid
+                                      ? `Paid ${new Date(pmt.paidDate).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`
+                                      : pmt.dueDate
+                                        ? `Due ${new Date(pmt.dueDate).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`
+                                        : "No due date"}
+                                  </div>
+
+                                  {/* Action buttons */}
+                                  {isPaid ? (
+                                    <button
+                                      onClick={() => {
+                                        setReceiptPayment(pmt);
+                                        setReceiptBride({
+                                          name: bride.name,
+                                          email: bride.email,
+                                        });
+                                      }}
                                       style={{
                                         display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "flex-start",
-                                        marginBottom: 10,
-                                      }}
-                                    >
-                                      <Badge
-                                        style={{
-                                          background: isPaid
-                                            ? "#ECFDF5"
-                                            : isOverdue
-                                              ? "#FEF2F2"
-                                              : "#FFFBEB",
-                                          color: isPaid
-                                            ? "#059669"
-                                            : isOverdue
-                                              ? "#DC2626"
-                                              : "#D97706",
-                                          border: "none",
-                                          fontSize: 9,
-                                        }}
-                                      >
-                                        {isPaid
-                                          ? "Paid"
-                                          : isOverdue
-                                            ? "Overdue"
-                                            : "Pending"}
-                                      </Badge>
-                                    </div>
-                                    <div
-                                      style={{
-                                        fontSize: 13,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: 5,
+                                        width: "100%",
+                                        padding: "7px",
+                                        borderRadius: 6,
+                                        border: "none",
+                                        background: "#F5EFE9",
+                                        color: "#8B5E3C",
+                                        fontSize: 10,
                                         fontWeight: 600,
-                                        color: "#333",
-                                        marginBottom: 4,
+                                        cursor: "pointer",
                                       }}
                                     >
-                                      {PAYMENT_TYPE_LABELS[step]}
-                                    </div>
-                                    <div
-                                      style={{
-                                        fontSize: 12,
-                                        fontWeight: 500,
-                                        color: "#D4A373",
-                                        marginBottom: 12,
-                                      }}
-                                    >
-                                      ${Number(pmt.amount).toLocaleString()}
-                                    </div>
-
-                                    <div
-                                      style={{
-                                        borderTop: "1px solid #F5F5F5",
-                                        paddingTop: 12,
-                                        marginTop: 4,
-                                      }}
-                                    >
-                                      <div
+                                      <FileText size={11} /> Receipt
+                                    </button>
+                                  ) : (
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                      <button
+                                        onClick={() => setEditPayment(pmt)}
                                         style={{
+                                          flex: 1,
+                                          padding: "7px",
+                                          borderRadius: 6,
+                                          border: "1px solid #E8E0D5",
+                                          background: "#fff",
+                                          color: "#555",
                                           fontSize: 10,
-                                          color: "#AAA",
-                                          marginBottom: 12,
+                                          cursor: "pointer",
                                         }}
                                       >
-                                        {isPaid
-                                          ? `Paid on: ${new Date(pmt.paidDate).toLocaleDateString()}`
-                                          : `Due: ${new Date(pmt.dueDate).toLocaleDateString()}`}
-                                      </div>
-                                      <div style={{ display: "flex", gap: 8 }}>
-                                        {isPaid ? (
-                                          <button
-                                            onClick={() => {
-                                              setReceiptPayment(pmt);
-                                              setReceiptBride({
-                                                name: bride.name,
-                                                email: bride.email,
-                                              });
-                                            }}
-                                            style={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              gap: 6,
-                                              width: "100%",
-                                              justifyContent: "center",
-                                              fontSize: 10,
-                                              fontWeight: 600,
-                                              color: "#8B5E3C",
-                                              border: "none",
-                                              background: "#F5EFE9",
-                                              padding: "8px",
-                                              borderRadius: 6,
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            <FileText size={12} /> Receipt
-                                          </button>
-                                        ) : (
-                                          <button
-                                            onClick={() =>
-                                              markPaidMutation.mutate(pmt.id)
-                                            }
-                                            style={{
-                                              width: "100%",
-                                              padding: "8px",
-                                              borderRadius: 6,
-                                              border: "none",
-                                              background: "#1F1F1F",
-                                              color: "#fff",
-                                              cursor: "pointer",
-                                              display: "flex",
-                                              justifyContent: "center",
-                                              alignItems: "center",
-                                              gap: 5,
-                                              fontSize: 10,
-                                              fontWeight: 500,
-                                            }}
-                                          >
-                                            <CheckCircle2 size={12} /> Mark Paid
-                                          </button>
-                                        )}
-                                      </div>
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          markPaidMutation.mutate(pmt.id)
+                                        }
+                                        disabled={markPaidMutation.isPending}
+                                        style={{
+                                          flex: 2,
+                                          padding: "7px",
+                                          borderRadius: 6,
+                                          border: "none",
+                                          background: "#1F1F1F",
+                                          color: "#fff",
+                                          fontSize: 10,
+                                          fontWeight: 600,
+                                          cursor: "pointer",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          gap: 4,
+                                        }}
+                                      >
+                                        <CheckCircle2 size={11} /> Mark Paid
+                                      </button>
                                     </div>
-                                  </CardContent>
-                                </Card>
+                                  )}
+                                </div>
                               );
                             });
                           })}
@@ -1028,6 +1092,15 @@ export function AdminPaymentsDesktop() {
       </main>
 
       <CreatePaymentModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+
+      {/* Edit Payment — reuse CreatePaymentModal in edit mode */}
+      <CreatePaymentModal
+        open={!!editPayment}
+        onOpenChange={(open) => {
+          if (!open) setEditPayment(null);
+        }}
+        editPayment={editPayment}
+      />
 
       <PaymentReceiptModal
         payment={receiptPayment}
