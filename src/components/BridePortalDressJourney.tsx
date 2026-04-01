@@ -562,7 +562,7 @@ export function BridePortalDressJourney() {
                                     Fitting Notes
                                   </div>
                                   <div
-                                    className="fitting-notes"
+                                    className="ql-editor ql-fitting-notes"
                                     style={{
                                       fontSize: 13,
                                       color: "#555",

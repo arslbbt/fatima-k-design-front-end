@@ -450,7 +450,7 @@ export function BridePortalFittingPhotos() {
                                 fontSize: 12,
                                 color: "#666",
                                 lineHeight: 1.5,
-                                maxHeight: "4em",
+                                maxHeight: "3em",
                                 overflow: "hidden",
                                 display: "-webkit-box",
                                 WebkitLineClamp: 2,
