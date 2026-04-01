@@ -235,7 +235,7 @@ export function AdminDashboard() {
             <div className="xl:col-span-2 space-y-4">
               <div className="flex justify-between items-center border-b border-[#E8E0D5] pb-2">
                 <h2 className="text-xl font-['Cormorant_Garamond'] font-medium text-[#2C2C2C]">
-                  All Brides
+                  All Brides <span className="text-sm text-[#888888]">(coming up weddings)</span>
                 </h2>
                 <button
                   onClick={() => navigate("/admin/brides")}

@@ -472,6 +472,7 @@ export interface BrideProfile {
 
 export interface BrideWithProfile extends User {
   brideProfile: BrideProfile | null;
+  outstanding?: number;
 }
 
 export interface Appointment {

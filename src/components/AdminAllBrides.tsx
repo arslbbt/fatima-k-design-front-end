@@ -336,9 +336,6 @@ function BrideCard({
       })
     : null;
 
-  // TODO: Replace with real payment data from payments API
-  const PLACEHOLDER_BALANCE = { total: 10000, paid: 8000, outstanding: 2000 };
-
   return (
     <Card
       style={{
@@ -354,7 +351,7 @@ function BrideCard({
         style={{
           height: 3,
           background:
-            PLACEHOLDER_BALANCE.outstanding > 0 ? "#D4A373" : "#B8D4B0",
+            (bride.outstanding ?? 0) > 0 ? "#D4A373" : "#B8D4B0",
         }}
       />
       <CardContent style={{ padding: "20px" }}>
@@ -512,7 +509,7 @@ function BrideCard({
               </div>
             </div>
           )}
-          {/* TODO: Replace PLACEHOLDER_BALANCE with real data from payments API */}
+          {/* Balance */}
           <div>
             <div
               style={{
@@ -530,11 +527,11 @@ function BrideCard({
                 fontSize: 12,
                 fontWeight: 600,
                 color:
-                  PLACEHOLDER_BALANCE.outstanding > 0 ? "#D4A373" : "#5A9E6E",
+                  (bride.outstanding ?? 0) > 0 ? "#D4A373" : "#5A9E6E",
               }}
             >
-              {PLACEHOLDER_BALANCE.outstanding > 0
-                ? `$${PLACEHOLDER_BALANCE.outstanding.toLocaleString()} due`
+              {(bride.outstanding ?? 0) > 0
+                ? `$${(bride.outstanding!).toLocaleString()} due`
                 : "Paid in full"}
             </div>
           </div>
