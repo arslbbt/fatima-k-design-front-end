@@ -28,7 +28,23 @@ import { AdminTeam } from "@/components/AdminTeam";
 import { AdminFittings } from "@/components/AdminFittings";
 import { AdminInspo } from "@/components/AdminInspo";
 
-const queryClient = new QueryClient();
+// Configure QueryClient with aggressive caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Data stays fresh for 5 minutes before refetching
+      staleTime: 5 * 60 * 1000,
+      // Keep unused data in cache for 10 minutes
+      gcTime: 10 * 60 * 1000,
+      // Don't refetch on window focus (user can manually refresh if needed)
+      refetchOnWindowFocus: false,
+      // Don't refetch on mount if data exists and is not stale
+      refetchOnMount: false,
+      // Retry failed requests once
+      retry: 1,
+    },
+  },
+});
 
 function NotFound() {
   return (

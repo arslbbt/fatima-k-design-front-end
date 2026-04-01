@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminLayout } from "@/components/AdminLayout";
 import { documentsApi, bridesApi, ApiError, type Document } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/hooks/use-toast";
 
@@ -370,7 +371,7 @@ export function AdminDocumentsDesktop() {
   const debouncedSearch = useDebounce(search);
 
   const { data: brides = [] } = useQuery({
-    queryKey: ["brides-names"],
+    queryKey: queryKeys.brides.names(),
     queryFn: () => bridesApi.names(),
   });
 

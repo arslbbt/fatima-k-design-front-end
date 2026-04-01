@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, AlertCircle, CreditCard } from "lucide-react";
 import { paymentsApi, bridesApi, ApiError, type PaymentType } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "@/hooks/use-toast";
 
 interface CreatePaymentModalProps {
@@ -92,7 +93,7 @@ export function CreatePaymentModal({
   }, [open, onOpenChange]);
 
   const { data: brides = [] } = useQuery({
-    queryKey: ["brides-names"],
+    queryKey: queryKeys.brides.names(),
     queryFn: () => bridesApi.names(),
     enabled: open,
   });
@@ -110,7 +111,7 @@ export function CreatePaymentModal({
       return paymentsApi.create(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      invalidateQueries.afterPaymentMutation(queryClient);
       toast({
         title: "Payment created",
         description: "Bride will be notified by email.",

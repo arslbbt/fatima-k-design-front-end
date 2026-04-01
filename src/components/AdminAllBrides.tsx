@@ -27,6 +27,7 @@ import {
 import { Pagination } from "./ui/Pagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Link } from "wouter";
+import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 
 const PAGE_SIZE = 6;
 
@@ -56,7 +57,11 @@ export function AdminAllBrides() {
   }, []);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["brides", { search: debouncedSearch, stage: stageFilter, page }],
+    queryKey: queryKeys.brides.list({
+      search: debouncedSearch,
+      stage: stageFilter === "ALL" ? undefined : stageFilter,
+      page,
+    }),
     queryFn: () =>
       bridesApi.list({
         search: debouncedSearch || undefined,
@@ -70,7 +75,7 @@ export function AdminAllBrides() {
   const stageMutation = useMutation({
     mutationFn: ({ id, stage }: { id: string; stage: BrideStage }) =>
       bridesApi.updateStage(id, stage),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["brides"] }),
+    onSuccess: () => invalidateQueries.afterBrideUpdate(queryClient),
   });
 
   const brides = data?.data ?? [];
@@ -350,8 +355,7 @@ function BrideCard({
       <div
         style={{
           height: 3,
-          background:
-            (bride.outstanding ?? 0) > 0 ? "#D4A373" : "#B8D4B0",
+          background: (bride.outstanding ?? 0) > 0 ? "#D4A373" : "#B8D4B0",
         }}
       />
       <CardContent style={{ padding: "20px" }}>
@@ -526,12 +530,11 @@ function BrideCard({
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color:
-                  (bride.outstanding ?? 0) > 0 ? "#D4A373" : "#5A9E6E",
+                color: (bride.outstanding ?? 0) > 0 ? "#D4A373" : "#5A9E6E",
               }}
             >
               {(bride.outstanding ?? 0) > 0
-                ? `$${(bride.outstanding!).toLocaleString()} due`
+                ? `$${bride.outstanding!.toLocaleString()} due`
                 : "Paid in full"}
             </div>
           </div>
@@ -595,7 +598,9 @@ function BrideCard({
               cursor: "pointer",
             }}
           >
-            <Link href="/admin/appointments"><Calendar size={12} /></Link> 
+            <Link href="/admin/appointments">
+              <Calendar size={12} />
+            </Link>
           </button>
           <button
             style={{
@@ -610,7 +615,9 @@ function BrideCard({
               cursor: "pointer",
             }}
           >
-             <Link href="/admin/payments"><CreditCard size={12} /></Link>
+            <Link href="/admin/payments">
+              <CreditCard size={12} />
+            </Link>
           </button>
           <button
             style={{
@@ -625,7 +632,9 @@ function BrideCard({
               cursor: "pointer",
             }}
           >
-            <Link href="/admin/documents"><FileText size={12} /></Link>
+            <Link href="/admin/documents">
+              <FileText size={12} />
+            </Link>
           </button>
         </div>
       </CardContent>

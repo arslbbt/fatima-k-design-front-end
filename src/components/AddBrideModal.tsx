@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { adminApi, ApiError, type RegisterBridePayload } from "@/lib/api";
+import { invalidateQueries } from "@/lib/queryKeys";
 
 interface AddBrideModalProps {
   open: boolean;
@@ -93,7 +94,7 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
     mutationFn: (payload: RegisterBridePayload) =>
       adminApi.registerBride(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["brides"] });
+      invalidateQueries.afterBrideCreate(queryClient);
       onClose();
     },
     onError: (err) => {

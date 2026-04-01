@@ -12,6 +12,7 @@ import {
   type UpdateAppointmentPayload,
   APPOINTMENT_TITLE_LABELS,
 } from "@/lib/api";
+import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 
 interface AddAppointmentModalProps {
   open: boolean;
@@ -138,7 +139,7 @@ export function AddAppointmentModal({
 
   // Load brides for selector (create mode only)
   const { data: brides = [] } = useQuery({
-    queryKey: ["brides-names"],
+    queryKey: queryKeys.brides.names(),
     queryFn: () => bridesApi.names(),
     enabled: open && !isEdit,
   });
@@ -147,7 +148,7 @@ export function AddAppointmentModal({
     mutationFn: (payload: CreateAppointmentPayload) =>
       appointmentsApi.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      invalidateQueries.afterAppointmentMutation(queryClient);
       onClose();
     },
     onError: (err) => {
@@ -161,7 +162,7 @@ export function AddAppointmentModal({
     mutationFn: (payload: UpdateAppointmentPayload) =>
       appointmentsApi.update(editAppointment!.id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      invalidateQueries.afterAppointmentMutation(queryClient);
       onClose();
     },
     onError: (err) => {
