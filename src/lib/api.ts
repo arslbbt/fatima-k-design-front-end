@@ -69,6 +69,47 @@ export const authApi = {
 export const adminApi = {
   me: () => request<User>("/admin/me"),
 
+  dashboard: () =>
+    request<{
+      totalBrides: number;
+      newBridesThisMonth: number;
+      weekApptsCount: number;
+      weekAppts: Array<{
+        id: string;
+        title: AppointmentTitle;
+        brideName: string;
+        startTime: string;
+      }>;
+      nextAppt: {
+        id: string;
+        title: AppointmentTitle;
+        brideName: string;
+        startTime: string;
+      } | null;
+      paidThisMonth: number;
+      outstanding: number;
+      outstandingBridesCount: number;
+      brides: Array<{
+        id: string;
+        name: string;
+        email: string;
+        createdAt: string;
+        brideProfile: {
+          stage: BrideStage;
+          weddingDate: string | null;
+          phone: string | null;
+        } | null;
+        balance: number;
+        hasDue: boolean;
+      }>;
+      recentActivity: Array<{
+        type: "appointment" | "payment" | "photo";
+        label: string;
+        brideName: string;
+        timestamp: string;
+      }>;
+    }>("/admin/dashboard"),
+
   updateMe: (data: { name?: string; email?: string }) =>
     request<User>("/admin/me", {
       method: "PATCH",
