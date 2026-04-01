@@ -520,3 +520,26 @@
 .fitting-notes p {
   margin: 0 0 4px;
 }
+
+── Quill read-only rendering (fitting notes) ──
+.ql-fitting-notes {
+  min-height: unset !important;
+}
+.ql-fitting-notes ul,
+.ql-fitting-notes ol {
+  padding-left: 1.4em;
+  margin: 4px 0;
+}
+.ql-fitting-notes li {
+  margin: 2px 0;
+}
+.ql-fitting-notes strong {
+  font-weight: 600;
+  color: #333;
+}
+.ql-fitting-notes em {
+  font-style: italic;
+}
+.ql-fitting-notes p {
+  margin: 2px 0;
+}

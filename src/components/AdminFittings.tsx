@@ -50,6 +50,7 @@ export function AdminFittings() {
     string | null
   >(null);
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [notesExpanded, setNotesExpanded] = useState(false);
 
   const debouncedSearch = useDebounce(brideSearch);
 
@@ -683,7 +684,10 @@ export function AdminFittings() {
                 {fittings.map((f) => (
                   <Card
                     key={f.id}
-                    onClick={() => setActiveFittingId(f.id)}
+                    onClick={() => {
+                      setActiveFittingId(f.id);
+                      setNotesExpanded(false);
+                    }}
                     style={{
                       background: "#fff",
                       border: "1px solid #E8E0D5",
@@ -761,8 +765,39 @@ export function AdminFittings() {
                             month: "long",
                             year: "numeric",
                           })}
-                          {f.notes ? " — " + f.notes : ""}
                         </div>
+                        {f.notes && (
+                          <div style={{ marginBottom: 8 }}>
+                            <div
+                              className="ql-editor ql-fitting-notes"
+                              dangerouslySetInnerHTML={{ __html: f.notes }}
+                              style={{
+                                padding: 0,
+                                fontSize: 12,
+                                color: "#666",
+                                lineHeight: 1.5,
+                                maxHeight: "3em",
+                                overflow: "hidden",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                              }}
+                            />
+                            {f.notes.length > 100 && (
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  color: "#A67C52",
+                                  fontWeight: 500,
+                                  marginTop: 4,
+                                  display: "inline-block",
+                                }}
+                              >
+                                Show more
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <Badge
                           style={{
                             background: "#F5EFE9",
@@ -889,6 +924,64 @@ export function AdminFittings() {
                 style={{ display: "none" }}
                 onChange={(e) => handleUpload(e.target.files)}
               />
+
+              {/* Notes section in detail view */}
+              {activeFitting.notes && (
+                <div
+                  style={{
+                    background: "#FAF8F5",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 10,
+                    padding: "14px 18px",
+                    marginBottom: 20,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "#AAAAAA",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Fitting Notes
+                  </div>
+                  <div
+                    className="ql-editor ql-fitting-notes"
+                    dangerouslySetInnerHTML={{ __html: activeFitting.notes }}
+                    style={{
+                      padding: 0,
+                      fontSize: 13,
+                      color: "#444",
+                      lineHeight: 1.6,
+                      maxHeight: notesExpanded ? "none" : "7.5em",
+                      overflow: "hidden",
+                      display: notesExpanded ? "block" : "-webkit-box",
+                      WebkitLineClamp: notesExpanded ? "unset" : 5,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  />
+                  {activeFitting.notes.length > 300 && (
+                    <button
+                      onClick={() => setNotesExpanded(!notesExpanded)}
+                      style={{
+                        marginTop: 8,
+                        background: "none",
+                        border: "none",
+                        color: "#A67C52",
+                        fontSize: 12,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      {notesExpanded ? "Show less" : "Show more"}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {photos.length === 0 && (
                 <div
