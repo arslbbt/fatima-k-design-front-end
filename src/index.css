@@ -504,7 +504,7 @@
 /* ── Fitting notes HTML rendering ── */
 .fitting-notes ul,
 .fitting-notes ol {
-  padding-left: 18px;
+  /* padding-left: 18px; */
   margin: 4px 0;
 }
 .fitting-notes li {
@@ -521,17 +521,24 @@
   margin: 0 0 4px;
 }
 
-── Quill read-only rendering (fitting notes) ──
+/* ── Quill read-only rendering (fitting notes) ── */
 .ql-fitting-notes {
   min-height: unset !important;
 }
 .ql-fitting-notes ul,
 .ql-fitting-notes ol {
   padding-left: 1.4em;
-  margin: 4px 0;
+  margin: 0px 0;
+}
+.ql-fitting-notes ul {
+  list-style-type: disc;
+}
+.ql-fitting-notes ol {
+  list-style-type: decimal;
 }
 .ql-fitting-notes li {
   margin: 2px 0;
+  display: list-item;
 }
 .ql-fitting-notes strong {
   font-weight: 600;

@@ -19,6 +19,7 @@ export function BridePortalFittingPhotos() {
   const [activeFitting, setActiveFitting] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [notesExpanded, setNotesExpanded] = useState(false);
 
   const { data: fittings = [], isLoading } = useQuery({
     queryKey: ["fittings-mine"],
@@ -182,6 +183,7 @@ export function BridePortalFittingPhotos() {
                     onClick={() => {
                       setActiveFitting(null);
                       setLightboxIdx(null);
+                      setNotesExpanded(false);
                     }}
                     style={{
                       background: "none",
@@ -205,21 +207,78 @@ export function BridePortalFittingPhotos() {
                 "Fitting Photos"
               )}
             </h1>
-            <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
-              {activeFitting
-                ? new Date(fitting!.createdAt).toLocaleDateString("en-AU", {
+            {!activeFitting && (
+              <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
+                Photos from your fittings, shared by Fatima after each session
+              </p>
+            )}
+            {activeFitting && (
+              <div>
+                <p style={{ fontSize: 13, color: "#888", margin: "0 0 8px" }}>
+                  {new Date(fitting!.createdAt).toLocaleDateString("en-AU", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
-                  })
-                : "Photos from your fittings, shared by Fatima after each session"}
-              {activeFitting && fitting?.notes && (
-                <span
-                  style={{ marginLeft: 4 }}
-                  dangerouslySetInnerHTML={{ __html: " — " + fitting.notes }}
-                />
-              )}
-            </p>
+                  })}
+                </p>
+                {fitting?.notes && (
+                  <div
+                    style={{
+                      background: "#FAF8F5",
+                      border: "1px solid #E8E0D5",
+                      borderRadius: 8,
+                      padding: "12px 16px",
+                      marginTop: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#AAAAAA",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        marginBottom: 6,
+                      }}
+                    >
+                      Fitting Notes
+                    </div>
+                    <div
+                      className="ql-editor ql-fitting-notes"
+                      style={{
+                        padding: 0,
+                        fontSize: 13,
+                        color: "#444",
+                        lineHeight: 1.6,
+                        maxHeight: notesExpanded ? "none" : "8.5em",
+                        overflow: "hidden",
+                        display: notesExpanded ? "block" : "-webkit-box",
+                        WebkitLineClamp: notesExpanded ? "unset" : 5,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: fitting.notes }}
+                    />
+                    {fitting.notes.length > 300 && (
+                      <button
+                        onClick={() => setNotesExpanded(!notesExpanded)}
+                        style={{
+                          marginTop: 8,
+                          background: "none",
+                          border: "none",
+                          color: "#A67C52",
+                          fontSize: 12,
+                          fontWeight: 500,
+                          cursor: "pointer",
+                          padding: 0,
+                        }}
+                      >
+                        {notesExpanded ? "Show less" : "Show more"}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {isLoading && (
@@ -296,7 +355,10 @@ export function BridePortalFittingPhotos() {
                 {fittings.map((f) => (
                   <Card
                     key={f.id}
-                    onClick={() => setActiveFitting(f.id)}
+                    onClick={() => {
+                      setActiveFitting(f.id);
+                      setNotesExpanded(false);
+                    }}
                     style={{
                       background: "#FFFFFF",
                       border: "1px solid #E8E0D5",
@@ -380,16 +442,36 @@ export function BridePortalFittingPhotos() {
                           })}
                         </div>
                         {f.notes && (
-                          <div
-                            className="fitting-notes"
-                            style={{
-                              fontSize: 12,
-                              color: "#666",
-                              marginBottom: 10,
-                              lineHeight: 1.5,
-                            }}
-                            dangerouslySetInnerHTML={{ __html: f.notes }}
-                          />
+                          <div style={{ marginBottom: 10 }}>
+                            <div
+                              className="ql-editor ql-fitting-notes"
+                              style={{
+                                padding: 0,
+                                fontSize: 12,
+                                color: "#666",
+                                lineHeight: 1.5,
+                                maxHeight: "4em",
+                                overflow: "hidden",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                              }}
+                              dangerouslySetInnerHTML={{ __html: f.notes }}
+                            />
+                            {f.notes.length > 100 && (
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  color: "#A67C52",
+                                  fontWeight: 500,
+                                  marginTop: 4,
+                                  display: "inline-block",
+                                }}
+                              >
+                                Show more
+                              </span>
+                            )}
+                          </div>
                         )}
                         <div
                           style={{
