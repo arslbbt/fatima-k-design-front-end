@@ -6,7 +6,6 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import { LoginBride } from "@/components/LoginBride";
 import { ForgotPassword } from "@/components/ForgotPassword";
-import HomePage from "@/pages/HomePage";
 
 import { BridePortal } from "@/components/BridePortal";
 import { BridePortalAppointments } from "@/components/BridePortalAppointments";
@@ -94,7 +93,7 @@ function NotFound() {
 function RootRedirect() {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user) return <HomePage />;
+  if (!user) return <Redirect to="/login" />;
   return <Redirect to={user.role === "ADMIN" ? "/admin" : "/bride"} />;
 }
 
