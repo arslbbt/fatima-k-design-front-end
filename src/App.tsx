@@ -37,8 +37,8 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000,
       // Don't refetch on window focus (user can manually refresh if needed)
       refetchOnWindowFocus: false,
-      // Don't refetch on mount if data exists and is not stale
-      refetchOnMount: false,
+      // Refetch on mount if data is stale (this allows invalidated queries to refetch)
+      refetchOnMount: true,
       // Retry failed requests once
       retry: 1,
     },
