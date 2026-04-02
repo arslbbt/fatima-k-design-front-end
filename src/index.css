@@ -459,6 +459,17 @@
   }
 }
 
+/* ── Responsive logo sizing ── */
+.logo-responsive {
+  height: 48px;
+}
+
+@media (max-width: 1024px) {
+  .logo-responsive {
+    height: 28px;
+  }
+}
+
 /* Photo card zoom overlay — show on parent hover */
 .photo-card:hover .zoom-overlay {
   opacity: 1 !important;

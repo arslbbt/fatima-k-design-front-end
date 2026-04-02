@@ -10,7 +10,7 @@ export function BridePortalMobile() {
       {/* ── Site Header (web nav style) ── */}
       <header style={{ background: "#F5EFE9", borderBottom: "1px solid #E8E0D5", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 58 }}>
         <img
-          src="/fatimak-portal/fatimak-logo.jpg"
+          src="/fatimak-logo.jpg"
           alt="Fatima K Designs"
           style={{ height: 26, objectFit: "contain", mixBlendMode: "multiply", filter: "brightness(0.15)" }}
         />
@@ -179,7 +179,7 @@ export function BridePortalMobile() {
       {/* ── Site footer ── */}
       <footer style={{ borderTop: "1px solid #E8E0D5", background: "#F5EFE9", padding: "16px 20px", textAlign: "center" }}>
         <img
-          src="/fatimak-portal/fatimak-logo.jpg"
+          src="/fatimak-logo.jpg"
           alt="Fatima K Designs"
           style={{ height: 20, objectFit: "contain", mixBlendMode: "multiply", filter: "brightness(0.15)", marginBottom: 6 }}
         />

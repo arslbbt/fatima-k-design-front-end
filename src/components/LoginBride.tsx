@@ -58,14 +58,12 @@ export function LoginBride() {
         }}
       >
         <img
-          src="/fatimak-portal/fatimak-logo.jpg"
+          src="/fatimak-logo.jpg"
           alt="Fatima K"
           style={{
-            height: 28,
             objectFit: "contain",
-            mixBlendMode: "multiply",
-            filter: "brightness(0.15)",
           }}
+          className="logo-responsive"
         />
       </div>
 

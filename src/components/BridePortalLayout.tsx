@@ -112,14 +112,12 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
             <Menu size={22} color="#555" />
           </button>
           <img
-            src="/fatimak-portal/fatimak-logo.jpg"
+            src="/fatimak-logo.jpg"
             alt="Fatima K"
             style={{
-              height: 28,
               objectFit: "contain",
-              mixBlendMode: "multiply",
-              filter: "brightness(0.15)",
             }}
+            className="logo-responsive"
           />
           <div
             className="bp-divider"
@@ -175,7 +173,10 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
                 cursor: "pointer",
               }}
             >
-              <div className="bp-hide-mobile flex flex-col" style={{ textAlign: "right" }}>
+              <div
+                className="bp-hide-mobile flex flex-col"
+                style={{ textAlign: "right" }}
+              >
                 <div style={{ fontSize: 13, fontWeight: 500, color: "#333" }}>
                   {displayName}
                 </div>

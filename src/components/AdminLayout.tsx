@@ -57,7 +57,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <header
         style={{
           height: 64,
-          background: "#2C2C2C",
+          background: "#FFFFFF",
+          borderBottom: "1px solid #E8E0D5",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -79,67 +80,63 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               cursor: "pointer",
             }}
           >
-            <Menu size={22} color="rgba(255,255,255,0.8)" />
+            <Menu size={22} color="#555" />
           </button>
           <img
-            src="/fatimak-portal/fatimak-logo.jpg"
+            src="/fatimak-logo.jpg"
             alt="Fatima K"
             style={{
-              height: 28,
               objectFit: "contain",
-              filter: "brightness(0) invert(1)",
-              opacity: 0.9,
             }}
+            className="logo-responsive"
           />
           <div
             className="bp-divider"
             style={{
               width: 1,
               height: 24,
-              background: "rgba(255,255,255,0.15)",
+              background: "#E8E0D5",
             }}
           />
           <span
             className="bp-divider"
             style={{
               fontSize: 11,
-              color: "rgba(255,255,255,0.45)",
+              color: "#AAAAAA",
               textTransform: "uppercase",
               letterSpacing: "0.1em",
             }}
           >
-            Admin
+            Admin Portal
           </span>
         </div>
-          <Link href="/admin/settings">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Avatar
-            style={{
-              width: 34,
-              height: 34,
-              border: "1.5px solid rgba(255,255,255,0.2)",
-            }}
-          >
-            <AvatarFallback
+        <Link href="/admin/settings">
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div className="bp-hide-mobile flex flex-col items-end">
+              <div style={{ fontSize: 13, fontWeight: 500, color: "#333" }}>
+                {displayName}
+              </div>
+              <div style={{ fontSize: 11, color: "#888" }}>Studio Owner</div>
+            </div>
+            <Avatar
               style={{
-                background: "#A67C52",
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 600,
+                width: 34,
+                height: 34,
+                border: "1.5px solid #E8D8CE",
               }}
             >
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="bp-hide-mobile">
-            <div style={{ fontSize: 13, fontWeight: 500, color: "#fff" }}>
-              {displayName}
-            </div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
-              Studio Owner
-            </div>
+              <AvatarFallback
+                style={{
+                  background: "#A67C52",
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                {initials}
+              </AvatarFallback>
+            </Avatar>
           </div>
-        </div>
         </Link>
       </header>
 

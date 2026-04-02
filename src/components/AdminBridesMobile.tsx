@@ -70,7 +70,7 @@ export function AdminBridesMobile() {
       {/* Header */}
       <header style={{ background: S.sidebar, borderBottom: `1px solid ${S.border}`, padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 58 }}>
         <div>
-          <img src="/fatimak-portal/fatimak-logo.jpg" alt="Fatima K" style={{ height: 20, objectFit: "contain", mixBlendMode: "multiply", filter: "brightness(0.15)", display: "block" }} />
+          <img src="/fatimak-logo.jpg" alt="Fatima K" style={{ height: 20, objectFit: "contain", mixBlendMode: "multiply", filter: "brightness(0.15)", display: "block" }} />
           <div style={{ fontSize: 8, color: "#AAAAAA", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 1 }}>Admin</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -141,7 +141,7 @@ export function AdminBridesMobile() {
       </div>
 
       <footer style={{ borderTop: `1px solid ${S.border}`, background: S.sidebar, padding: "16px 20px", textAlign: "center" }}>
-        <img src="/fatimak-portal/fatimak-logo.jpg" alt="" style={{ height: 18, objectFit: "contain", mixBlendMode: "multiply", filter: "brightness(0.15)", marginBottom: 5 }} />
+        <img src="/fatimak-logo.jpg" alt="" style={{ height: 18, objectFit: "contain", mixBlendMode: "multiply", filter: "brightness(0.15)", marginBottom: 5 }} />
         <div style={{ fontSize: 10, color: "#AAAAAA" }}>© 2026 Fatima K Designs Australia</div>
       </footer>
 
