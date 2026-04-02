@@ -54,7 +54,7 @@ export function AdminFittings() {
 
   const debouncedSearch = useDebounce(brideSearch);
 
-  const { data: bridesData } = useQuery({
+  const { data: bridesData, isLoading: bridesLoading } = useQuery({
     queryKey: ["brides-fittings-list", debouncedSearch, bridePage],
     queryFn: () =>
       bridesApi.list({
@@ -349,71 +349,86 @@ export function AdminFittings() {
                 />
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                  gap: 12,
-                }}
-              >
-                {brides.map((b) => (
-                  <div
-                    key={b.id}
-                    onClick={() => setSelectedBrideId(b.id)}
-                    style={{
-                      padding: "16px",
-                      background: "#fff",
-                      border: "1px solid #E8E0D5",
-                      borderRadius: 12,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                    }}
-                  >
-                    <Avatar
+              {bridesLoading && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "40px 0",
+                  }}
+                >
+                  <Loader2 size={22} className="animate-spin" color="#D4A373" />
+                </div>
+              )}
+
+              {!bridesLoading && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: 12,
+                  }}
+                >
+                  {brides.map((b) => (
+                    <div
+                      key={b.id}
+                      onClick={() => setSelectedBrideId(b.id)}
                       style={{
-                        width: 38,
-                        height: 38,
-                        border: "1.5px solid #E8D8CE",
-                        flexShrink: 0,
+                        padding: "16px",
+                        background: "#fff",
+                        border: "1px solid #E8E0D5",
+                        borderRadius: 12,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
                       }}
                     >
-                      <AvatarFallback
+                      <Avatar
                         style={{
-                          background: "#E8D8CE",
-                          color: "#A67C52",
-                          fontSize: 12,
-                          fontWeight: 600,
+                          width: 38,
+                          height: 38,
+                          border: "1.5px solid #E8D8CE",
+                          flexShrink: 0,
                         }}
                       >
-                        {b.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "#2C2C2C",
-                        }}
-                      >
-                        {b.name}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#888" }}>
-                        {b.email}
+                        <AvatarFallback
+                          style={{
+                            background: "#E8D8CE",
+                            color: "#A67C52",
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {b.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "#2C2C2C",
+                          }}
+                        >
+                          {b.name}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#888" }}>
+                          {b.email}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
-              {bridesMeta && bridesMeta.totalPages > 1 && (
+              {!bridesLoading && bridesMeta && bridesMeta.totalPages > 1 && (
                 <Pagination
                   page={bridePage}
                   totalPages={bridesMeta.totalPages}
@@ -550,7 +565,10 @@ export function AdminFittings() {
                         </option>
                       ))}
                       {eligibleAppts.length === 0 && (
-                        <option disabled>No eligible appointments found</option>
+                        <option disabled>
+                          No eligible appointments found (first create
+                          appointment to add fitting photos against it)
+                        </option>
                       )}
                     </select>
                   </div>
