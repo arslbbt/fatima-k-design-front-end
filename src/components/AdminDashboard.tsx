@@ -47,7 +47,10 @@ function timeAgo(iso: string): string {
 }
 
 function fmtTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-AU", {
+  return new Date(iso).toLocaleString("en-AU", {
+    weekday: "short",   // Mon, Tue
+    day: "numeric",     // 2
+    month: "short",     // Apr
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
@@ -118,7 +121,7 @@ export function AdminDashboard() {
             </h1>
             <Button
               onClick={() => setAddModalOpen(true)}
-              className="bg-[#333333] text-white hover:bg-[#222222] font-normal shadow-sm"
+              className="cursor-pointer bg-[#333333] text-white hover:bg-[#222222] font-normal shadow-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Bride
@@ -239,7 +242,7 @@ export function AdminDashboard() {
                 </h2>
                 <button
                   onClick={() => navigate("/admin/brides")}
-                  className="text-sm text-[#A67C52] hover:underline"
+                  className="text-sm text-[#A67C52] hover:underline cursor-pointer"
                 >
                   View all
                 </button>
@@ -321,7 +324,7 @@ export function AdminDashboard() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-[#A67C52] hover:bg-[#FAF8F5] hover:text-[#A67C52]"
+                                  className="h-8 w-8 text-[#A67C52] hover:bg-[#FAF8F5] hover:text-[#A67C52] cursor-pointer"
                                   onClick={() => navigate("/admin/fittings")}
                                   title="Fitting Photos"
                                 >
@@ -330,7 +333,7 @@ export function AdminDashboard() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="h-8 border-[#E8E0D5] text-[#555555] font-normal"
+                                  className="h-8 border-[#E8E0D5] text-[#555555] font-normal cursor-pointer"
                                   onClick={() => handleViewBride(bride.id)}
                                 >
                                   View
@@ -354,7 +357,7 @@ export function AdminDashboard() {
                 </h2>
                 <button
                   onClick={() => navigate("/admin/appointments")}
-                  className="text-sm text-[#A67C52] hover:underline"
+                  className="text-sm text-[#A67C52] hover:underline cursor-pointer"
                 >
                   View all
                 </button>
@@ -480,20 +483,20 @@ export function AdminDashboard() {
               <h2 className="text-xl font-['Cormorant_Garamond'] font-medium text-[#2C2C2C] border-b border-[#E8E0D5] pb-2">
                 Quick Actions
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 ">
                 <button
                   onClick={() => setAddModalOpen(true)}
-                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
+                  className="cursor-pointer flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
                 >
-                  <div className="bg-[#E8D8CE]/50 p-3 rounded-full text-[#A67C52]">
+                  <div className="bg-[#E8D8CE]/50 p-3 rounded-full text-[#A67C52] ">
                     <Users size={20} />
                   </div>
-                  <span className="text-sm font-medium">Add New Bride</span>
+                  <span className="text-sm font-medium ">Add New Bride</span>
                 </button>
 
                 <button
                   onClick={() => navigate("/admin/appointments")}
-                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
+                  className="cursor-pointer flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
                 >
                   <div className="bg-[#E8D8CE]/50 p-3 rounded-full text-[#A67C52]">
                     <Calendar size={20} />
@@ -503,7 +506,7 @@ export function AdminDashboard() {
 
                 <button
                   onClick={() => navigate("/admin/payments")}
-                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
+                  className="cursor-pointer flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
                 >
                   <div className="bg-[#E8D8CE]/50 p-3 rounded-full text-[#A67C52]">
                     <DollarSign size={20} />
@@ -513,9 +516,9 @@ export function AdminDashboard() {
 
                 <button
                   onClick={() => navigate("/admin/fittings")}
-                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
+                  className="cursor-pointer flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-[#E8E0D5] bg-white hover:bg-[#FAF8F5] transition-colors shadow-sm text-[#333333]"
                 >
-                  <div className="bg-[#E8D8CE]/50 p-3 rounded-full text-[#A67C52]">
+                  <div className=" bg-[#E8D8CE]/50 p-3 rounded-full text-[#A67C52]">
                     <Upload size={20} />
                   </div>
                   <span className="text-sm font-medium">Upload Photos</span>
