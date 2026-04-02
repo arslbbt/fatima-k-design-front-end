@@ -619,8 +619,9 @@ export function AdminPaymentsDesktop() {
                       className="bride-card-header"
                       style={{
                         display: "flex",
-                        alignItems: "center",
-                        gap: 16,
+                        alignItems: "flex-start",
+                        gap: 12,
+                        flexWrap: "wrap",
                         padding: "16px 20px",
                         cursor: "pointer",
                         position: "relative",
@@ -801,8 +802,8 @@ export function AdminPaymentsDesktop() {
                               fontSize: 11,
                               fontWeight: 500,
                               border: `1px solid ${bride.status === "overdue" ? "#F5C0C0" : "#F5D5B0"}`,
-                              flex: 1,
-                              minWidth: 0,
+
+                              width: "fit-content",
                             }}
                           >
                             <AlertCircle size={12} style={{ flexShrink: 0 }} />
