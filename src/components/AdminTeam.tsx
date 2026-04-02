@@ -828,7 +828,7 @@ export function AdminTeam() {
                 cursor: "pointer",
               }}
             >
-              <Plus size={15} /> Add Admin
+              <Plus size={15} /> Add <span className="hidden sm:block">Admin</span>
             </button>
           </div>
 

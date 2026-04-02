@@ -680,3 +680,142 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Responsive payments KPI grid ── */
+.payments-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 1024px) {
+  .payments-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .payments-kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ── Responsive monthly revenue chart ── */
+.monthly-revenue-chart {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #e8e0d5 transparent;
+}
+
+@media (max-width: 768px) {
+  .monthly-revenue-chart {
+    min-width: 600px;
+  }
+}
+
+/* ── Responsive payments filters header ── */
+.payments-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.payments-filters-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .payments-filters-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .payments-filters-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .payments-filters-controls > div:first-child {
+    width: 100%;
+  }
+
+  .payments-filters-controls > div:first-child input {
+    width: 100%;
+  }
+
+  .payments-filters-controls > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .payments-filters-controls button {
+    flex: 1;
+  }
+}
+
+/* ── Responsive monthly revenue chart ── */
+.monthly-revenue-chart-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #e8e0d5 transparent;
+}
+
+.monthly-revenue-chart-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.monthly-revenue-chart-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.monthly-revenue-chart-wrapper::-webkit-scrollbar-thumb {
+  background: #e8e0d5;
+  border-radius: 3px;
+}
+
+/* ── Responsive bride card layout ── */
+.bride-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .bride-card-header {
+    gap: 12px;
+  }
+
+  .bride-card-header > div:last-child > div:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .bride-card-header > div:last-child > div:first-child > div:last-child {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bride-progress-bar {
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  .bride-progress-bar > div:first-child {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .bride-progress-bar > span {
+    width: 100%;
+    font-size: 9px !important;
+  }
+}

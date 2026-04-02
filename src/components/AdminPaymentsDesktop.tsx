@@ -191,18 +191,12 @@ export function AdminPaymentsDesktop() {
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
               }}
             >
-              <PlusCircle size={18} /> Create Payment
+              <PlusCircle size={18} /> Create{" "}
+              <span className="hidden sm:block">Payment</span>
             </button>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr 1fr",
-              gap: 16,
-              marginBottom: 32,
-            }}
-          >
+          <div className="payments-kpi-grid">
             {[
               {
                 label: "Revenue Collected",
@@ -302,6 +296,7 @@ export function AdminPaymentsDesktop() {
               border: "1px solid #E8E0D5",
               boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
               marginBottom: 32,
+              overflow: "hidden",
             }}
           >
             <CardContent style={{ padding: "24px" }}>
@@ -349,116 +344,129 @@ export function AdminPaymentsDesktop() {
                 </select>
               </div>
               <div
+                className="monthly-revenue-chart-wrapper"
                 style={{
-                  display: "flex",
-                  gap: 14,
-                  alignItems: "flex-end",
-                  height: 120,
-                  paddingBottom: 10,
-                  overflow: "visible",
-                  position: "relative",
+                  overflowX: "auto",
+                  overflowY: "visible",
+                  marginLeft: -24,
+                  marginRight: -24,
+                  paddingLeft: 24,
+                  paddingRight: 24,
                 }}
               >
-                {monthlyRevenue?.map((m, i) => {
-                  const maxVal =
-                    Math.max(...monthlyRevenue.map((d) => d.amount)) || 1;
-                  const height = (m.amount / maxVal) * 100;
-                  return (
-                    <div
-                      key={i}
-                      title={
-                        m.amount > 0
-                          ? `$${m.amount.toLocaleString()}`
-                          : "No revenue"
-                      }
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 8,
-                        position: "relative",
-                        cursor: m.amount > 0 ? "default" : "default",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (m.amount > 0) {
+                <div
+                  className="monthly-revenue-chart"
+                  style={{
+                    display: "flex",
+                    gap: 14,
+                    alignItems: "flex-end",
+                    height: 120,
+                    paddingBottom: 10,
+                    position: "relative",
+                    minWidth: "600px",
+                  }}
+                >
+                  {monthlyRevenue?.map((m, i) => {
+                    const maxVal =
+                      Math.max(...monthlyRevenue.map((d) => d.amount)) || 1;
+                    const height = (m.amount / maxVal) * 100;
+                    return (
+                      <div
+                        key={i}
+                        title={
+                          m.amount > 0
+                            ? `$${m.amount.toLocaleString()}`
+                            : "No revenue"
+                        }
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 8,
+                          position: "relative",
+                          cursor: m.amount > 0 ? "default" : "default",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (m.amount > 0) {
+                            const tip =
+                              e.currentTarget.querySelector<HTMLElement>(
+                                ".bar-tip",
+                              );
+                            if (tip) tip.style.opacity = "1";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
                           const tip =
                             e.currentTarget.querySelector<HTMLElement>(
                               ".bar-tip",
                             );
-                          if (tip) tip.style.opacity = "1";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        const tip =
-                          e.currentTarget.querySelector<HTMLElement>(
-                            ".bar-tip",
-                          );
-                        if (tip) tip.style.opacity = "0";
-                      }}
-                    >
-                      {/* Tooltip */}
-                      {m.amount > 0 && (
-                        <div
-                          className="bar-tip"
-                          style={{
-                            position: "absolute",
-                            bottom: "calc(100% - 20px)",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            background: "#2C2C2C",
-                            color: "#fff",
-                            fontSize: 10,
-                            fontWeight: 600,
-                            padding: "4px 8px",
-                            borderRadius: 6,
-                            whiteSpace: "nowrap",
-                            opacity: 0,
-                            transition: "opacity 0.15s",
-                            pointerEvents: "none",
-                            zIndex: 10,
-                          }}
-                        >
-                          ${m.amount.toLocaleString()}
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "100%",
-                              left: "50%",
-                              transform: "translateX(-50%)",
-                              width: 0,
-                              height: 0,
-                              borderLeft: "4px solid transparent",
-                              borderRight: "4px solid transparent",
-                              borderTop: "4px solid #2C2C2C",
-                            }}
-                          />
-                        </div>
-                      )}
-                      <div
-                        style={{
-                          width: "100%",
-                          background:
-                            m.amount > 0
-                              ? "linear-gradient(180deg,#D4A373,#C8956A)"
-                              : "#F0EBE4",
-                          borderRadius: "4px 4px 0 0",
-                          height: `${Math.max(height, 4)}px`,
-                          transition: "height 0.4s ease-out",
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: 10,
-                          color: m.amount > 0 ? "#8B6F5A" : "#AAAAAA",
-                          fontWeight: m.amount > 0 ? 600 : 400,
+                          if (tip) tip.style.opacity = "0";
                         }}
                       >
-                        {m.name}
-                      </span>
-                    </div>
-                  );
-                })}
+                        {/* Tooltip */}
+                        {m.amount > 0 && (
+                          <div
+                            className="bar-tip"
+                            style={{
+                              position: "absolute",
+                              bottom: "calc(100% - 20px)",
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              background: "#2C2C2C",
+                              color: "#fff",
+                              fontSize: 10,
+                              fontWeight: 600,
+                              padding: "4px 8px",
+                              borderRadius: 6,
+                              whiteSpace: "nowrap",
+                              opacity: 0,
+                              transition: "opacity 0.15s",
+                              pointerEvents: "none",
+                              zIndex: 10,
+                            }}
+                          >
+                            ${m.amount.toLocaleString()}
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                width: 0,
+                                height: 0,
+                                borderLeft: "4px solid transparent",
+                                borderRight: "4px solid transparent",
+                                borderTop: "4px solid #2C2C2C",
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div
+                          style={{
+                            width: "100%",
+                            background:
+                              m.amount > 0
+                                ? "linear-gradient(180deg,#D4A373,#C8956A)"
+                                : "#F0EBE4",
+                            borderRadius: "4px 4px 0 0",
+                            height: `${Math.max(height, 4)}px`,
+                            transition: "height 0.4s ease-out",
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontSize: 10,
+                            color: m.amount > 0 ? "#8B6F5A" : "#AAAAAA",
+                            fontWeight: m.amount > 0 ? 600 : 400,
+                          }}
+                        >
+                          {m.name}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <div
                 style={{
@@ -469,6 +477,7 @@ export function AdminPaymentsDesktop() {
                   gap: 32,
                   fontSize: 13,
                   color: "#666",
+                  flexWrap: "wrap",
                 }}
               >
                 <span>
@@ -488,14 +497,7 @@ export function AdminPaymentsDesktop() {
             </CardContent>
           </Card>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
+          <div className="payments-filters-header">
             <h2
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
@@ -507,7 +509,7 @@ export function AdminPaymentsDesktop() {
             >
               All Brides
             </h2>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div className="payments-filters-controls">
               <div
                 style={{
                   display: "flex",
@@ -608,25 +610,26 @@ export function AdminPaymentsDesktop() {
                         bride.status === "overdue"
                           ? "0 4px 12px rgba(192,64,64,0.06)"
                           : "0 2px 6px rgba(0,0,0,0.02)",
-                      overflow: "hidden",
+                      overflow: "visible",
                       transition: "all 0.3s",
                     }}
                   >
                     <div
                       onClick={() => setExpandedId(isOpen ? null : bride.id)}
+                      className="bride-card-header"
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 20,
-                        padding: "20px 24px",
+                        gap: 16,
+                        padding: "16px 20px",
                         cursor: "pointer",
                         position: "relative",
                       }}
                     >
                       <Avatar
                         style={{
-                          width: 44,
-                          height: 44,
+                          width: 40,
+                          height: 40,
                           border: "1.5px solid #F5EFE9",
                           flexShrink: 0,
                         }}
@@ -635,7 +638,7 @@ export function AdminPaymentsDesktop() {
                           style={{
                             background: "#F5EFE9",
                             color: "#A67C52",
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: 600,
                           }}
                         >
@@ -644,33 +647,100 @@ export function AdminPaymentsDesktop() {
                       </Avatar>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ marginBottom: 6 }}>
-                          <span
-                            style={{
-                              fontFamily: "'Cormorant Garamond', serif",
-                              fontSize: 19,
-                              fontWeight: 500,
-                              color: "#2C2C2C",
-                              marginRight: 10,
-                            }}
-                          >
-                            {bride.name}
-                          </span>
-                        </div>
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: 8,
                             gap: 12,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: "'Cormorant Garamond', serif",
+                              fontSize: 18,
+                              fontWeight: 500,
+                              color: "#2C2C2C",
+                            }}
+                          >
+                            {bride.name}
+                          </span>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <div
+                              style={{
+                                textAlign: "right",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontFamily: "'Cormorant Garamond', serif",
+                                  fontSize: 17,
+                                  fontWeight: 500,
+                                  color: "#2C2C2C",
+                                }}
+                              >
+                                ${bride.total.toLocaleString()}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: "#AAA",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.5px",
+                                }}
+                              >
+                                total
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                background: cfg.bg,
+                                color: cfg.color,
+                                padding: "4px 10px",
+                                borderRadius: 12,
+                                fontSize: 9,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {cfg.icon} {cfg.label}
+                            </div>
+                            <ChevronDown
+                              size={16}
+                              color="#CCCCCC"
+                              style={{
+                                transform: isOpen ? "rotate(180deg)" : "none",
+                                transition: "transform 0.3s",
+                                flexShrink: 0,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div
+                          className="bride-progress-bar"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
                           }}
                         >
                           <div
                             style={{
                               flex: 1,
-                              maxWidth: 200,
+                              maxWidth: 180,
                               background: "#F0EBE4",
-                              height: 5,
-                              borderRadius: 3,
+                              height: 4,
+                              borderRadius: 2,
                               overflow: "hidden",
                             }}
                           >
@@ -684,78 +754,16 @@ export function AdminPaymentsDesktop() {
                           </div>
                           <span
                             style={{
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: 600,
                               color: "#A67C52",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            ${bride.paid.toLocaleString()} paid • {progress}%
+                            ${bride.paid.toLocaleString()} • {progress}%
                           </span>
                         </div>
                       </div>
-
-                      <div
-                        style={{
-                          textAlign: "right",
-                          width: 120,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: "'Cormorant Garamond', serif",
-                            fontSize: 19,
-                            fontWeight: 500,
-                            color: "#2C2C2C",
-                          }}
-                        >
-                          ${bride.total.toLocaleString()}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "#AAA",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px",
-                          }}
-                        >
-                          total order
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          width: 120,
-                          flexShrink: 0,
-                          display: "flex",
-                          justifyContent: "flex-end",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                            background: cfg.bg,
-                            color: cfg.color,
-                            padding: "6px 14px",
-                            borderRadius: 20,
-                            fontSize: 11,
-                            fontWeight: 600,
-                          }}
-                        >
-                          {cfg.icon} {cfg.label}
-                        </div>
-                      </div>
-
-                      <ChevronDown
-                        size={18}
-                        color="#CCCCCC"
-                        style={{
-                          transform: isOpen ? "rotate(180deg)" : "none",
-                          transition: "transform 0.3s",
-                        }}
-                      />
                     </div>
 
                     {isOpen && (
