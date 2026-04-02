@@ -786,9 +786,17 @@
   gap: 16px;
 }
 
+.bride-name-desktop {
+  display: inline;
+}
+
 @media (max-width: 640px) {
   .bride-card-header {
     gap: 12px;
+  }
+
+  .bride-name-desktop {
+    display: none;
   }
 
   .bride-card-header > div:last-child > div:first-child {

@@ -780,6 +780,7 @@ export function AdminPaymentsDesktop() {
                             justifyContent: "space-between",
                             alignItems: "center",
                             marginBottom: 20,
+                            gap: 12,
                           }}
                         >
                           <div
@@ -795,18 +796,31 @@ export function AdminPaymentsDesktop() {
                                 bride.status === "overdue"
                                   ? "#FDE8E8"
                                   : "#FFF9F4",
-                              padding: "6px 12px",
+                              padding: "6px 10px",
                               borderRadius: 6,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: 500,
                               border: `1px solid ${bride.status === "overdue" ? "#F5C0C0" : "#F5D5B0"}`,
+                              flex: 1,
+                              minWidth: 0,
                             }}
                           >
-                            <AlertCircle size={14} />{" "}
-                            {bride.status === "overdue"
-                              ? "Overdue"
-                              : "Payment Due"}{" "}
-                            — {bride.name}
+                            <AlertCircle size={12} style={{ flexShrink: 0 }} />
+                            <span
+                              style={{
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {bride.status === "overdue"
+                                ? "Overdue"
+                                : "Payment Due"}
+                              <span className="bride-name-desktop">
+                                {" "}
+                                — {bride.name}
+                              </span>
+                            </span>
                           </div>
                           <button
                             onClick={(e) => {
@@ -821,15 +835,17 @@ export function AdminPaymentsDesktop() {
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: 8,
-                              padding: "8px 20px",
+                              gap: 6,
+                              padding: "7px 14px",
                               background: "#1F1F1F",
                               color: "#fff",
                               border: "none",
                               borderRadius: 6,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: 500,
                               cursor: "pointer",
+                              whiteSpace: "nowrap",
+                              flexShrink: 0,
                             }}
                           >
                             Send Reminder
