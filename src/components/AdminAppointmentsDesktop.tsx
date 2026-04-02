@@ -22,6 +22,7 @@ import {
   type AppointmentWithBride,
   type BrideWithProfile,
 } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 
 type ViewMode = "week" | "month";
 
@@ -110,7 +111,7 @@ export function AdminAppointmentsDesktop() {
   const queryClient = useQueryClient();
 
   const { data: appointments = [], isLoading } = useQuery({
-    queryKey: ["appointments", from.toISOString(), to.toISOString()],
+    queryKey: queryKeys.appointments.list(from.toISOString(), to.toISOString()),
     queryFn: () =>
       appointmentsApi.list({ from: from.toISOString(), to: to.toISOString() }),
   });
@@ -128,7 +129,10 @@ export function AdminAppointmentsDesktop() {
     mutationFn: (id: string) =>
       appointmentsApi.update(id, { status: "COMPLETED" }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.appointments.lists(),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.dashboard() });
       setConfirmCompleteId(null);
     },
   });

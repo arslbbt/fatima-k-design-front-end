@@ -94,9 +94,15 @@ export const invalidateQueries = {
   // After creating/updating a bride
   afterBrideCreate: (queryClient: any) => {
     // Invalidate all bride list queries (with any filters)
-    queryClient.invalidateQueries({ queryKey: queryKeys.brides.lists() });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.brides.lists(),
+      refetchType: "active",
+    });
     // Also invalidate the base "brides" key to catch any other bride queries
-    queryClient.invalidateQueries({ queryKey: queryKeys.brides.all() });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.brides.all(),
+      refetchType: "active",
+    });
     queryClient.invalidateQueries({ queryKey: queryKeys.brides.names() });
     queryClient.invalidateQueries({ queryKey: queryKeys.admin.dashboard() });
   },
