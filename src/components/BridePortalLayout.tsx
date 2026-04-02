@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
@@ -40,6 +40,10 @@ export function BridePortalLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { logout, user } = useAuth();
+
+  useEffect(() => {
+    document.title = "Fatima K — Bride Portal";
+  }, []);
 
   const { data: me } = useQuery({
     queryKey: ["bride-me"],

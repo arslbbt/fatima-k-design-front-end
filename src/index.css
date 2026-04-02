@@ -461,12 +461,12 @@
 
 /* ── Responsive logo sizing ── */
 .logo-responsive {
-  height: 48px;
+  height: 48px !important;
 }
 
 @media (max-width: 1024px) {
   .logo-responsive {
-    height: 28px;
+    height: 28px !important;
   }
 }
 
