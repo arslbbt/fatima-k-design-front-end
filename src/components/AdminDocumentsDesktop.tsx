@@ -78,6 +78,7 @@ function UploadModal({
   if (!open) return null;
   const inp: React.CSSProperties = {
     width: "100%",
+    maxHeight: "100px",
     padding: "9px 12px",
     border: "1px solid #E8E0D5",
     borderRadius: 7,
@@ -297,7 +298,8 @@ function UploadModal({
               <select
                 value={brideId}
                 onChange={(e) => setBrideId(e.target.value)}
-                style={inp}
+                style={{ ...inp, maxHeight: "200px" }}
+                size={1}
               >
                 <option value="">Select a bride…</option>
                 {brides.map((b) => (
@@ -368,6 +370,7 @@ export function AdminDocumentsDesktop() {
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showUpload, setShowUpload] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search);
 
   const { data: brides = [] } = useQuery({
@@ -396,14 +399,17 @@ export function AdminDocumentsDesktop() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-docs"] });
       setSelectedDoc(null);
+      setConfirmDeleteId(null);
       toast({ title: "Document deleted" });
     },
-    onError: (err) =>
+    onError: (err) => {
       toast({
         title: "Error",
         description:
           err instanceof ApiError ? err.message : "Something went wrong.",
-      }),
+      });
+      setConfirmDeleteId(null);
+    },
   });
 
   const typeColors: Record<string, string> = {
@@ -765,8 +771,7 @@ export function AdminDocumentsDesktop() {
                     <Download size={13} /> Download
                   </button>
                   <button
-                    onClick={() => deleteMutation.mutate(doc.id)}
-                    disabled={deleteMutation.isPending}
+                    onClick={() => setConfirmDeleteId(doc.id)}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -780,12 +785,7 @@ export function AdminDocumentsDesktop() {
                       cursor: "pointer",
                     }}
                   >
-                    {deleteMutation.isPending ? (
-                      <Loader2 size={13} className="animate-spin" />
-                    ) : (
-                      <Trash2 size={13} />
-                    )}{" "}
-                    Delete
+                    <Trash2 size={13} /> Delete
                   </button>
                 </div>
               </div>
@@ -928,6 +928,106 @@ export function AdminDocumentsDesktop() {
         onClose={() => setShowUpload(false)}
         brides={brides}
       />
+
+      {/* Confirm delete modal */}
+      {confirmDeleteId && (
+        <>
+          <div
+            onClick={() => setConfirmDeleteId(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.45)",
+              zIndex: 200,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                width: "100%",
+                maxWidth: 380,
+                padding: "28px 24px",
+                textAlign: "center",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 22,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  margin: "0 0 8px",
+                }}
+              >
+                Delete this document?
+              </h3>
+              <p style={{ fontSize: 13, color: "#888", margin: "0 0 24px" }}>
+                This cannot be undone.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    color: "#666",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteMutation.mutate(confirmDeleteId)}
+                  disabled={deleteMutation.isPending}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "none",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: "#CC4444",
+                    cursor: deleteMutation.isPending
+                      ? "not-allowed"
+                      : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  {deleteMutation.isPending ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" /> Deleting…
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </AdminLayout>
   );
 }
