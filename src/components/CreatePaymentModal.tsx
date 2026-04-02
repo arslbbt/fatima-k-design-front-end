@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, AlertCircle, CreditCard } from "lucide-react";
 import { paymentsApi, bridesApi, ApiError, type PaymentType } from "@/lib/api";
-import { queryKeys } from "@/lib/queryKeys";
+import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 import { toast } from "@/hooks/use-toast";
 
 interface CreatePaymentModalProps {

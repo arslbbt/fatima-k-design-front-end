@@ -281,7 +281,7 @@ export type PaymentStatus = "PAID" | "PENDING" | "OVERDUE";
 export interface Payment {
   id: string;
   brideId: string;
-  amount: number;
+  amount: number | string; // API returns string, but we use as number
   paymentType: PaymentType;
   status: PaymentStatus;
   dueDate: string | null;

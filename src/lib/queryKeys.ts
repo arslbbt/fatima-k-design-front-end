@@ -130,9 +130,18 @@ export const invalidateQueries = {
 
   // After payment mutation
   afterPaymentMutation: (queryClient: any) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.payments.all() });
-    queryClient.invalidateQueries({ queryKey: queryKeys.brides.lists() });
-    queryClient.invalidateQueries({ queryKey: queryKeys.admin.dashboard() });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.payments.all(),
+      refetchType: "active",
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.brides.lists(),
+      refetchType: "active",
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.admin.dashboard(),
+      refetchType: "active",
+    });
   },
 
   // After fitting photo upload/delete

@@ -469,6 +469,7 @@
     height: 28px !important;
   }
 }
+}
 
 /* Photo card zoom overlay — show on parent hover */
 .photo-card:hover .zoom-overlay {
