@@ -83,6 +83,14 @@ export function CreatePaymentModal({
     }
   }, [open, editPayment]);
 
+  // When "mark as paid" is toggled, set due date to today
+  useEffect(() => {
+    if (markAsPaid) {
+      const today = new Date().toISOString().split("T")[0];
+      setDueDate(today);
+    }
+  }, [markAsPaid]);
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -354,7 +362,13 @@ export function CreatePaymentModal({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  style={inp}
+                  min={new Date().toISOString().split("T")[0]}
+                  disabled={markAsPaid}
+                  style={{
+                    ...inp,
+                    cursor: markAsPaid ? "not-allowed" : "text",
+                    opacity: markAsPaid ? 0.6 : 1,
+                  }}
                 />
               </div>
             </div>
