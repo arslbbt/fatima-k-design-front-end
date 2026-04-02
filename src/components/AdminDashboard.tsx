@@ -135,7 +135,7 @@ export function AdminDashboard() {
               <Loader2 size={24} className="animate-spin text-[#D4A373]" />
             </div>
           ) : (
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Total Brides */}
               <Card
                 className="bg-white border-[#E8E0D5] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
@@ -447,7 +447,7 @@ export function AdminDashboard() {
                       {(data?.recentActivity ?? []).map((item, i) => (
                         <div key={i} className="p-4 flex gap-4">
                           <div
-                            className={`mt-1 p-2 rounded-full shrink-0 ${
+                            className={`mt-1 max-h-8 p-2 rounded-full shrink-0 ${
                               item.type === "photo"
                                 ? "bg-[#F5EFE9] text-[#A67C52]"
                                 : item.type === "payment"

@@ -283,13 +283,7 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
             )}
 
             {/* Row: Name + Email */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 14,
-              }}
-            >
+            <div className="bride-modal-row">
               <Field label="Full Name *" error={errors.name}>
                 <input
                   value={form.name}
@@ -343,13 +337,7 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
             </Field>
 
             {/* Row: Wedding Date + Phone */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 14,
-              }}
-            >
+            <div className="bride-modal-row">
               <Field label="Wedding Date *" error={errors.weddingDate}>
                 <input
                   type="date"
@@ -371,13 +359,7 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
             </div>
 
             {/* Row: Partner Name + Venue Name */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 14,
-              }}
-            >
+            <div className="bride-modal-row">
               <Field label="Partner's Name">
                 <input
                   value={form.partnerName}
