@@ -370,7 +370,7 @@ export function AdminFittings() {
                     gap: 12,
                   }}
                 >
-                  {brides.map((b) => (
+                  {brides.map((b: any) => (
                     <div
                       key={b.id}
                       onClick={() => setSelectedBrideId(b.id)}
@@ -837,14 +837,7 @@ export function AdminFittings() {
 
           {selectedBrideId && activeFittingId && activeFitting && (
             <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 20,
-                }}
-              >
+              <div className="fitting-detail-header">
                 <button
                   onClick={() => setActiveFittingId(null)}
                   style={{
@@ -860,7 +853,7 @@ export function AdminFittings() {
                 >
                   <ChevronLeft size={15} /> {selectedBride?.name}'s Fittings
                 </button>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div className="fitting-detail-title">
                   <span
                     style={{
                       fontFamily: "'Cormorant Garamond', serif",
@@ -871,6 +864,8 @@ export function AdminFittings() {
                   >
                     Fitting #{activeFitting.fittingNumber}
                   </span>
+                </div>
+                <div className="fitting-detail-actions">
                   {photos.length > 0 && (
                     <button
                       onClick={downloadAllAsZip}
@@ -1040,14 +1035,7 @@ export function AdminFittings() {
               )}
 
               {photos.length > 0 && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr 1fr",
-                    gap: 12,
-                    alignItems: "start",
-                  }}
-                >
+                <div className="fitting-photos-grid">
                   {photos.map((photo, i) => (
                     <div
                       key={photo.id}
