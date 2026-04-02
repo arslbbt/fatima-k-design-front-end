@@ -303,28 +303,46 @@ export function AdminInspo() {
               <div
                 style={{
                   display: "flex",
+                  flexWrap: "wrap",
                   alignItems: "center",
                   gap: 12,
                   marginBottom: 20,
                 }}
               >
-                <button
-                  onClick={() => setSelectedBrideId(null)}
+                {/* Row 1 */}
+                <div
                   style={{
                     display: "flex",
+                    justifyContent: "space-between",
                     alignItems: "center",
-                    gap: 6,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#A67C52",
-                    fontSize: 13,
+                    width: "100%", // full row
                   }}
                 >
-                  <ChevronLeft size={15} /> All Brides
-                </button>
+                  <button
+                    onClick={() => setSelectedBrideId(null)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#A67C52",
+                      fontSize: 13,
+                    }}
+                  >
+                    <ChevronLeft size={15} /> All Brides
+                  </button>
+
+                  <span style={{ fontSize: 12, color: "#888" }}>
+                    ({uploads.length} photo{uploads.length !== 1 ? "s" : ""})
+                  </span>
+                </div>
+
+                {/* Row 2 */}
                 <span
                   style={{
+                    width: "100%", // new row
                     fontFamily: "'Cormorant Garamond', serif",
                     fontSize: 20,
                     fontWeight: 500,
@@ -332,9 +350,6 @@ export function AdminInspo() {
                   }}
                 >
                   {selectedBride?.name}'s Inspiration Board
-                </span>
-                <span style={{ fontSize: 12, color: "#888" }}>
-                  ({uploads.length} photo{uploads.length !== 1 ? "s" : ""})
                 </span>
               </div>
 
