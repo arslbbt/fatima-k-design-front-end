@@ -224,7 +224,8 @@ export function AdminAppointmentsDesktop() {
                 cursor: "pointer",
               }}
             >
-              <Plus size={15} /> New Appointment
+              <Plus size={15} /> New{" "}
+              <span className="hidden sm:block">Appointment</span>
             </button>
           </div>
 
@@ -412,8 +413,8 @@ export function AdminAppointmentsDesktop() {
           )}
 
           {!isLoading && (
-            <div style={{ display: "flex", gap: 20 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="appointments-layout">
+              <div className="appointments-list">
                 {/* Today */}
                 {todayAppts.length > 0 && (
                   <div style={{ marginBottom: 24 }}>
@@ -465,6 +466,19 @@ export function AdminAppointmentsDesktop() {
                         />
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Detail Panel - Mobile (shows here on mobile) */}
+                {selected && (
+                  <div className="detail-panel-mobile">
+                    <DetailPanel
+                      appt={selected}
+                      onClose={() => setSelectedId(null)}
+                      onViewBride={() => openBrideProfile(selected.bride.id)}
+                      onEdit={() => setEditAppointment(selected)}
+                      profileLoading={profileLoading}
+                    />
                   </div>
                 )}
 
@@ -639,8 +653,9 @@ export function AdminAppointmentsDesktop() {
                 )}
               </div>
 
+              {/* Detail Panel - Desktop (shows here on desktop) */}
               {selected && (
-                <div style={{ width: 280, flexShrink: 0 }}>
+                <div className="detail-panel-desktop">
                   <DetailPanel
                     appt={selected}
                     onClose={() => setSelectedId(null)}

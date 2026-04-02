@@ -577,3 +577,39 @@
     gap: 16px;
   }
 }
+
+/* ── Responsive appointments layout ── */
+.appointments-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.appointments-list {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-panel-desktop {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.detail-panel-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .appointments-layout {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .detail-panel-desktop {
+    display: none;
+  }
+
+  .detail-panel-mobile {
+    display: block;
+    margin-bottom: 24px;
+  }
+}

@@ -394,35 +394,44 @@ export function AddAppointmentModal({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
                 gap: 12,
+                gridTemplateColumns: "1fr 1fr", // 2 columns
+                gridAutoRows: "auto",
               }}
             >
-              <Field label="Date *" error={errors.date}>
-                <input
-                  type="date"
-                  value={form.date}
-                  min={isEdit ? undefined : today}
-                  onChange={(e) => set("date", e.target.value)}
-                  style={inputStyle(!!errors.date)}
-                />
-              </Field>
-              <Field label="Start Time *" error={errors.startTime}>
-                <input
-                  type="time"
-                  value={form.startTime}
-                  onChange={(e) => set("startTime", e.target.value)}
-                  style={inputStyle(!!errors.startTime)}
-                />
-              </Field>
-              <Field label="End Time *" error={errors.endTime}>
-                <input
-                  type="time"
-                  value={form.endTime}
-                  onChange={(e) => set("endTime", e.target.value)}
-                  style={inputStyle(!!errors.endTime)}
-                />
-              </Field>
+              <div style={{ gridColumn: "span 2" }}>
+                <Field label="Date *" error={errors.date}>
+                  <input
+                    type="date"
+                    value={form.date}
+                    min={isEdit ? undefined : today}
+                    onChange={(e) => set("date", e.target.value)}
+                    style={inputStyle(!!errors.date)}
+                  />
+                </Field>
+              </div>
+
+              <div>
+                <Field label="Start Time *" error={errors.startTime}>
+                  <input
+                    type="time"
+                    value={form.startTime}
+                    onChange={(e) => set("startTime", e.target.value)}
+                    style={inputStyle(!!errors.startTime)}
+                  />
+                </Field>
+              </div>
+
+              <div>
+                <Field label="End Time *" error={errors.endTime}>
+                  <input
+                    type="time"
+                    value={form.endTime}
+                    onChange={(e) => set("endTime", e.target.value)}
+                    style={inputStyle(!!errors.endTime)}
+                  />
+                </Field>
+              </div>
             </div>
 
             {/* Status — edit mode only */}
