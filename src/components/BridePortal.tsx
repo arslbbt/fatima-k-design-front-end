@@ -395,7 +395,7 @@ export function BridePortal() {
                   <span>Dress Journey Stage</span>
                   <button
                     onClick={() => navigate("/bride/dress-journey")}
-                    className="text-[#D4A373] text-xs lowercase flex items-center hover:underline"
+                    className="text-[#D4A373] text-xs lowercase flex items-center hover:underline cursor-pointer"
                   >
                     View all <ChevronRight size={12} />
                   </button>
@@ -448,7 +448,7 @@ export function BridePortal() {
                 </div>
                 <button
                   onClick={() => navigate("/bride/payments")}
-                  className="w-full py-2.5 mt-4 rounded-md bg-[#333333] text-white text-sm font-medium hover:bg-[#222222] transition-colors"
+                  className="w-full py-2.5 mt-4 rounded-md bg-[#333333] text-white text-sm font-medium hover:bg-[#222222] transition-colors cursor-pointer"
                 >
                   View Payments
                 </button>
@@ -465,7 +465,7 @@ export function BridePortal() {
                 </h2>
                 <button
                   onClick={() => navigate("/bride/appointments")}
-                  className="text-sm text-[#A67C52] hover:underline mb-1"
+                  className="text-sm text-[#A67C52] hover:underline mb-1 cursor-pointer"
                 >
                   View all
                 </button>
@@ -544,7 +544,7 @@ export function BridePortal() {
                 </h2>
                 <button
                   onClick={() => navigate("/bride/fitting-photos")}
-                  className="text-sm text-[#A67C52] hover:underline mb-1"
+                  className="text-sm text-[#A67C52] hover:underline mb-1 cursor-pointer"
                 >
                   View all
                 </button>
@@ -601,14 +601,14 @@ export function BridePortal() {
               <div className="flex items-center gap-3 mb-1">
                 <button
                   onClick={() => navigate("/bride/inspiration")}
-                  className="text-sm text-[#A67C52] hover:underline"
+                  className="text-sm text-[#A67C52] hover:underline cursor-pointer"
                 >
                   View all
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="flex items-center gap-1.5 text-sm text-[#A67C52] hover:underline disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-sm text-[#A67C52] hover:underline disabled:opacity-50 cursor-pointer"
                 >
                   {uploading ? (
                     <Loader2 size={14} className="animate-spin" />

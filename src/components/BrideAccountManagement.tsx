@@ -625,7 +625,7 @@ export function BrideAccountManagement() {
                     </form>
                   </div>
 
-                  <div
+                  {/* <div
                     style={{
                       background: "#FFFFFF",
                       border: "1px solid #F0C0B8",
@@ -668,7 +668,7 @@ export function BrideAccountManagement() {
                     >
                       Request account deletion
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               )}
             </>
