@@ -866,3 +866,100 @@
     margin-left: auto;
   }
 }
+
+/* ── Responsive Documents Page ── */
+.documents-layout {
+  display: flex;
+}
+
+.documents-list {
+  width: 480px;
+  border-right: 1px solid #e8e0d5;
+}
+
+.documents-detail {
+  flex: 1;
+}
+
+/* Hide close button on desktop */
+.documents-close-btn {
+  display: none !important;
+}
+
+/* Hide empty state on mobile */
+@media (max-width: 768px) {
+  .documents-empty-state {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .documents-layout {
+    flex-direction: column;
+    position: relative;
+  }
+
+  .documents-list {
+    width: 100% !important;
+    border-right: none;
+    border-bottom: none;
+    max-height: none;
+    min-height: 100%;
+  }
+
+  /* Make detail panel a slide-in drawer on mobile */
+  .documents-detail {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: #fff;
+    padding: 20px 16px !important;
+    overflow-y: auto;
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* Show close button on mobile */
+  .documents-close-btn {
+    display: flex !important;
+  }
+
+  .documents-detail-header {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  .documents-detail-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Hide text labels on mobile, show only icons */
+  .documents-detail-actions .action-text {
+    display: none;
+  }
+
+  .documents-detail-actions a,
+  .documents-detail-actions button {
+    flex: 1;
+    justify-content: center !important;
+    padding: 9px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .documents-list {
+    max-height: none;
+  }
+}

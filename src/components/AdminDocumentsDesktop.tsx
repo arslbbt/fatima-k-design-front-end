@@ -429,9 +429,13 @@ export function AdminDocumentsDesktop() {
           position: "relative",
         }}
       >
-        <div style={{ flex: 1, overflow: "hidden", display: "flex" }}>
+        <div
+          className="documents-layout"
+          style={{ flex: 1, overflow: "hidden", display: "flex" }}
+        >
           {/* Left panel */}
           <div
+            className="documents-list"
             style={{
               width: 480,
               borderRight: "1px solid #E8E0D5",
@@ -680,8 +684,33 @@ export function AdminDocumentsDesktop() {
 
           {/* Detail panel */}
           {doc ? (
-            <div style={{ flex: 1, overflowY: "auto", padding: "26px 28px" }}>
+            <div
+              className="documents-detail"
+              style={{ flex: 1, overflowY: "auto", padding: "26px 28px" }}
+            >
+              {/* Close button for mobile */}
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="documents-close-btn"
+                style={{
+                  display: "none",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 12px",
+                  background: "#fff",
+                  border: "1px solid #E8E0D5",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: "#666",
+                  cursor: "pointer",
+                  marginBottom: 16,
+                }}
+              >
+                <X size={14} /> Close Preview
+              </button>
+
               <div
+                className="documents-detail-header"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -689,7 +718,7 @@ export function AdminDocumentsDesktop() {
                   marginBottom: 22,
                 }}
               >
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h2
                     style={{
                       fontFamily: "'Cormorant Garamond', serif",
@@ -702,7 +731,12 @@ export function AdminDocumentsDesktop() {
                     {doc.title}
                   </h2>
                   <div
-                    style={{ display: "flex", gap: 8, alignItems: "center" }}
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
                   >
                     <span
                       style={{
@@ -725,7 +759,10 @@ export function AdminDocumentsDesktop() {
                     </span>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div
+                  className="documents-detail-actions"
+                  style={{ display: "flex", gap: 8, flexShrink: 0 }}
+                >
                   <a
                     href={doc.fileUrl}
                     target="_blank"
@@ -744,7 +781,7 @@ export function AdminDocumentsDesktop() {
                       textDecoration: "none",
                     }}
                   >
-                    <Eye size={13} /> View
+                    <Eye size={13} /> <span className="action-text">View</span>
                   </a>
                   <button
                     onClick={async () => {
@@ -768,7 +805,8 @@ export function AdminDocumentsDesktop() {
                       cursor: "pointer",
                     }}
                   >
-                    <Download size={13} /> Download
+                    <Download size={13} />{" "}
+                    <span className="action-text">Download</span>
                   </button>
                   <button
                     onClick={() => setConfirmDeleteId(doc.id)}
@@ -785,7 +823,8 @@ export function AdminDocumentsDesktop() {
                       cursor: "pointer",
                     }}
                   >
-                    <Trash2 size={13} /> Delete
+                    <Trash2 size={13} />{" "}
+                    <span className="action-text">Delete</span>
                   </button>
                 </div>
               </div>
@@ -904,6 +943,7 @@ export function AdminDocumentsDesktop() {
             </div>
           ) : (
             <div
+              className="documents-empty-state"
               style={{
                 flex: 1,
                 display: "flex",
