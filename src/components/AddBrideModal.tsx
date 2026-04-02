@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { adminApi, ApiError, type RegisterBridePayload } from "@/lib/api";
 import { invalidateQueries } from "@/lib/queryKeys";
+import { toast } from "@/hooks/use-toast";
 
 interface AddBrideModalProps {
   open: boolean;
@@ -25,6 +26,7 @@ interface FormErrors {
   email?: string;
   password?: string;
   weddingDate?: string;
+  phone?: string;
 }
 
 const EMPTY: FormState = {
@@ -40,17 +42,29 @@ const EMPTY: FormState = {
 
 function validate(form: FormState): FormErrors {
   const errors: FormErrors = {};
-  if (!form.name.trim()) errors.name = "Full name is required";
+
+  // Name validation
+  if (!form.name.trim()) {
+    errors.name = "Full name is required";
+  } else if (form.name.trim().length < 3) {
+    errors.name = "Name must be at least 3 characters";
+  }
+
+  // Email validation
   if (!form.email.trim()) {
     errors.email = "Email is required";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
     errors.email = "Enter a valid email address";
   }
+
+  // Password validation
   if (!form.password) {
     errors.password = "Password is required";
   } else if (form.password.length < 6) {
     errors.password = "Password must be at least 6 characters";
   }
+
+  // Wedding date validation
   if (!form.weddingDate) {
     errors.weddingDate = "Wedding date is required";
   } else {
@@ -60,6 +74,20 @@ function validate(form: FormState): FormErrors {
       errors.weddingDate = "Wedding date must be today or in the future";
     }
   }
+
+  // Phone validation (mandatory)
+  if (!form.phone.trim()) {
+    errors.phone = "Phone number is required";
+  } else {
+    // Remove all non-digit characters for validation
+    const digitsOnly = form.phone.replace(/\D/g, "");
+    if (digitsOnly.length < 8) {
+      errors.phone = "Phone number must be at least 8 digits";
+    } else if (digitsOnly.length > 15) {
+      errors.phone = "Phone number cannot exceed 15 digits";
+    }
+  }
+
   return errors;
 }
 
@@ -95,6 +123,10 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
       adminApi.registerBride(payload),
     onSuccess: () => {
       invalidateQueries.afterBrideCreate(queryClient);
+      toast({
+        title: "Bride added successfully",
+        description: `${form.name} can now log in to their portal.`,
+      });
       onClose();
     },
     onError: (err) => {
@@ -127,7 +159,7 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
       email: form.email.trim(),
       password: form.password,
       weddingDate: form.weddingDate,
-      ...(form.phone.trim() && { phone: form.phone.trim() }),
+      phone: form.phone.trim(),
       ...(form.partnerName.trim() && { partnerName: form.partnerName.trim() }),
       ...(form.venueName.trim() && { venueName: form.venueName.trim() }),
       ...(form.notes.trim() && { notes: form.notes.trim() }),
@@ -327,12 +359,13 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
                   style={inputStyle(!!errors.weddingDate)}
                 />
               </Field>
-              <Field label="Phone Number">
+              <Field label="Phone Number *" error={errors.phone}>
                 <input
+                  type="number"
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
                   placeholder="+971 50 123 4567"
-                  style={inputStyle(false)}
+                  style={inputStyle(!!errors.phone)}
                 />
               </Field>
             </div>
