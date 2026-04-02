@@ -828,7 +828,8 @@ export function AdminTeam() {
                 cursor: "pointer",
               }}
             >
-              <Plus size={15} /> Add <span className="hidden sm:block">Admin</span>
+              <Plus size={15} /> Add{" "}
+              <span className="hidden sm:block">Admin</span>
             </button>
           </div>
 
@@ -942,11 +943,12 @@ export function AdminTeam() {
                 return (
                   <div
                     key={u.id}
+                    className="user-row"
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 14,
-                      padding: "10px 22px",
+                      padding: "14px 20px",
                       borderBottom:
                         i < users.length - 1 ? "1px solid #F0EBE4" : "none",
                     }}
@@ -973,11 +975,13 @@ export function AdminTeam() {
 
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div
+                        className="user-info-header"
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 7,
                           marginBottom: 2,
+                          flexWrap: "wrap",
                         }}
                       >
                         <span
@@ -1020,6 +1024,7 @@ export function AdminTeam() {
                     </div>
 
                     <div
+                      className="user-meta"
                       style={{
                         fontSize: 11,
                         color: "#AAA",
@@ -1044,67 +1049,102 @@ export function AdminTeam() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                      {isAdmin ? (
-                        <>
-                          <button
-                            onClick={() => openEdit(u)}
-                            title="Edit"
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 8,
-                              border: "1px solid #E8E0D5",
-                              background: "#fff",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Pencil size={13} color="#666" />
-                          </button>
-                          <button
-                            onClick={() => setDeleting(u)}
-                            title="Remove"
-                            disabled={isMe}
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 8,
-                              border: "1px solid #E8E0D5",
-                              background: "#fff",
-                              cursor: isMe ? "not-allowed" : "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              opacity: isMe ? 0.35 : 1,
-                            }}
-                          >
-                            <Trash2 size={13} color="#C04030" />
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() => setResetting(u)}
-                          title="Reset Password"
+                    <div
+                      className="user-actions"
+                      style={{ display: "flex", gap: 6, flexShrink: 0 }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-end",
+                          gap: 6,
+                        }}
+                      >
+                        <div style={{ display: "flex", gap: 6 }}>
+                          {isAdmin ? (
+                            <>
+                              <button
+                                onClick={() => openEdit(u)}
+                                title="Edit"
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: 8,
+                                  border: "1px solid #E8E0D5",
+                                  background: "#fff",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Pencil size={13} color="#666" />
+                              </button>
+                              <button
+                                onClick={() => setDeleting(u)}
+                                title="Remove"
+                                disabled={isMe}
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: 8,
+                                  border: "1px solid #E8E0D5",
+                                  background: "#fff",
+                                  cursor: isMe ? "not-allowed" : "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  opacity: isMe ? 0.35 : 1,
+                                }}
+                              >
+                                <Trash2 size={13} color="#C04030" />
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => setResetting(u)}
+                              title="Reset Password"
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                border: "1px solid #E8E0D5",
+                                background: "#fff",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <KeyRound size={13} color="#A67C52" />
+                            </button>
+                          )}
+                        </div>
+                        <div
+                          className="user-meta-mobile"
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 5,
-                            padding: "6px 12px",
-                            borderRadius: 8,
-                            border: "1px solid #E8E0D5",
-                            background: "#fff",
-                            cursor: "pointer",
-                            fontSize: 11,
-                            color: "#666",
-                            fontWeight: 500,
+                            fontSize: 10,
+                            color: "#AAA",
+                            whiteSpace: "nowrap",
+                            textAlign: "right",
                           }}
                         >
-                          <KeyRound size={12} color="#A67C52" /> Reset Password
-                        </button>
-                      )}
+                          {stage && !isAdmin && (
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: "#A67C52",
+                                fontWeight: 600,
+                                marginBottom: 2,
+                              }}
+                            >
+                              {BRIDE_STAGE_LABELS[stage]}
+                            </div>
+                          )}
+                          <div>Since {memberSince}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );

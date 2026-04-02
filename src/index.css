@@ -827,3 +827,42 @@
     font-size: 9px !important;
   }
 }
+
+/* ── Responsive user management rows ── */
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Hide mobile meta on desktop */
+.user-meta-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .user-row {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 16px !important;
+  }
+
+  .user-info-header {
+    width: 100%;
+  }
+
+  /* Hide desktop meta on mobile */
+  .user-meta {
+    display: none !important;
+  }
+
+  /* Show mobile meta on mobile */
+  .user-meta-mobile {
+    display: block;
+  }
+
+  .user-actions {
+    order: 2;
+    margin-left: auto;
+  }
+}
