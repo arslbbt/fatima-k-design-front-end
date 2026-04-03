@@ -77,14 +77,15 @@ function truncate(str: string | null | undefined, max: number) {
 
 // ── Journey card ──────────────────────────────────────────────────────────────
 
-type JourneyEvent = {
-  type: "completed" | "in-progress" | "coming-soon";
-  title: string;
+type StageProgress = {
+  key: string;
+  label: string;
+  status: "done" | "current" | "upcoming";
 };
 
-function JourneyCard({ events }: { events: JourneyEvent[] }) {
-  // If no events, show Consultation as the current stage
-  if (events.length === 0) {
+function JourneyCard({ stages }: { stages: StageProgress[] }) {
+  // If no stages, show default empty state
+  if (stages.length === 0) {
     return (
       <div className="relative mt-4 space-y-4">
         <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-[#F5EFE9]" />
@@ -111,69 +112,74 @@ function JourneyCard({ events }: { events: JourneyEvent[] }) {
     );
   }
 
-  // Show max 5 events: last 2 completed + current + next 2 upcoming
-  const completed = events.filter((e) => e.type === "completed");
-  const current = events.find((e) => e.type === "in-progress");
-  const upcoming = events.filter((e) => e.type === "coming-soon");
+  // Show max 5 stages: last 2 done + current + next 2 upcoming
+  const done = stages.filter((s) => s.status === "done");
+  const current = stages.find((s) => s.status === "current");
+  const upcoming = stages.filter((s) => s.status === "upcoming");
 
-  const shown: (JourneyEvent & { _key: string })[] = [];
+  const shown: StageProgress[] = [];
 
   // up to 2 most recent completed
-  completed
-    .slice(-2)
-    .forEach((e, i) => shown.push({ ...e, _key: `done-${i}` }));
+  done.slice(-2).forEach((s) => shown.push(s));
   // current
-  if (current) shown.push({ ...current, _key: "current" });
+  if (current) shown.push(current);
   // up to 2 upcoming
-  upcoming
-    .slice(0, 2)
-    .forEach((e, i) => shown.push({ ...e, _key: `soon-${i}` }));
+  upcoming.slice(0, 2).forEach((s) => shown.push(s));
 
-  // pad to 5 if fewer events exist
+  // pad to 5 if fewer stages exist
   while (shown.length < 5) {
     shown.push({
-      type: "coming-soon",
-      title: "—",
-      _key: `pad-${shown.length}`,
+      key: `pad-${shown.length}`,
+      label: "—",
+      status: "upcoming",
     });
   }
 
   return (
     <div className="relative mt-4 space-y-4">
       <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-[#F5EFE9]" />
-      {shown.slice(0, 5).map((e) => {
-        if (e.type === "completed") {
+      {shown.slice(0, 5).map((stage, idx) => {
+        if (stage.status === "done") {
           return (
-            <div key={e._key} className="flex items-center gap-3 relative">
+            <div
+              key={`${stage.key}-${idx}`}
+              className="flex items-center gap-3 relative"
+            >
               <CheckCircle2
                 size={16}
                 className="text-[#D4A373] bg-white rounded-full z-10 shrink-0"
               />
               <span className="text-sm text-[#888888] line-through">
-                {e.title}
+                {stage.label}
               </span>
             </div>
           );
         }
-        if (e.type === "in-progress") {
+        if (stage.status === "current") {
           return (
-            <div key={e._key} className="flex items-center gap-3 relative">
+            <div
+              key={`${stage.key}-${idx}`}
+              className="flex items-center gap-3 relative"
+            >
               <div className="w-4 h-4 rounded-full border-2 border-[#D4A373] bg-white flex items-center justify-center z-10 shrink-0">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#D4A373]" />
               </div>
               <span className="text-sm font-medium text-[#333333]">
-                {e.title}
+                {stage.label}
               </span>
             </div>
           );
         }
         return (
-          <div key={e._key} className="flex items-center gap-3 relative">
+          <div
+            key={`${stage.key}-${idx}`}
+            className="flex items-center gap-3 relative"
+          >
             <Circle
               size={16}
               className="text-[#E8E0D5] bg-white rounded-full z-10 shrink-0"
             />
-            <span className="text-sm text-[#AAAAAA]">{e.title}</span>
+            <span className="text-sm text-[#AAAAAA]">{stage.label}</span>
           </div>
         );
       })}
@@ -402,7 +408,7 @@ export function BridePortal() {
                 </div>
 
                 {journey ? (
-                  <JourneyCard events={journey.events} />
+                  <JourneyCard stages={journey.stageProgress} />
                 ) : (
                   <div className="flex justify-center py-6">
                     <Loader2

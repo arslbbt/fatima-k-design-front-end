@@ -374,39 +374,54 @@ export function BridePortalFittingPhotos() {
                       boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                       cursor: "pointer",
                       overflow: "hidden",
+                      height: 140,
                     }}
                   >
-                    <CardContent style={{ padding: 0, display: "flex" }}>
+                    <CardContent
+                      style={{
+                        padding: 0,
+                        display: "flex",
+                        height: "100%",
+                      }}
+                    >
                       {/* Photo strip preview */}
                       <div
-                        style={{ display: "flex", width: 200, flexShrink: 0 }}
+                        style={{
+                          display: "flex",
+                          width: 200,
+                          height: "100%",
+                          flexShrink: 0,
+                          overflow: "hidden",
+                        }}
                       >
-                        {f.photos.slice(0, 3).map((p, k) => (
-                          <div
-                            key={k}
-                            style={{
-                              flex: 1,
-                              minHeight: 120,
-                              overflow: "hidden",
-                            }}
-                          >
-                            <img
-                              src={p.imageUrl}
-                              alt=""
+                        {f.photos.length > 0 ? (
+                          f.photos.slice(0, 3).map((p, k) => (
+                            <div
+                              key={k}
                               style={{
-                                width: "100%",
+                                flex: 1,
                                 height: "100%",
-                                objectFit: "cover",
+                                overflow: "hidden",
                               }}
-                            />
-                          </div>
-                        ))}
-                        {f.photos.length === 0 && (
+                            >
+                              <img
+                                src={p.imageUrl}
+                                alt=""
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  display: "block",
+                                }}
+                              />
+                            </div>
+                          ))
+                        ) : (
                           <div
                             style={{
-                              flex: 1,
+                              width: "100%",
                               background: "#F5EFE9",
-                              minHeight: 120,
+                              height: "100%",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -424,6 +439,7 @@ export function BridePortalFittingPhotos() {
                           flexDirection: "column",
                           justifyContent: "center",
                           borderLeft: "1px solid #F0EBE4",
+                          height: "100%",
                         }}
                       >
                         <div

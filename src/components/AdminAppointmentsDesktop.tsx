@@ -636,16 +636,16 @@ export function AdminAppointmentsDesktop() {
                                 style={{
                                   display: "flex",
                                   alignItems: "center",
-                                  gap: 6,
-                                  padding: "6px 10px",
+                                  gap: 4,
+                                  padding: "4px 8px",
                                   background: "#FFF5F5",
                                   border: "1px solid #F5C6C6",
-                                  borderRadius: 6,
-                                  fontSize: 10,
+                                  borderRadius: 5,
+                                  fontSize: 9,
                                   color: "#C0392B",
                                 }}
                               >
-                                <span style={{ fontSize: 12, flexShrink: 0 }}>
+                                <span style={{ fontSize: 11, flexShrink: 0 }}>
                                   ⚠️
                                 </span>
                                 <span>
