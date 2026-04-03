@@ -603,7 +603,7 @@ export function BridePortal() {
                   onClick={() => navigate("/bride/inspiration")}
                   className="text-sm text-[#A67C52] hover:underline cursor-pointer"
                 >
-                  View all
+                  View <span className="hidden sm:inline">all</span>
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -615,7 +615,7 @@ export function BridePortal() {
                   ) : (
                     <Upload size={14} />
                   )}
-                  Upload New
+                  <span className="hidden sm:inline">Upload New</span>
                 </button>
               </div>
             </div>

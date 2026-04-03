@@ -58,10 +58,13 @@ export function BridePortalPayments() {
             </p>
           </div>
 
-          <div style={{ display: "flex", gap: 16, marginBottom: 28 }}>
+          <div
+            className="payment-stats-grid"
+            style={{ display: "flex", gap: 16, marginBottom: 28 }}
+          >
             {[
               {
-                label: "Total Gown Value",
+                label: "Total Value",
                 value: `$${total.toLocaleString()}`,
                 sub: "Custom couture",
                 accent: false,
@@ -83,6 +86,7 @@ export function BridePortalPayments() {
             ].map((s, i) => (
               <Card
                 key={i}
+                className="payment-stat-card"
                 style={{
                   flex: 1,
                   background: s.accent
@@ -94,6 +98,7 @@ export function BridePortalPayments() {
               >
                 <CardContent style={{ padding: "20px 22px" }}>
                   <div
+                    className="stat-value"
                     style={{
                       fontFamily: "'Cormorant Garamond', serif",
                       fontSize: 28,
@@ -105,6 +110,7 @@ export function BridePortalPayments() {
                     {s.value}
                   </div>
                   <div
+                    className="stat-label"
                     style={{
                       fontSize: 12,
                       fontWeight: 600,
@@ -114,7 +120,12 @@ export function BridePortalPayments() {
                   >
                     {s.label}
                   </div>
-                  <div style={{ fontSize: 11, color: "#888" }}>{s.sub}</div>
+                  <div
+                    className="stat-sub"
+                    style={{ fontSize: 11, color: "#888" }}
+                  >
+                    {s.sub}
+                  </div>
                 </CardContent>
               </Card>
             ))}

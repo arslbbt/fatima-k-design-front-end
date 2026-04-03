@@ -1057,3 +1057,90 @@
     gap: 8px !important;
   }
 }
+
+/* ── Responsive Fitting Photos Stats ── */
+
+@media (max-width: 640px) {
+  .fitting-stats-grid {
+    gap: 10px !important;
+  }
+
+  .fitting-stat-card .stat-value {
+    font-size: 22px !important;
+  }
+
+  .fitting-stat-card .stat-label {
+    font-size: 10px !important;
+    margin-top: 2px !important;
+  }
+
+  .fitting-stat-card > div {
+    padding: 14px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .fitting-stats-grid {
+    gap: 8px !important;
+  }
+
+  .fitting-stat-card .stat-value {
+    font-size: 20px !important;
+  }
+
+  .fitting-stat-card .stat-label {
+    font-size: 9px !important;
+  }
+
+  .fitting-stat-card > div {
+    padding: 12px 14px !important;
+  }
+}
+
+/* ── Responsive Payment Stats ── */
+
+@media (max-width: 640px) {
+  .payment-stats-grid {
+    gap: 10px !important;
+  }
+
+  .payment-stat-card .stat-value {
+    font-size: 22px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .payment-stat-card .stat-label {
+    font-size: 10px !important;
+    margin-bottom: 1px !important;
+  }
+
+  .payment-stat-card .stat-sub {
+    font-size: 9px !important;
+  }
+
+  .payment-stat-card > div {
+    padding: 14px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-stats-grid {
+    gap: 8px !important;
+  }
+
+  .payment-stat-card .stat-value {
+    font-size: 20px !important;
+  }
+
+  .payment-stat-card .stat-label {
+    font-size: 9px !important;
+  }
+
+  .payment-stat-card .stat-sub {
+    font-size: 8px !important;
+  }
+
+  .payment-stat-card > div {
+    padding: 12px 14px !important;
+  }
+}

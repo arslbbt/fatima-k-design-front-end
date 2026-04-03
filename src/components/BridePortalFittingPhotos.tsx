@@ -209,7 +209,10 @@ export function BridePortalFittingPhotos() {
             </h1>
             {!activeFitting && (
               <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
-                Photos from your fittings, shared by Fatima after each session
+                Photos from your fittings
+                <span className="hidden sm:inline">
+                  , shared by Fatima after each session
+                </span>
               </p>
             )}
             {activeFitting && (
@@ -296,7 +299,10 @@ export function BridePortalFittingPhotos() {
           {!isLoading && !activeFitting && (
             <>
               {/* Stats */}
-              <div style={{ display: "flex", gap: 16, marginBottom: 28 }}>
+              <div
+                className="fitting-stats-grid"
+                style={{ display: "flex", gap: 16, marginBottom: 28 }}
+              >
                 {[
                   { label: "Total Photos", value: String(totalPhotos) },
                   {
@@ -307,6 +313,7 @@ export function BridePortalFittingPhotos() {
                 ].map((stat, i) => (
                   <Card
                     key={i}
+                    className="fitting-stat-card"
                     style={{
                       flex: 1,
                       background: "#FFFFFF",
@@ -316,6 +323,7 @@ export function BridePortalFittingPhotos() {
                   >
                     <CardContent style={{ padding: "16px 20px" }}>
                       <div
+                        className="stat-value"
                         style={{
                           fontFamily: "'Cormorant Garamond', serif",
                           fontSize: 26,
@@ -326,6 +334,7 @@ export function BridePortalFittingPhotos() {
                         {stat.value}
                       </div>
                       <div
+                        className="stat-label"
                         style={{ fontSize: 11, color: "#888", marginTop: 2 }}
                       >
                         {stat.label}
@@ -492,7 +501,8 @@ export function BridePortalFittingPhotos() {
                             {f.photos.length !== 1 ? "s" : ""}
                           </Badge>
                           <span style={{ fontSize: 12, color: "#D4A373" }}>
-                            View album →
+                            View{" "}
+                            <span className="hidden sm:inline">album →</span>
                           </span>
                         </div>
                       </div>
