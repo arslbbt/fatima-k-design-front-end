@@ -775,83 +775,95 @@ export function AdminPaymentsDesktop() {
                           padding: "24px",
                         }}
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 20,
-                            gap: 12,
-                          }}
-                        >
+                        {/* Only show reminder section if there are pending payments */}
+                        {bride.status !== "paid" && (
                           <div
                             style={{
                               display: "flex",
+                              justifyContent: "space-between",
                               alignItems: "center",
-                              gap: 8,
-                              color:
-                                bride.status === "overdue"
-                                  ? "#C04040"
-                                  : "#C07840",
-                              background:
-                                bride.status === "overdue"
-                                  ? "#FDE8E8"
-                                  : "#FFF9F4",
-                              padding: "6px 10px",
-                              borderRadius: 6,
-                              fontSize: 11,
-                              fontWeight: 500,
-                              border: `1px solid ${bride.status === "overdue" ? "#F5C0C0" : "#F5D5B0"}`,
-
-                              width: "fit-content",
+                              marginBottom: 20,
+                              gap: 12,
                             }}
                           >
-                            <AlertCircle size={12} style={{ flexShrink: 0 }} />
-                            <span
+                            <div
                               style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                color:
+                                  bride.status === "overdue"
+                                    ? "#C04040"
+                                    : "#C07840",
+                                background:
+                                  bride.status === "overdue"
+                                    ? "#FDE8E8"
+                                    : "#FFF9F4",
+                                padding: "6px 10px",
+                                borderRadius: 6,
+                                fontSize: 11,
+                                fontWeight: 500,
+                                border: `1px solid ${bride.status === "overdue" ? "#F5C0C0" : "#F5D5B0"}`,
+                                width: "fit-content",
                               }}
                             >
-                              {bride.status === "overdue"
-                                ? "Overdue"
-                                : "Payment Due"}
-                              <span className="bride-name-desktop">
-                                {" "}
-                                — {bride.name}
+                              <AlertCircle
+                                size={12}
+                                style={{ flexShrink: 0 }}
+                              />
+                              <span
+                                style={{
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {bride.status === "overdue"
+                                  ? "Overdue"
+                                  : "Payment Due"}
+                                <span className="bride-name-desktop">
+                                  {" "}
+                                  — {bride.name}
+                                </span>
                               </span>
-                            </span>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                remindMutation.mutate(bride.id);
+                              }}
+                              disabled={remindMutation.isPending}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "7px 14px",
+                                background: remindMutation.isPending
+                                  ? "#888"
+                                  : "#1F1F1F",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 6,
+                                fontSize: 11,
+                                fontWeight: 500,
+                                cursor: remindMutation.isPending
+                                  ? "not-allowed"
+                                  : "pointer",
+                                whiteSpace: "nowrap",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {remindMutation.isPending ? (
+                                <>
+                                  <Loader2 size={12} className="animate-spin" />{" "}
+                                  Sending…
+                                </>
+                              ) : (
+                                "Send Reminder"
+                              )}
+                            </button>
                           </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const pendingPmt = bride.payments?.find(
-                                (p: any) => p.status === "PENDING",
-                              );
-                              if (pendingPmt)
-                                remindMutation.mutate(pendingPmt.id);
-                              else alert("No pending payments to remind for.");
-                            }}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              padding: "7px 14px",
-                              background: "#1F1F1F",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 6,
-                              fontSize: 11,
-                              fontWeight: 500,
-                              cursor: "pointer",
-                              whiteSpace: "nowrap",
-                              flexShrink: 0,
-                            }}
-                          >
-                            Send Reminder
-                          </button>
-                        </div>
+                        )}
 
                         {/* Payment cards — min 4 visible, horizontally scrollable */}
                         <div

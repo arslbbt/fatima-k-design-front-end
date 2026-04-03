@@ -378,8 +378,8 @@ export const paymentsApi = {
       body: JSON.stringify(data),
     }),
 
-  sendReminder: (id: string) =>
-    request<{ reminderSentAt: string }>(`/payments/${id}/remind`, {
+  sendReminder: (brideId: string) =>
+    request<{ message: string }>(`/payments/bride/${brideId}/remind`, {
       method: "POST",
     }),
 
