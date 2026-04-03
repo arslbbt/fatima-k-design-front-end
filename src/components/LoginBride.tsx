@@ -52,13 +52,14 @@ export function LoginBride() {
       <div
         style={{
           padding: "20px 32px",
+          marginLeft:"20px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
         }}
       >
         <img
-          src="/fatimak-logo.jpg"
+          src="/logo-with-bg.png"
           alt="Fatima K"
           style={{
             objectFit: "contain",
