@@ -32,7 +32,7 @@ export const queryKeys = {
       limit?: number;
     }) => ["brides", "list", filters] as const,
     detail: (id: string) => ["brides", "detail", id] as const,
-    names: () => ["brides", "names"] as const,
+    names: (search?: string) => ["brides", "names", { search }] as const,
     me: () => ["brides", "me"] as const,
     journey: () => ["brides", "journey"] as const,
   },

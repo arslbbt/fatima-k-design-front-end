@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FileText,
@@ -19,6 +19,7 @@ import { documentsApi, bridesApi, ApiError, type Document } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/hooks/use-toast";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 // ── Upload Modal ──────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ function UploadModal({
 }: {
   open: boolean;
   onClose: () => void;
-  brides: { id: string; name: string }[];
+  brides: { id: string; name: string; email: string }[];
 }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,12 +39,24 @@ function UploadModal({
   const [brideId, setBrideId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [brideSearch, setBrideSearch] = useState("");
+
+  const { data: searchedBrides = [], isLoading: bridesLoading } = useQuery({
+    queryKey: queryKeys.brides.names(brideSearch),
+    queryFn: () => bridesApi.names({ search: brideSearch || undefined }),
+    enabled: open,
+  });
+
+  const handleBrideSearch = useCallback((search: string) => {
+    setBrideSearch(search);
+  }, []);
 
   function reset() {
     setFile(null);
     setTitle("");
     setBrideId("");
     setError(null);
+    setBrideSearch("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -295,19 +308,14 @@ function UploadModal({
 
             <div>
               <label style={lbl}>Assign to Bride *</label>
-              <select
+              <SearchableSelect
                 value={brideId}
-                onChange={(e) => setBrideId(e.target.value)}
-                style={{ ...inp, maxHeight: "200px" }}
-                size={1}
-              >
-                <option value="">Select a bride…</option>
-                {brides.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setBrideId}
+                options={searchedBrides}
+                onSearch={handleBrideSearch}
+                placeholder="Select a bride..."
+                isLoading={bridesLoading}
+              />
             </div>
 
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>

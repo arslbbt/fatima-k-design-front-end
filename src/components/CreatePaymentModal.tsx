@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, AlertCircle, CreditCard } from "lucide-react";
 import { paymentsApi, bridesApi, ApiError, type PaymentType } from "@/lib/api";
 import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 import { toast } from "@/hooks/use-toast";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface CreatePaymentModalProps {
   open: boolean;
@@ -60,6 +61,7 @@ export function CreatePaymentModal({
   const [notes, setNotes] = useState("");
   const [markAsPaid, setMarkAsPaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [brideSearch, setBrideSearch] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -80,6 +82,7 @@ export function CreatePaymentModal({
         setMarkAsPaid(false);
       }
       setError(null);
+      setBrideSearch("");
     }
   }, [open, editPayment]);
 
@@ -100,11 +103,15 @@ export function CreatePaymentModal({
     return () => window.removeEventListener("keydown", handler);
   }, [open, onOpenChange]);
 
-  const { data: brides = [] } = useQuery({
-    queryKey: queryKeys.brides.names(),
-    queryFn: () => bridesApi.names(),
+  const { data: brides = [], isLoading: bridesLoading } = useQuery({
+    queryKey: queryKeys.brides.names(brideSearch),
+    queryFn: () => bridesApi.names({ search: brideSearch || undefined }),
     enabled: open,
   });
+
+  const handleBrideSearch = useCallback((search: string) => {
+    setBrideSearch(search);
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -293,18 +300,14 @@ export function CreatePaymentModal({
             {!isEdit && (
               <div>
                 <label style={lbl}>Client *</label>
-                <select
+                <SearchableSelect
                   value={brideId}
-                  onChange={(e) => setBrideId(e.target.value)}
-                  style={inp}
-                >
-                  <option value="">Select a bride</option>
-                  {brides.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setBrideId}
+                  options={brides}
+                  onSearch={handleBrideSearch}
+                  placeholder="Select a bride..."
+                  isLoading={bridesLoading}
+                />
               </div>
             )}
 

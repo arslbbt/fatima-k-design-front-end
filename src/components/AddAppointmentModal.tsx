@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, Pointer } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import {
   APPOINTMENT_TITLE_LABELS,
 } from "@/lib/api";
 import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface AddAppointmentModalProps {
   open: boolean;
@@ -105,6 +106,7 @@ export function AddAppointmentModal({
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
+  const [brideSearch, setBrideSearch] = useState("");
 
   // Pre-fill form when editing
   useEffect(() => {
@@ -126,6 +128,7 @@ export function AddAppointmentModal({
     }
     setErrors({});
     setApiError(null);
+    setBrideSearch("");
   }, [open, editAppointment]);
 
   useEffect(() => {
@@ -138,11 +141,15 @@ export function AddAppointmentModal({
   }, [open, onClose]);
 
   // Load brides for selector (create mode only)
-  const { data: brides = [] } = useQuery({
-    queryKey: queryKeys.brides.names(),
-    queryFn: () => bridesApi.names(),
+  const { data: brides = [], isLoading: bridesLoading } = useQuery({
+    queryKey: queryKeys.brides.names(brideSearch),
+    queryFn: () => bridesApi.names({ search: brideSearch || undefined }),
     enabled: open && !isEdit,
   });
+
+  const handleBrideSearch = useCallback((search: string) => {
+    setBrideSearch(search);
+  }, []);
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateAppointmentPayload) =>
@@ -346,18 +353,14 @@ export function AddAppointmentModal({
             {/* Bride selector — create mode only */}
             {!isEdit && (
               <Field label="Bride *" error={errors.brideId}>
-                <select
+                <SearchableSelect
                   value={form.brideId}
-                  onChange={(e) => set("brideId", e.target.value)}
-                  style={inputStyle(!!errors.brideId)}
-                >
-                  <option value="">Select a bride…</option>
-                  {brides.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => set("brideId", value)}
+                  options={brides}
+                  onSearch={handleBrideSearch}
+                  placeholder="Select a bride..."
+                  isLoading={bridesLoading}
+                />
               </Field>
             )}
 

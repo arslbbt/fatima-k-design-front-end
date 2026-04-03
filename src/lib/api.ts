@@ -179,8 +179,16 @@ export const bridesApi = {
       body: JSON.stringify(data),
     }),
 
-  // Lightweight — only id + name, no pagination. Use for dropdowns.
-  names: () => request<{ id: string; name: string }[]>("/brides/names"),
+  // Lightweight — only id + name + email, max 10 results. Use for searchable dropdowns.
+  names: (params?: { search?: string; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set("search", params.search);
+    if (params?.limit) qs.set("limit", String(params.limit));
+    const query = qs.toString();
+    return request<{ id: string; name: string; email: string }[]>(
+      `/brides/names${query ? `?${query}` : ""}`,
+    );
+  },
 
   journey: () =>
     request<{
