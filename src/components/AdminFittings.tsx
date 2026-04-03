@@ -869,18 +869,27 @@ export function AdminFittings() {
                       boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                       cursor: "pointer",
                       overflow: "hidden",
+                      height: 140,
                     }}
                   >
-                    <CardContent style={{ padding: 0, display: "flex" }}>
+                    <CardContent
+                      style={{ padding: 0, display: "flex", height: "100%" }}
+                    >
                       <div
-                        style={{ display: "flex", width: 180, flexShrink: 0 }}
+                        style={{
+                          display: "flex",
+                          width: 180,
+                          height: 140,
+                          flexShrink: 0,
+                          overflow: "hidden",
+                        }}
                       >
                         {f.photos.slice(0, 3).map((p, k) => (
                           <div
                             key={k}
                             style={{
                               flex: 1,
-                              minHeight: 100,
+                              height: 140,
                               overflow: "hidden",
                             }}
                           >
@@ -889,8 +898,9 @@ export function AdminFittings() {
                               alt=""
                               style={{
                                 width: "100%",
-                                height: "100%",
+                                height: 140,
                                 objectFit: "cover",
+                                display: "block",
                               }}
                             />
                           </div>
@@ -900,7 +910,7 @@ export function AdminFittings() {
                             style={{
                               flex: 1,
                               background: "#F5EFE9",
-                              minHeight: 100,
+                              height: 140,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -915,6 +925,10 @@ export function AdminFittings() {
                           flex: 1,
                           padding: "16px 20px",
                           borderLeft: "1px solid #F0EBE4",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          height: 140,
                         }}
                       >
                         <div
@@ -979,6 +993,7 @@ export function AdminFittings() {
                             color: "#A67C52",
                             border: "none",
                             fontSize: 10,
+                            width: "fit-content",
                           }}
                         >
                           {f.photos.length} photo
