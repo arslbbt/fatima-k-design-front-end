@@ -43,6 +43,7 @@ export function AdminFittings() {
   const [uploading, setUploading] = useState(false);
   const [newFittingNotes, setNewFittingNotes] = useState("");
   const [newFittingApptId, setNewFittingApptId] = useState("");
+  const [newFittingPhotos, setNewFittingPhotos] = useState<File[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [brideSearch, setBrideSearch] = useState("");
   const [bridePage, setBridePage] = useState(1);
@@ -87,19 +88,33 @@ export function AdminFittings() {
   const photos = activeFitting?.photos ?? [];
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      fittingsApi.create(
+    mutationFn: async () => {
+      // First create the fitting
+      const fitting = await fittingsApi.create(
         selectedBrideId!,
         newFittingApptId,
         newFittingNotes || undefined,
-      ),
+      );
+      // Then upload photos if any
+      if (newFittingPhotos.length > 0) {
+        await fittingsApi.uploadPhotos(fitting.id, newFittingPhotos);
+      }
+      return fitting;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["fittings-admin", selectedBrideId],
       });
-      toast({ title: "Fitting created" });
+      toast({
+        title: "Fitting created",
+        description:
+          newFittingPhotos.length > 0
+            ? `With ${newFittingPhotos.length} photo${newFittingPhotos.length !== 1 ? "s" : ""}`
+            : undefined,
+      });
       setNewFittingNotes("");
       setNewFittingApptId("");
+      setNewFittingPhotos([]);
       setShowCreateForm(false);
     },
     onError: (err) =>
@@ -617,9 +632,151 @@ export function AdminFittings() {
                       />
                     </div>
                   </div>
+
+                  {/* Photo upload section */}
+                  <div style={{ marginBottom: 12 }}>
+                    <label
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#555",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                        display: "block",
+                        marginBottom: 5,
+                      }}
+                    >
+                      Photos (optional)
+                    </label>
+                    <div
+                      onClick={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "image/jpeg,image/png";
+                        input.multiple = true;
+                        input.onchange = (e) => {
+                          const files = (e.target as HTMLInputElement).files;
+                          if (!files) return;
+                          const valid = Array.from(files).filter((f) => {
+                            if (!["image/jpeg", "image/png"].includes(f.type)) {
+                              toast({
+                                title: "Invalid type",
+                                description: `${f.name} must be JPEG or PNG.`,
+                              });
+                              return false;
+                            }
+                            if (f.size > 10 * 1024 * 1024) {
+                              toast({
+                                title: "Too large",
+                                description: `${f.name} exceeds 10MB.`,
+                              });
+                              return false;
+                            }
+                            return true;
+                          });
+                          setNewFittingPhotos((prev) => [
+                            ...prev,
+                            ...valid.slice(0, 10 - prev.length),
+                          ]);
+                        };
+                        input.click();
+                      }}
+                      style={{
+                        border: "1.5px dashed #D4A373",
+                        borderRadius: 8,
+                        padding: "16px",
+                        background: "rgba(212,163,115,0.04)",
+                        cursor: "pointer",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Upload
+                        size={20}
+                        color="#D4A373"
+                        style={{ margin: "0 auto 8px" }}
+                      />
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: "#333",
+                          marginBottom: 2,
+                        }}
+                      >
+                        Click to select photos
+                      </div>
+                      <div style={{ fontSize: 11, color: "#888" }}>
+                        JPEG or PNG · Max 10MB · Up to 10 photos
+                      </div>
+                    </div>
+                    {newFittingPhotos.length > 0 && (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 8,
+                        }}
+                      >
+                        {newFittingPhotos.map((file, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              position: "relative",
+                              width: 60,
+                              height: 60,
+                              borderRadius: 6,
+                              overflow: "hidden",
+                              border: "1px solid #E8E0D5",
+                            }}
+                          >
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt=""
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNewFittingPhotos((prev) =>
+                                  prev.filter((_, idx) => idx !== i),
+                                );
+                              }}
+                              style={{
+                                position: "absolute",
+                                top: 2,
+                                right: 2,
+                                width: 18,
+                                height: 18,
+                                borderRadius: "50%",
+                                background: "rgba(0,0,0,0.6)",
+                                border: "none",
+                                color: "#fff",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 10,
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{ display: "flex", gap: 8 }}>
                     <button
-                      onClick={() => setShowCreateForm(false)}
+                      onClick={() => {
+                        setShowCreateForm(false);
+                        setNewFittingPhotos([]);
+                      }}
                       style={{
                         padding: "8px 16px",
                         border: "1px solid #E8E0D5",
