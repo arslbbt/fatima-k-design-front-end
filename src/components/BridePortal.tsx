@@ -629,7 +629,7 @@ export function BridePortal() {
               onChange={(e) => handleInspoFiles(e.target.files)}
             />
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {recentInspo.length === 0
                 ? [0, 1, 2, 3].map((i) => (
                     <div

@@ -160,10 +160,13 @@ export function BridePortalDressJourney() {
                   justifyContent: "space-between",
                   marginTop: 10,
                 }}
+                className="journey-stages"
               >
                 {stages.map((s) => (
                   <div
                     key={s.key}
+                    className="journey-stage-item"
+                    title={s.label}
                     style={{
                       display: "flex",
                       flexDirection: "column",
@@ -189,6 +192,7 @@ export function BridePortalDressJourney() {
                       }}
                     />
                     <span
+                      className="stage-label"
                       style={{
                         fontSize: 9,
                         color:
@@ -460,8 +464,12 @@ export function BridePortalDressJourney() {
                             background: "#FDFAF8",
                           }}
                         >
-                          <div style={{ display: "flex" }}>
+                          <div
+                            className="journey-expanded-content"
+                            style={{ display: "flex" }}
+                          >
                             <div
+                              className="journey-session-details"
                               style={{
                                 flex: 1,
                                 padding: "18px 22px",
@@ -594,6 +602,7 @@ export function BridePortalDressJourney() {
                             {/* Photos — completed only */}
                             {isDone && event.photos.length > 0 && (
                               <div
+                                className="journey-photos"
                                 style={{
                                   width: 220,
                                   borderLeft: "1px solid #F0EBE4",
@@ -617,6 +626,7 @@ export function BridePortalDressJourney() {
                                   <Camera size={11} color="#D4A373" /> Photos
                                 </div>
                                 <div
+                                  className="journey-photos-grid"
                                   style={{
                                     display: "grid",
                                     gridTemplateColumns: "1fr 1fr",

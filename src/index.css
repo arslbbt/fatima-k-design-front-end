@@ -963,3 +963,65 @@
     max-height: none;
   }
 }
+
+/* ── Responsive Bride Journey Page ── */
+
+/* Hide stage labels on mobile, show on hover via title attribute */
+@media (max-width: 640px) {
+  .journey-stage-item .stage-label {
+    display: none;
+  }
+
+  .journey-stage-item {
+    position: relative;
+  }
+
+  /* Show tooltip on touch/hover */
+  .journey-stage-item:active::after {
+    content: attr(title);
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(44, 44, 44, 0.9);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Stack expanded content vertically on mobile */
+  .journey-expanded-content {
+    flex-direction: column !important;
+  }
+
+  .journey-session-details {
+    padding: 16px 18px !important;
+  }
+
+  .journey-photos {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid #f0ebe4;
+    padding: 16px 18px !important;
+  }
+
+  .journey-photos-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+/* Adjust stage dots spacing on very small screens */
+@media (max-width: 480px) {
+  .journey-stages {
+    gap: 4px;
+  }
+
+  .journey-stage-item {
+    gap: 2px !important;
+  }
+}
