@@ -27,7 +27,7 @@ export function BridePortalDocuments() {
   };
   const typeLabel: Record<string, string> = {
     pdf: "PDF",
-    docx: "Word Document",
+    docx: "DOCX",
   };
 
   return (
@@ -53,7 +53,10 @@ export function BridePortalDocuments() {
           </div>
 
           {/* Stats */}
-          <div style={{ display: "flex", gap: 14, marginBottom: 28 }}>
+          <div
+            className="documents-stats-grid"
+            style={{ display: "flex", gap: 14, marginBottom: 28 }}
+          >
             {[
               { label: "Total Documents", value: String(docs.length) },
               {
@@ -67,6 +70,7 @@ export function BridePortalDocuments() {
             ].map((s, i) => (
               <Card
                 key={i}
+                className="documents-stat-card"
                 style={{
                   flex: 1,
                   background: "#FFFFFF",
@@ -76,6 +80,7 @@ export function BridePortalDocuments() {
               >
                 <CardContent style={{ padding: "16px 20px" }}>
                   <div
+                    className="stat-value"
                     style={{
                       fontFamily: "'Cormorant Garamond', serif",
                       fontSize: 26,
@@ -85,7 +90,10 @@ export function BridePortalDocuments() {
                   >
                     {s.value}
                   </div>
-                  <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
+                  <div
+                    className="stat-label"
+                    style={{ fontSize: 11, color: "#888", marginTop: 2 }}
+                  >
                     {s.label}
                   </div>
                 </CardContent>
@@ -166,7 +174,7 @@ export function BridePortalDocuments() {
                         <FileText size={20} color="#A67C52" />
                       </div>
 
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                           style={{
                             display: "flex",
@@ -176,11 +184,17 @@ export function BridePortalDocuments() {
                           }}
                         >
                           <span
+                            className="document-title"
                             style={{
                               fontFamily: "'Cormorant Garamond', serif",
                               fontSize: 20,
                               fontWeight: 500,
                               color: "#2C2C2C",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              flex: 1,
+                              minWidth: 0,
                             }}
                           >
                             {doc.title}
@@ -192,6 +206,7 @@ export function BridePortalDocuments() {
                               background: bg,
                               color: "#666",
                               borderRadius: 10,
+                              flexShrink: 0,
                             }}
                           >
                             {typeLabel[doc.fileType] ??
@@ -230,7 +245,8 @@ export function BridePortalDocuments() {
                             cursor: "pointer",
                           }}
                         >
-                          <Download size={13} /> Download
+                          <Download size={13} />{" "}
+                          <span className="hidden sm:inline">Download</span>
                         </button>
                         {/* View — open in new tab */}
                         <a
@@ -252,7 +268,8 @@ export function BridePortalDocuments() {
                             textDecoration: "none",
                           }}
                         >
-                          <Eye size={13} /> View
+                          <Eye size={13} />
+                          <span className="hidden sm:inline">View</span>
                         </a>
                       </div>
 

@@ -1144,3 +1144,31 @@
     padding: 12px 14px !important;
   }
 }
+
+/* ── Responsive Documents Stats ── */
+
+@media (max-width: 640px) {
+  .documents-stats-grid {
+    gap: 10px !important;
+  }
+
+  /* Hide action text labels on mobile, show only icons */
+  .document-actions .action-text {
+    display: none;
+  }
+
+  /* Truncate long document titles on mobile */
+  .document-title {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .documents-stats-grid {
+    gap: 8px !important;
+  }
+
+  .document-title {
+    font-size: 16px !important;
+  }
+}
