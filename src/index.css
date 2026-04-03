@@ -1035,16 +1035,6 @@
     gap: 10px !important;
   }
 
-  /* Hide desktop detail panel on mobile */
-  .inspo-detail-panel {
-    display: none !important;
-  }
-
-  /* Show mobile full-screen viewer */
-  .inspo-mobile-viewer {
-    display: block !important;
-  }
-
   /* Show floating upload button on mobile */
   .inspo-mobile-upload-btn {
     display: flex !important;

@@ -586,6 +586,7 @@ function BrideCard({
             View Profile <ChevronRight size={12} />
           </button>
           <button
+            title="View Appointments"
             style={{
               display: "flex",
               alignItems: "center",
@@ -603,6 +604,7 @@ function BrideCard({
             </Link>
           </button>
           <button
+            title="View Payments"
             style={{
               display: "flex",
               alignItems: "center",
@@ -620,6 +622,7 @@ function BrideCard({
             </Link>
           </button>
           <button
+            title="View Documents"
             style={{
               display: "flex",
               alignItems: "center",

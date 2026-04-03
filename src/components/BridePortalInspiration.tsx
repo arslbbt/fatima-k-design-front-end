@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
 export function BridePortalInspiration() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -31,7 +31,7 @@ export function BridePortalInspiration() {
     mutationFn: (id: string) => inspoApi.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inspo-mine"] });
-      setSelected(null);
+      setLightboxIdx(null);
       setConfirmDelete(null);
       toast({ title: "Photo removed" });
     },
@@ -83,10 +83,102 @@ export function BridePortalInspiration() {
     }
   }
 
-  const selectedPhoto = uploads.find((u) => u.id === selected) ?? null;
-
   return (
     <BridePortalLayout>
+      {/* Lightbox */}
+      {lightboxIdx !== null && uploads[lightboxIdx] && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.88)",
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <button
+            onClick={() => setLightboxIdx(null)}
+            style={{
+              position: "absolute",
+              top: 24,
+              right: 28,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            <X size={24} />
+          </button>
+          <button
+            onClick={() =>
+              setLightboxIdx((i) => (i !== null && i > 0 ? i - 1 : i))
+            }
+            style={{
+              position: "absolute",
+              left: 28,
+              background: "rgba(255,255,255,0.08)",
+              border: "none",
+              borderRadius: "50%",
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <img
+            src={uploads[lightboxIdx].imageUrl}
+            alt={uploads[lightboxIdx].caption ?? "Inspiration"}
+            style={{
+              maxWidth: "80vw",
+              maxHeight: "80vh",
+              borderRadius: 12,
+              objectFit: "contain",
+            }}
+          />
+          <button
+            onClick={() =>
+              setLightboxIdx((i) =>
+                i !== null && i < uploads.length - 1 ? i + 1 : i,
+              )
+            }
+            style={{
+              position: "absolute",
+              right: 28,
+              background: "rgba(255,255,255,0.08)",
+              border: "none",
+              borderRadius: "50%",
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            <ChevronRight size={22} />
+          </button>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 24,
+              fontSize: 12,
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            {(lightboxIdx ?? 0) + 1} / {uploads.length}
+          </div>
+        </div>
+      )}
+
       <main className="bp-page-main">
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div
@@ -236,20 +328,20 @@ export function BridePortalInspiration() {
           )}
 
           {!isLoading && (
-            <div style={{ display: "flex", gap: 20 }}>
-              <div style={{ flex: 1 }}>
-                {uploads.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "60px 0",
-                      color: "#AAA",
-                      fontSize: 13,
-                    }}
-                  >
-                    No photos yet — upload your first inspiration image above.
-                  </div>
-                )}
+            <>
+              {uploads.length === 0 && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "60px 0",
+                    color: "#AAA",
+                    fontSize: 13,
+                  }}
+                >
+                  No photos yet — upload your first inspiration image above.
+                </div>
+              )}
+              {uploads.length > 0 && (
                 <div
                   className="inspo-grid"
                   style={{
@@ -258,24 +350,20 @@ export function BridePortalInspiration() {
                     gap: 12,
                   }}
                 >
-                  {uploads.map((photo) => (
+                  {uploads.map((photo, i) => (
                     <div
                       key={photo.id}
-                      onClick={() =>
-                        setSelected(photo.id === selected ? null : photo.id)
-                      }
+                      onClick={() => setLightboxIdx(i)}
                       style={{
                         borderRadius: 10,
                         overflow: "hidden",
-                        border: `2px solid ${selected === photo.id ? "#D4A373" : "#E8E0D5"}`,
+                        border: "1px solid #E8E0D5",
                         cursor: "pointer",
-                        boxShadow:
-                          selected === photo.id
-                            ? "0 2px 12px rgba(212,163,115,0.25)"
-                            : "0 1px 4px rgba(0,0,0,0.05)",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
                         transition: "all 0.15s",
                         display: "flex",
                         flexDirection: "column",
+                        position: "relative",
                       }}
                     >
                       <div
@@ -324,7 +412,7 @@ export function BridePortalInspiration() {
                             padding: 2,
                           }}
                         >
-                          <Trash2 size={12} color="#DDDDDD" />
+                          <Trash2 size={12} color="#CC4444" />
                         </button>
                       </div>
                     </div>
@@ -336,7 +424,7 @@ export function BridePortalInspiration() {
                     style={{
                       borderRadius: 10,
                       border: "1.5px dashed #E8E0D5",
-                      height: 256,
+                      height: 310,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -364,297 +452,8 @@ export function BridePortalInspiration() {
                     </span>
                   </div>
                 </div>
-              </div>
-
-              {/* Detail panel */}
-              {selectedPhoto && (
-                <>
-                  {/* Desktop detail panel */}
-                  <div
-                    className="inspo-detail-panel"
-                    style={{ width: 240, flexShrink: 0 }}
-                  >
-                    <Card
-                      style={{
-                        background: "#FFFFFF",
-                        border: "1px solid #E8E0D5",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                        position: "sticky",
-                        top: 0,
-                      }}
-                    >
-                      <CardContent style={{ padding: 0 }}>
-                        <div
-                          style={{
-                            height: 260,
-                            borderRadius: "10px 10px 0 0",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <img
-                            src={selectedPhoto.imageUrl}
-                            alt=""
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </div>
-                        <div style={{ padding: "16px" }}>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: "#AAA",
-                              marginBottom: 12,
-                            }}
-                          >
-                            Uploaded{" "}
-                            {new Date(
-                              selectedPhoto.uploadedAt,
-                            ).toLocaleDateString("en-AU", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </div>
-                          {selectedPhoto.caption && (
-                            <div
-                              style={{
-                                borderTop: "1px solid #F0EBE4",
-                                paddingTop: 12,
-                                marginBottom: 12,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: 10,
-                                  color: "#AAAAAA",
-                                  fontWeight: 600,
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.07em",
-                                  marginBottom: 7,
-                                }}
-                              >
-                                Caption
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  color: "#555",
-                                  lineHeight: 1.5,
-                                }}
-                              >
-                                {selectedPhoto.caption}
-                              </div>
-                            </div>
-                          )}
-                          <button
-                            onClick={() => setConfirmDelete(selectedPhoto.id)}
-                            style={{
-                              width: "100%",
-                              padding: "8px",
-                              background: "#FFF5F5",
-                              color: "#CC4444",
-                              border: "1px solid #FFCCCC",
-                              borderRadius: 7,
-                              fontSize: 12,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 5,
-                            }}
-                          >
-                            <Trash2 size={12} /> Remove Photo
-                          </button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Mobile full-screen viewer */}
-                  <div
-                    className="inspo-mobile-viewer"
-                    style={{
-                      position: "fixed",
-                      inset: 0,
-                      background: "rgba(0,0,0,0.95)",
-                      zIndex: 100,
-                      display: "none",
-                    }}
-                  >
-                    <button
-                      onClick={() => setSelected(null)}
-                      style={{
-                        position: "absolute",
-                        top: 16,
-                        right: 16,
-                        width: 40,
-                        height: 40,
-                        borderRadius: "50%",
-                        background: "rgba(255,255,255,0.1)",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        color: "#fff",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 102,
-                      }}
-                    >
-                      <X size={20} />
-                    </button>
-
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "60px 16px 120px",
-                      }}
-                    >
-                      <img
-                        src={selectedPhoto.imageUrl}
-                        alt=""
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "100%",
-                          objectFit: "contain",
-                        }}
-                      />
-                    </div>
-
-                    {/* Navigation arrows */}
-                    {uploads.length > 1 && (
-                      <>
-                        <button
-                          onClick={() => {
-                            const idx = uploads.findIndex(
-                              (u) => u.id === selected,
-                            );
-                            const prev =
-                              uploads[idx === 0 ? uploads.length - 1 : idx - 1];
-                            setSelected(prev.id);
-                          }}
-                          style={{
-                            position: "absolute",
-                            left: 28,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "rgba(255,255,255,0.08)",
-                            border: "none",
-                            borderRadius: "50%",
-                            width: 44,
-                            height: 44,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                            color: "#fff",
-                          }}
-                        >
-                          <ChevronLeft size={22} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const idx = uploads.findIndex(
-                              (u) => u.id === selected,
-                            );
-                            const next =
-                              uploads[idx === uploads.length - 1 ? 0 : idx + 1];
-                            setSelected(next.id);
-                          }}
-                          style={{
-                            position: "absolute",
-                            right: 28,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "rgba(255,255,255,0.08)",
-                            border: "none",
-                            borderRadius: "50%",
-                            width: 44,
-                            height: 44,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                            color: "#fff",
-                          }}
-                        >
-                          <ChevronRight size={22} />
-                        </button>
-                      </>
-                    )}
-
-                    {/* Bottom info panel */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        background: "rgba(0,0,0,0.8)",
-                        backdropFilter: "blur(10px)",
-                        padding: "20px 16px",
-                        borderTop: "1px solid rgba(255,255,255,0.1)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "rgba(255,255,255,0.6)",
-                          marginBottom: 12,
-                        }}
-                      >
-                        Uploaded{" "}
-                        {new Date(selectedPhoto.uploadedAt).toLocaleDateString(
-                          "en-AU",
-                          {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          },
-                        )}
-                      </div>
-                      {selectedPhoto.caption && (
-                        <div
-                          style={{
-                            fontSize: 13,
-                            color: "rgba(255,255,255,0.9)",
-                            lineHeight: 1.5,
-                            marginBottom: 12,
-                          }}
-                        >
-                          {selectedPhoto.caption}
-                        </div>
-                      )}
-                      <button
-                        onClick={() => setConfirmDelete(selectedPhoto.id)}
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          background: "rgba(204,68,68,0.2)",
-                          color: "#FF6B6B",
-                          border: "1px solid rgba(255,107,107,0.3)",
-                          borderRadius: 8,
-                          fontSize: 13,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 6,
-                        }}
-                      >
-                        <Trash2 size={14} /> Remove Photo
-                      </button>
-                    </div>
-                  </div>
-                </>
               )}
-            </div>
+            </>
           )}
         </div>
       </main>

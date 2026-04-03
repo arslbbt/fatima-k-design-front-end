@@ -481,7 +481,7 @@ export function BridePortalAppointments() {
                               )}
                             </div>
 
-                            <div
+                            {/* <div
                               style={{
                                 display: "flex",
                                 flexDirection: "column",
@@ -521,7 +521,7 @@ export function BridePortalAppointments() {
                               >
                                 Contact Fatima
                               </a>
-                            </div>
+                            </div> */}
                           </div>
                         )}
                       </div>
