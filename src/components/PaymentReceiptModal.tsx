@@ -409,7 +409,7 @@ export function PaymentReceiptModal({
               <div style={{ fontSize: 11, color: "#AAAAAA", lineHeight: 1.8 }}>
                 Fatima K Bridal Couture · Paddington, NSW 2021
                 <br />
-                studio@fatimak.com.au · fatimak.com.au
+                Info@fatimak.com.au · fatimak.com.au
               </div>
             </div>
           </div>

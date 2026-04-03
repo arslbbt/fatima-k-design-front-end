@@ -511,111 +511,147 @@ export function AdminAppointmentsDesktop() {
                         const isDone =
                           a.status === "COMPLETED" || a.status === "CANCELLED";
                         const sc = statusColor(a.status);
+                        const isPast = new Date(a.endTime) < new Date();
+                        const needsCompletion = isPast && !isDone;
+
                         return (
                           <div
                             key={a.id}
-                            onClick={() =>
-                              setSelectedId(a.id === selectedId ? null : a.id)
-                            }
                             style={{
                               display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                              padding: "10px 14px",
-                              background: "#fff",
-                              border: `1px solid ${selectedId === a.id ? "#D4A373" : "#E8E0D5"}`,
-                              borderRadius: 8,
-                              cursor: "pointer",
+                              flexDirection: "column",
+                              gap: 8,
                             }}
                           >
-                            <Avatar
-                              style={{ width: 30, height: 30, flexShrink: 0 }}
-                            >
-                              <AvatarFallback
-                                style={{
-                                  background: "#E8D8CE",
-                                  color: "#A67C52",
-                                  fontSize: 10,
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {a.bride?.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .slice(0, 2)
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: "#333",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {a.bride?.name}
-                              </div>
-                              <div style={{ fontSize: 11, color: "#888" }}>
-                                {APPOINTMENT_TITLE_LABELS[a.title]}
-                              </div>
-                            </div>
                             <div
+                              onClick={() =>
+                                setSelectedId(a.id === selectedId ? null : a.id)
+                              }
                               style={{
-                                fontSize: 11,
-                                color: "#888",
-                                textAlign: "right",
-                                flexShrink: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                                padding: "10px 14px",
+                                background: "#fff",
+                                border: `1px solid ${selectedId === a.id ? "#D4A373" : needsCompletion ? "#F5C6C6" : "#E8E0D5"}`,
+                                borderRadius: 8,
+                                cursor: "pointer",
                               }}
                             >
-                              <div>{fmtDate(new Date(a.startTime))}</div>
-                              <div
-                                style={{ color: "#A67C52", fontWeight: 500 }}
+                              <Avatar
+                                style={{ width: 30, height: 30, flexShrink: 0 }}
                               >
-                                {fmtTime(new Date(a.startTime))}
-                              </div>
-                            </div>
-                            <Badge
-                              style={{
-                                background: sc.bg,
-                                color: sc.color,
-                                border: "none",
-                                fontSize: 9,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {a.status}
-                            </Badge>
-                            {!isDone && (
-                              <div
-                                title="Mark as Completed"
-                                style={{ flexShrink: 0 }}
-                              >
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setConfirmCompleteId(a.id);
-                                  }}
+                                <AvatarFallback
                                   style={{
-                                    width: 26,
-                                    height: 26,
-                                    borderRadius: "50%",
-                                    border: "1.5px solid #D4A373",
-                                    background: "#fff",
+                                    background: "#E8D8CE",
                                     color: "#A67C52",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    cursor: "pointer",
-                                    fontSize: 13,
+                                    fontSize: 10,
+                                    fontWeight: 600,
                                   }}
                                 >
-                                  ✓
-                                </button>
+                                  {a.bride?.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .slice(0, 2)
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: "#333",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {a.bride?.name}
+                                </div>
+                                <div style={{ fontSize: 11, color: "#888" }}>
+                                  {APPOINTMENT_TITLE_LABELS[a.title]}
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: "#888",
+                                  textAlign: "right",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <div>{fmtDate(new Date(a.startTime))}</div>
+                                <div
+                                  style={{ color: "#A67C52", fontWeight: 500 }}
+                                >
+                                  {fmtTime(new Date(a.startTime))}
+                                </div>
+                              </div>
+                              <Badge
+                                style={{
+                                  background: sc.bg,
+                                  color: sc.color,
+                                  border: "none",
+                                  fontSize: 9,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {a.status}
+                              </Badge>
+                              {!isDone && (
+                                <div
+                                  title="Mark as Completed"
+                                  style={{ flexShrink: 0 }}
+                                >
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setConfirmCompleteId(a.id);
+                                    }}
+                                    style={{
+                                      width: 26,
+                                      height: 26,
+                                      borderRadius: "50%",
+                                      border: "1.5px solid #D4A373",
+                                      background: "#fff",
+                                      color: "#A67C52",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                      fontSize: 13,
+                                    }}
+                                  >
+                                    ✓
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {needsCompletion && (
+                              <div
+                                className="past-appointment-alert"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  padding: "6px 10px",
+                                  background: "#FFF5F5",
+                                  border: "1px solid #F5C6C6",
+                                  borderRadius: 6,
+                                  fontSize: 10,
+                                  color: "#C0392B",
+                                }}
+                              >
+                                <span style={{ fontSize: 12, flexShrink: 0 }}>
+                                  ⚠️
+                                </span>
+                                <span>
+                                  Past appointment - mark as completed or
+                                  cancelled
+                                </span>
                               </div>
                             )}
                           </div>

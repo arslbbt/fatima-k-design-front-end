@@ -280,10 +280,10 @@ export function LoginBride() {
           >
             Need help? Contact us at{" "}
             <a
-              href="mailto:studio@fatimak.com.au"
+              href="mailto:Info@fatimak.com.au"
               style={{ color: "#A67C52", textDecoration: "none" }}
             >
-              studio@fatimak.com.au
+              Info@fatimak.com.au
             </a>
           </p>
         </div>

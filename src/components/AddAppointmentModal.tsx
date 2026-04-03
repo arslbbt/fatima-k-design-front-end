@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Pointer } from "lucide-react";
 import {
   appointmentsApi,
   bridesApi,
@@ -406,7 +406,11 @@ export function AddAppointmentModal({
                     value={form.date}
                     min={isEdit ? undefined : today}
                     onChange={(e) => set("date", e.target.value)}
-                    style={inputStyle(!!errors.date)}
+                    onClick={(e) => e.currentTarget.showPicker?.()}
+                    style={{
+                      ...inputStyle(!!errors.date),
+                      cursor: "pointer",
+                    }}
                   />
                 </Field>
               </div>
@@ -417,7 +421,11 @@ export function AddAppointmentModal({
                     type="time"
                     value={form.startTime}
                     onChange={(e) => set("startTime", e.target.value)}
-                    style={inputStyle(!!errors.startTime)}
+                    onClick={(e) => e.currentTarget.showPicker?.()} // 👈 key
+                    style={{
+                      ...inputStyle(!!errors.startTime),
+                      cursor: "pointer",
+                    }}
                   />
                 </Field>
               </div>
@@ -428,7 +436,11 @@ export function AddAppointmentModal({
                     type="time"
                     value={form.endTime}
                     onChange={(e) => set("endTime", e.target.value)}
-                    style={inputStyle(!!errors.endTime)}
+                    onClick={(e) => e.currentTarget.showPicker?.()} // 👈 added
+                    style={{
+                      ...inputStyle(!!errors.endTime),
+                      cursor: "pointer",
+                    }}
                   />
                 </Field>
               </div>

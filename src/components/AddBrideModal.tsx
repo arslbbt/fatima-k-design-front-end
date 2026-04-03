@@ -81,10 +81,10 @@ function validate(form: FormState): FormErrors {
   } else {
     // Remove all non-digit characters for validation
     const digitsOnly = form.phone.replace(/\D/g, "");
-    if (digitsOnly.length < 8) {
-      errors.phone = "Phone number must be at least 8 digits";
-    } else if (digitsOnly.length > 15) {
-      errors.phone = "Phone number cannot exceed 15 digits";
+    if (digitsOnly.length < 10) {
+      errors.phone = "Phone number must be at least 10 digits";
+    } else if (digitsOnly.length > 12) {
+      errors.phone = "Phone number cannot exceed 12 digits";
     }
   }
 
@@ -349,11 +349,22 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
               </Field>
               <Field label="Phone Number *" error={errors.phone}>
                 <input
-                  type="number"
+                  type="tel"
                   value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  placeholder="+971 50 123 4567"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow digits and common phone formatting characters
+                    const cleaned = value.replace(/[^\d\s\-\+\(\)]/g, "");
+                    // Count only digits
+                    const digitsOnly = cleaned.replace(/\D/g, "");
+                    // Prevent input if more than 12 digits
+                    if (digitsOnly.length <= 12) {
+                      set("phone", cleaned);
+                    }
+                  }}
+                  placeholder="0412 345 678"
                   style={inputStyle(!!errors.phone)}
+                  maxLength={15}
                 />
               </Field>
             </div>

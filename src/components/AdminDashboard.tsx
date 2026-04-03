@@ -320,7 +320,7 @@ export function AdminDashboard() {
                               >
                                 {bride.balance > 0
                                   ? `$${bride.balance.toLocaleString()}`
-                                  : "Paid"}
+                                  : "$0"}
                               </span>
                             </TableCell>
                             <TableCell className="text-right">

@@ -535,7 +535,7 @@ function BrideCard({
             >
               {(bride.outstanding ?? 0) > 0
                 ? `$${bride.outstanding!.toLocaleString()} due`
-                : "Paid in full"}
+                : "$0 due"}
             </div>
           </div>
           {profile?.phone && (
