@@ -869,17 +869,16 @@ export function AdminFittings() {
                       boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                       cursor: "pointer",
                       overflow: "hidden",
-                      height: 140,
                     }}
                   >
                     <CardContent
-                      style={{ padding: 0, display: "flex", height: "100%" }}
+                      style={{ padding: 0, display: "flex", minHeight: 140 }}
                     >
                       <div
                         style={{
                           display: "flex",
                           width: 180,
-                          height: 140,
+                          minHeight: 140,
                           flexShrink: 0,
                           overflow: "hidden",
                         }}
@@ -889,7 +888,7 @@ export function AdminFittings() {
                             key={k}
                             style={{
                               flex: 1,
-                              height: 140,
+                              minHeight: 140,
                               overflow: "hidden",
                             }}
                           >
@@ -898,7 +897,7 @@ export function AdminFittings() {
                               alt=""
                               style={{
                                 width: "100%",
-                                height: 140,
+                                height: "100%",
                                 objectFit: "cover",
                                 display: "block",
                               }}
@@ -910,7 +909,7 @@ export function AdminFittings() {
                             style={{
                               flex: 1,
                               background: "#F5EFE9",
-                              height: 140,
+                              minHeight: 140,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -928,7 +927,6 @@ export function AdminFittings() {
                           display: "flex",
                           flexDirection: "column",
                           justifyContent: "center",
-                          height: 140,
                         }}
                       >
                         <div
@@ -956,7 +954,7 @@ export function AdminFittings() {
                           })}
                         </div>
                         {f.notes && (
-                          <div style={{ marginBottom: 8 }}>
+                          <div style={{ marginBottom: 8, flex: 1 }}>
                             <div
                               className="ql-editor ql-fitting-notes"
                               dangerouslySetInnerHTML={{ __html: f.notes }}
@@ -965,26 +963,13 @@ export function AdminFittings() {
                                 fontSize: 12,
                                 color: "#666",
                                 lineHeight: 1.5,
-                                maxHeight: "4em",
+                                maxHeight: "3.6em",
                                 overflow: "hidden",
                                 display: "-webkit-box",
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: "vertical",
                               }}
                             />
-                            {f.notes.length > 100 && (
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  color: "#A67C52",
-                                  fontWeight: 500,
-                                  marginTop: 4,
-                                  display: "inline-block",
-                                }}
-                              >
-                                Show more
-                              </span>
-                            )}
                           </div>
                         )}
                         <Badge

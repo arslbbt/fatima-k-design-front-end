@@ -374,14 +374,13 @@ export function BridePortalFittingPhotos() {
                       boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                       cursor: "pointer",
                       overflow: "hidden",
-                      height: 140,
                     }}
                   >
                     <CardContent
                       style={{
                         padding: 0,
                         display: "flex",
-                        height: "100%",
+                        minHeight: 140,
                       }}
                     >
                       {/* Photo strip preview */}
@@ -389,7 +388,7 @@ export function BridePortalFittingPhotos() {
                         style={{
                           display: "flex",
                           width: 200,
-                          height: "100%",
+                          minHeight: 140,
                           flexShrink: 0,
                           overflow: "hidden",
                         }}
@@ -400,7 +399,7 @@ export function BridePortalFittingPhotos() {
                               key={k}
                               style={{
                                 flex: 1,
-                                height: "100%",
+                                minHeight: 140,
                                 overflow: "hidden",
                               }}
                             >
@@ -421,7 +420,7 @@ export function BridePortalFittingPhotos() {
                             style={{
                               width: "100%",
                               background: "#F5EFE9",
-                              height: "100%",
+                              minHeight: 140,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -439,7 +438,6 @@ export function BridePortalFittingPhotos() {
                           flexDirection: "column",
                           justifyContent: "center",
                           borderLeft: "1px solid #F0EBE4",
-                          height: "100%",
                         }}
                       >
                         <div
@@ -457,7 +455,7 @@ export function BridePortalFittingPhotos() {
                           style={{
                             fontSize: 12,
                             color: "#888",
-                            marginBottom: f.notes ? 6 : 10,
+                            marginBottom: f.notes ? 8 : 10,
                           }}
                         >
                           {new Date(f.createdAt).toLocaleDateString("en-AU", {
@@ -467,7 +465,7 @@ export function BridePortalFittingPhotos() {
                           })}
                         </div>
                         {f.notes && (
-                          <div style={{ marginBottom: 10 }}>
+                          <div style={{ marginBottom: 10, flex: 1 }}>
                             <div
                               className="ql-editor ql-fitting-notes"
                               style={{
@@ -475,7 +473,7 @@ export function BridePortalFittingPhotos() {
                                 fontSize: 12,
                                 color: "#666",
                                 lineHeight: 1.5,
-                                maxHeight: "3em",
+                                maxHeight: "3.6em",
                                 overflow: "hidden",
                                 display: "-webkit-box",
                                 WebkitLineClamp: 2,
@@ -483,19 +481,6 @@ export function BridePortalFittingPhotos() {
                               }}
                               dangerouslySetInnerHTML={{ __html: f.notes }}
                             />
-                            {f.notes.length > 100 && (
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  color: "#A67C52",
-                                  fontWeight: 500,
-                                  marginTop: 4,
-                                  display: "inline-block",
-                                }}
-                              >
-                                Show more
-                              </span>
-                            )}
                           </div>
                         )}
                         <div
