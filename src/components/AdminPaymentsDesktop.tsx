@@ -575,8 +575,14 @@ export function AdminPaymentsDesktop() {
             }}
           >
             {isLoading ? (
-              <div style={{ textAlign: "center", padding: 60, color: "#888" }}>
-                Loading tracking data...
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: 60,
+                }}
+              >
+                <Loader2 size={24} className="animate-spin" color="#D4A373" />
               </div>
             ) : !bridesData || bridesData.items.length === 0 ? (
               <div
