@@ -7,6 +7,8 @@ import {
   Trash2,
   Loader2,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
@@ -108,15 +110,17 @@ export function BridePortalInspiration() {
                 Inspiration Board
               </h1>
               <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
-                Share your vision with Fatima — upload anything that inspires
-                you
+                <span className="hidden sm:inline">
+                  Share your vision with Fatima —{" "}
+                </span>
+                upload anything that inspires you
               </p>
             </div>
             <button
+              className="hidden sm:flex"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               style={{
-                display: "flex",
                 alignItems: "center",
                 gap: 8,
                 padding: "10px 20px",
@@ -144,6 +148,7 @@ export function BridePortalInspiration() {
 
           {/* Drop zone */}
           <div
+            className="hidden sm:flex"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -155,7 +160,6 @@ export function BridePortalInspiration() {
               borderRadius: 12,
               padding: "20px 24px",
               background: "rgba(212,163,115,0.04)",
-              display: "flex",
               alignItems: "center",
               gap: 16,
               marginBottom: 28,
@@ -247,6 +251,7 @@ export function BridePortalInspiration() {
                   </div>
                 )}
                 <div
+                  className="inspo-grid"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr 1fr",
@@ -363,110 +368,326 @@ export function BridePortalInspiration() {
 
               {/* Detail panel */}
               {selectedPhoto && (
-                <div style={{ width: 240, flexShrink: 0 }}>
-                  <Card
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E8E0D5",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                      position: "sticky",
-                      top: 0,
-                    }}
+                <>
+                  {/* Desktop detail panel */}
+                  <div
+                    className="inspo-detail-panel"
+                    style={{ width: 240, flexShrink: 0 }}
                   >
-                    <CardContent style={{ padding: 0 }}>
-                      <div
-                        style={{
-                          height: 260,
-                          borderRadius: "10px 10px 0 0",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <img
-                          src={selectedPhoto.imageUrl}
-                          alt=""
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      </div>
-                      <div style={{ padding: "16px" }}>
+                    <Card
+                      style={{
+                        background: "#FFFFFF",
+                        border: "1px solid #E8E0D5",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                        position: "sticky",
+                        top: 0,
+                      }}
+                    >
+                      <CardContent style={{ padding: 0 }}>
                         <div
                           style={{
-                            fontSize: 11,
-                            color: "#AAA",
-                            marginBottom: 12,
+                            height: 260,
+                            borderRadius: "10px 10px 0 0",
+                            overflow: "hidden",
                           }}
                         >
-                          Uploaded{" "}
-                          {new Date(
-                            selectedPhoto.uploadedAt,
-                          ).toLocaleDateString("en-AU", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          <img
+                            src={selectedPhoto.imageUrl}
+                            alt=""
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
                         </div>
-                        {selectedPhoto.caption && (
+                        <div style={{ padding: "16px" }}>
                           <div
                             style={{
-                              borderTop: "1px solid #F0EBE4",
-                              paddingTop: 12,
+                              fontSize: 11,
+                              color: "#AAA",
                               marginBottom: 12,
                             }}
                           >
-                            <div
-                              style={{
-                                fontSize: 10,
-                                color: "#AAAAAA",
-                                fontWeight: 600,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.07em",
-                                marginBottom: 7,
-                              }}
-                            >
-                              Caption
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                color: "#555",
-                                lineHeight: 1.5,
-                              }}
-                            >
-                              {selectedPhoto.caption}
-                            </div>
+                            Uploaded{" "}
+                            {new Date(
+                              selectedPhoto.uploadedAt,
+                            ).toLocaleDateString("en-AU", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
                           </div>
-                        )}
+                          {selectedPhoto.caption && (
+                            <div
+                              style={{
+                                borderTop: "1px solid #F0EBE4",
+                                paddingTop: 12,
+                                marginBottom: 12,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 10,
+                                  color: "#AAAAAA",
+                                  fontWeight: 600,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.07em",
+                                  marginBottom: 7,
+                                }}
+                              >
+                                Caption
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  color: "#555",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {selectedPhoto.caption}
+                              </div>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => setConfirmDelete(selectedPhoto.id)}
+                            style={{
+                              width: "100%",
+                              padding: "8px",
+                              background: "#FFF5F5",
+                              color: "#CC4444",
+                              border: "1px solid #FFCCCC",
+                              borderRadius: 7,
+                              fontSize: 12,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 5,
+                            }}
+                          >
+                            <Trash2 size={12} /> Remove Photo
+                          </button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Mobile full-screen viewer */}
+                  <div
+                    className="inspo-mobile-viewer"
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      background: "rgba(0,0,0,0.95)",
+                      zIndex: 100,
+                      display: "none",
+                    }}
+                  >
+                    <button
+                      onClick={() => setSelected(null)}
+                      style={{
+                        position: "absolute",
+                        top: 16,
+                        right: 16,
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        color: "#fff",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 102,
+                      }}
+                    >
+                      <X size={20} />
+                    </button>
+
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "60px 16px 120px",
+                      }}
+                    >
+                      <img
+                        src={selectedPhoto.imageUrl}
+                        alt=""
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </div>
+
+                    {/* Navigation arrows */}
+                    {uploads.length > 1 && (
+                      <>
                         <button
-                          onClick={() => setConfirmDelete(selectedPhoto.id)}
+                          onClick={() => {
+                            const idx = uploads.findIndex(
+                              (u) => u.id === selected,
+                            );
+                            const prev =
+                              uploads[idx === 0 ? uploads.length - 1 : idx - 1];
+                            setSelected(prev.id);
+                          }}
                           style={{
-                            width: "100%",
-                            padding: "8px",
-                            background: "#FFF5F5",
-                            color: "#CC4444",
-                            border: "1px solid #FFCCCC",
-                            borderRadius: 7,
-                            fontSize: 12,
-                            cursor: "pointer",
+                            position: "absolute",
+                            left: 28,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "rgba(255,255,255,0.08)",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: 44,
+                            height: 44,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            gap: 5,
+                            cursor: "pointer",
+                            color: "#fff",
                           }}
                         >
-                          <Trash2 size={12} /> Remove Photo
+                          <ChevronLeft size={22} />
                         </button>
+                        <button
+                          onClick={() => {
+                            const idx = uploads.findIndex(
+                              (u) => u.id === selected,
+                            );
+                            const next =
+                              uploads[idx === uploads.length - 1 ? 0 : idx + 1];
+                            setSelected(next.id);
+                          }}
+                          style={{
+                            position: "absolute",
+                            right: 28,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "rgba(255,255,255,0.08)",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: 44,
+                            height: 44,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            color: "#fff",
+                          }}
+                        >
+                          <ChevronRight size={22} />
+                        </button>
+                      </>
+                    )}
+
+                    {/* Bottom info panel */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: "rgba(0,0,0,0.8)",
+                        backdropFilter: "blur(10px)",
+                        padding: "20px 16px",
+                        borderTop: "1px solid rgba(255,255,255,0.1)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "rgba(255,255,255,0.6)",
+                          marginBottom: 12,
+                        }}
+                      >
+                        Uploaded{" "}
+                        {new Date(selectedPhoto.uploadedAt).toLocaleDateString(
+                          "en-AU",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                      {selectedPhoto.caption && (
+                        <div
+                          style={{
+                            fontSize: 13,
+                            color: "rgba(255,255,255,0.9)",
+                            lineHeight: 1.5,
+                            marginBottom: 12,
+                          }}
+                        >
+                          {selectedPhoto.caption}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setConfirmDelete(selectedPhoto.id)}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          background: "rgba(204,68,68,0.2)",
+                          color: "#FF6B6B",
+                          border: "1px solid rgba(255,107,107,0.3)",
+                          borderRadius: 8,
+                          fontSize: 13,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Trash2 size={14} /> Remove Photo
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           )}
         </div>
       </main>
+
+      {/* Floating upload button for mobile */}
+      <button
+        className="inspo-mobile-upload-btn"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          background: "#333",
+          color: "#fff",
+          border: "none",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          cursor: uploading ? "not-allowed" : "pointer",
+          display: "none",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 50,
+        }}
+      >
+        {uploading ? (
+          <Loader2 size={24} className="animate-spin" />
+        ) : (
+          <Plus size={24} />
+        )}
+      </button>
 
       {/* Confirm delete */}
       {confirmDelete && (

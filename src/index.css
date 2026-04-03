@@ -1025,3 +1025,35 @@
     gap: 2px !important;
   }
 }
+
+/* ── Responsive Inspiration Board ── */
+
+/* Mobile responsive grid */
+@media (max-width: 768px) {
+  .inspo-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Hide desktop detail panel on mobile */
+  .inspo-detail-panel {
+    display: none !important;
+  }
+
+  /* Show mobile full-screen viewer */
+  .inspo-mobile-viewer {
+    display: block !important;
+  }
+
+  /* Show floating upload button on mobile */
+  .inspo-mobile-upload-btn {
+    display: flex !important;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .inspo-grid {
+    gap: 8px !important;
+  }
+}
