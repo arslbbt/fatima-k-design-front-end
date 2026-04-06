@@ -153,6 +153,48 @@ export function BridePortalInspiration() {
     }
   }
 
+  function getInstagramEmbedUrl(url: string): string | null {
+    // Extract Instagram post/reel ID from URL
+    const match = url.match(/instagram\.com\/(p|reel)\/([^/?]+)/);
+    if (match) {
+      return `https://www.instagram.com/${match[1]}/${match[2]}/embed/`;
+    }
+    return null;
+  }
+
+  function getYouTubeEmbedUrl(url: string): string | null {
+    // Extract YouTube video ID
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    return null;
+  }
+
+  function getTikTokEmbedUrl(url: string): string | null {
+    // Extract TikTok video ID
+    const match = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+    if (match) {
+      return `https://www.tiktok.com/embed/v2/${match[1]}`;
+    }
+    return null;
+  }
+
+  function getVideoThumbnail(item: InspoUpload): string | null {
+    if (item.platform === "youtube" && item.videoLink) {
+      const videoId = item.videoLink.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+      )?.[1];
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      }
+    }
+    return null;
+  }
+
   const selectedItem = lightboxIdx !== null ? uploads[lightboxIdx] : null;
 
   return (
@@ -329,42 +371,119 @@ export function BridePortalInspiration() {
                 </button>
               </div>
               <div style={{ padding: 24 }}>
-                <div
-                  style={{
-                    background: getPlatformGradient(selectedItem.platform),
-                    borderRadius: 12,
-                    padding: 40,
-                    textAlign: "center",
-                    marginBottom: 20,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
+                {/* Instagram Embed */}
+                {selectedItem.platform === "instagram" &&
+                  getInstagramEmbedUrl(selectedItem.videoLink!) && (
+                    <div
+                      style={{
+                        marginBottom: 20,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        background: "#F5F5F5",
+                      }}
+                    >
+                      <iframe
+                        src={getInstagramEmbedUrl(selectedItem.videoLink!)!}
+                        width="100%"
+                        height="600"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowTransparency
+                        style={{ border: "none", overflow: "hidden" }}
+                      />
+                    </div>
+                  )}
+
+                {/* YouTube Embed */}
+                {selectedItem.platform === "youtube" &&
+                  getYouTubeEmbedUrl(selectedItem.videoLink!) && (
+                    <div
+                      style={{
+                        marginBottom: 20,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        aspectRatio: "16/9",
+                      }}
+                    >
+                      <iframe
+                        src={getYouTubeEmbedUrl(selectedItem.videoLink!)!}
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ border: "none" }}
+                      />
+                    </div>
+                  )}
+
+                {/* TikTok Embed */}
+                {selectedItem.platform === "tiktok" &&
+                  getTikTokEmbedUrl(selectedItem.videoLink!) && (
+                    <div
+                      style={{
+                        marginBottom: 20,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        background: "#F5F5F5",
+                      }}
+                    >
+                      <iframe
+                        src={getTikTokEmbedUrl(selectedItem.videoLink!)!}
+                        width="100%"
+                        height="600"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowFullScreen
+                        style={{ border: "none" }}
+                      />
+                    </div>
+                  )}
+
+                {/* Fallback for Pinterest or if embed fails */}
+                {(!selectedItem.platform ||
+                  (selectedItem.platform !== "instagram" &&
+                    selectedItem.platform !== "youtube" &&
+                    selectedItem.platform !== "tiktok")) && (
                   <div
                     style={{
-                      width: 64,
-                      height: 64,
-                      background: "rgba(255,255,255,0.95)",
-                      borderRadius: "50%",
+                      background: "#F5F5F5",
+                      borderRadius: 12,
+                      padding: 40,
+                      textAlign: "center",
+                      marginBottom: 20,
                       display: "flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "center",
+                      gap: 12,
+                      border: "1px solid #E8E0D5",
                     }}
                   >
-                    <Play size={28} color="#333" fill="#333" />
+                    <div
+                      style={{
+                        width: 64,
+                        height: 64,
+                        background: "#fff",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                      }}
+                    >
+                      <Play size={28} color="#D4A373" fill="#D4A373" />
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#666",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Video hosted on {selectedItem.platform}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      color: "#fff",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Video hosted on {selectedItem.platform}
-                  </div>
-                </div>
+                )}
 
                 <div
                   style={{
@@ -443,9 +562,11 @@ export function BridePortalInspiration() {
               alignItems: "flex-end",
               justifyContent: "center",
               padding: 16,
+              pointerEvents: "none",
             }}
           >
             <div
+              onClick={(e) => e.stopPropagation()}
               style={{
                 background: "#fff",
                 borderRadius: "16px 16px 0 0",
@@ -453,6 +574,7 @@ export function BridePortalInspiration() {
                 maxWidth: 500,
                 padding: "24px",
                 boxShadow: "0 -4px 20px rgba(0,0,0,0.15)",
+                pointerEvents: "auto",
               }}
             >
               <h3
@@ -887,27 +1009,29 @@ export function BridePortalInspiration() {
                           <div
                             style={{
                               height: 280,
-                              background: getPlatformGradient(item.platform),
+                              background: "#F5F5F5",
                               display: "flex",
                               flexDirection: "column",
                               alignItems: "center",
                               justifyContent: "center",
                               gap: 12,
                               position: "relative",
+                              border: "1px solid #E8E0D5",
                             }}
                           >
                             <div
                               style={{
                                 position: "absolute",
                                 top: 12,
-                                right: 12,
-                                background: "rgba(255,255,255,0.95)",
+                                left: 12,
+                                background: "#fff",
                                 borderRadius: 6,
                                 padding: "4px 10px",
                                 fontSize: 10,
                                 fontWeight: 600,
                                 color: "#333",
                                 textTransform: "uppercase",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                               }}
                             >
                               {getPlatformIcon(item.platform)} {item.platform}
@@ -917,19 +1041,20 @@ export function BridePortalInspiration() {
                               style={{
                                 width: 64,
                                 height: 64,
-                                background: "rgba(255,255,255,0.95)",
+                                background: "#fff",
                                 borderRadius: "50%",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                               }}
                             >
-                              <Play size={28} color="#333" fill="#333" />
+                              <Play size={28} color="#D4A373" fill="#D4A373" />
                             </div>
 
                             <div
                               style={{
-                                color: "#fff",
+                                color: "#666",
                                 fontSize: 13,
                                 fontWeight: 500,
                               }}
@@ -1142,7 +1267,15 @@ export function BridePortalInspiration() {
       )}
 
       <style>{`
+        .inspo-mobile-upload-btn {
+          display: none;
+        }
+        
         @media (max-width: 640px) {
+          .inspo-mobile-upload-btn {
+            display: flex !important;
+          }
+          
           .inspo-grid {
             grid-template-columns: 1fr 1fr !important;
           }
