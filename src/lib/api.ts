@@ -677,7 +677,10 @@ export const fittingsApi = {
 export interface InspoUpload {
   id: string;
   brideId: string;
-  imageUrl: string;
+  imageUrl?: string | null;
+  videoLink?: string | null;
+  mediaType: "image" | "video_link";
+  platform?: string | null;
   caption: string | null;
   uploadedAt: string;
 }
@@ -704,6 +707,12 @@ export const inspoApi = {
       return res.json() as Promise<InspoUpload[]>;
     });
   },
+
+  addVideoLink: (videoLink: string) =>
+    request<InspoUpload>("/inspo/video-link", {
+      method: "POST",
+      body: JSON.stringify({ videoLink }),
+    }),
 
   remove: (id: string) =>
     request<{ message: string }>(`/inspo/${id}`, { method: "DELETE" }),

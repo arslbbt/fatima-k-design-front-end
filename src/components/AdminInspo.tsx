@@ -6,6 +6,8 @@ import {
   X,
   Loader2,
   Search,
+  Play,
+  ExternalLink,
 } from "lucide-react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -43,10 +45,42 @@ export function AdminInspo() {
 
   const selectedBride = brides.find((b) => b.id === selectedBrideId) ?? null;
 
+  function getPlatformIcon(platform?: string | null) {
+    switch (platform?.toLowerCase()) {
+      case "tiktok":
+        return "🎵";
+      case "instagram":
+        return "📸";
+      case "youtube":
+        return "▶️";
+      case "pinterest":
+        return "📌";
+      default:
+        return "🎬";
+    }
+  }
+
+  function getPlatformGradient(platform?: string | null) {
+    switch (platform?.toLowerCase()) {
+      case "tiktok":
+        return "linear-gradient(135deg, #000000 0%, #ee1d52 100%)";
+      case "instagram":
+        return "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)";
+      case "youtube":
+        return "linear-gradient(135deg, #FF0000 0%, #CC0000 100%)";
+      case "pinterest":
+        return "linear-gradient(135deg, #E60023 0%, #BD081C 100%)";
+      default:
+        return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+    }
+  }
+
+  const selectedItem = lightboxIdx !== null ? uploads[lightboxIdx] : null;
+
   return (
     <AdminLayout>
-      {/* Lightbox */}
-      {lightboxIdx !== null && uploads[lightboxIdx] && (
+      {/* Lightbox for images */}
+      {selectedItem && selectedItem.mediaType === "image" && (
         <div
           style={{
             position: "fixed",
@@ -102,7 +136,7 @@ export function AdminInspo() {
             }}
           >
             <img
-              src={uploads[lightboxIdx].imageUrl}
+              src={selectedItem.imageUrl!}
               alt=""
               style={{
                 maxWidth: "80vw",
@@ -111,9 +145,9 @@ export function AdminInspo() {
                 objectFit: "contain",
               }}
             />
-            {uploads[lightboxIdx].caption && (
+            {selectedItem.caption && (
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
-                {uploads[lightboxIdx].caption}
+                {selectedItem.caption}
               </div>
             )}
           </div>
@@ -151,6 +185,177 @@ export function AdminInspo() {
             {(lightboxIdx ?? 0) + 1} / {uploads.length}
           </div>
         </div>
+      )}
+
+      {/* Modal for video links */}
+      {selectedItem && selectedItem.mediaType === "video_link" && (
+        <>
+          <div
+            onClick={() => setLightboxIdx(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.75)",
+              zIndex: 200,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                width: "100%",
+                maxWidth: 500,
+                maxHeight: "90vh",
+                overflow: "auto",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              }}
+            >
+              <div
+                style={{
+                  padding: "20px 24px",
+                  borderBottom: "1px solid #F0F0F0",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 20 }}>
+                    {getPlatformIcon(selectedItem.platform)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: "#333",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {selectedItem.platform} Video
+                  </span>
+                </div>
+                <button
+                  onClick={() => setLightboxIdx(null)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 4,
+                  }}
+                >
+                  <X size={20} color="#666" />
+                </button>
+              </div>
+
+              <div style={{ padding: 24 }}>
+                <div
+                  style={{
+                    background: getPlatformGradient(selectedItem.platform),
+                    borderRadius: 12,
+                    padding: 40,
+                    textAlign: "center",
+                    marginBottom: 20,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 64,
+                      height: 64,
+                      background: "rgba(255,255,255,0.95)",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Play size={28} color="#333" fill="#333" />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: "#fff",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Video hosted on {selectedItem.platform}
+                  </div>
+                </div>
+
+                {selectedItem.caption && (
+                  <div
+                    style={{
+                      marginBottom: 20,
+                      padding: 16,
+                      background: "#F9F9F9",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#999",
+                        marginBottom: 4,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Caption
+                    </div>
+                    <div style={{ fontSize: 14, color: "#333" }}>
+                      {selectedItem.caption}
+                    </div>
+                  </div>
+                )}
+
+                <a
+                  href={selectedItem.videoLink!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "12px",
+                    background: "#333",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    textAlign: "center",
+                    textDecoration: "none",
+                  }}
+                >
+                  <ExternalLink size={14} />
+                  Open in {selectedItem.platform}
+                </a>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       <main className="bp-page-main">
@@ -392,9 +597,9 @@ export function AdminInspo() {
                     gap: 12,
                   }}
                 >
-                  {uploads.map((photo, i) => (
+                  {uploads.map((item, i) => (
                     <div
-                      key={photo.id}
+                      key={item.id}
                       onClick={() => setLightboxIdx(i)}
                       style={{
                         borderRadius: 10,
@@ -404,18 +609,81 @@ export function AdminInspo() {
                         boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
                       }}
                     >
-                      <div style={{ aspectRatio: "3/4", overflow: "hidden" }}>
-                        <img
-                          src={photo.imageUrl}
-                          alt={photo.caption ?? ""}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      </div>
-                      {photo.caption && (
+                      {item.mediaType === "image" ? (
+                        <>
+                          <div
+                            style={{ aspectRatio: "3/4", overflow: "hidden" }}
+                          >
+                            <img
+                              src={item.imageUrl!}
+                              alt={item.caption ?? ""}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div
+                            style={{
+                              aspectRatio: "3/4",
+                              background: getPlatformGradient(item.platform),
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 8,
+                              position: "relative",
+                            }}
+                          >
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                background: "rgba(255,255,255,0.95)",
+                                borderRadius: 4,
+                                padding: "3px 8px",
+                                fontSize: 9,
+                                fontWeight: 600,
+                                color: "#333",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              {getPlatformIcon(item.platform)} {item.platform}
+                            </div>
+
+                            <div
+                              style={{
+                                width: 48,
+                                height: 48,
+                                background: "rgba(255,255,255,0.95)",
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Play size={22} color="#333" fill="#333" />
+                            </div>
+
+                            <div
+                              style={{
+                                color: "#fff",
+                                fontSize: 11,
+                                fontWeight: 500,
+                              }}
+                            >
+                              Video Link
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {item.caption && (
                         <div
                           style={{ background: "#fff", padding: "7px 10px" }}
                         >
@@ -428,7 +696,7 @@ export function AdminInspo() {
                               whiteSpace: "nowrap",
                             }}
                           >
-                            {photo.caption}
+                            {item.caption}
                           </div>
                         </div>
                       )}
@@ -436,7 +704,7 @@ export function AdminInspo() {
                         style={{ background: "#fff", padding: "4px 10px 8px" }}
                       >
                         <div style={{ fontSize: 10, color: "#AAA" }}>
-                          {new Date(photo.uploadedAt).toLocaleDateString(
+                          {new Date(item.uploadedAt).toLocaleDateString(
                             "en-AU",
                             { day: "numeric", month: "short", year: "numeric" },
                           )}
