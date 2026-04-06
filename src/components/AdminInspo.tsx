@@ -12,7 +12,7 @@ import {
 import { AdminLayout } from "@/components/AdminLayout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Pagination } from "@/components/ui/Pagination";
-import { inspoApi, bridesApi } from "@/lib/api";
+import { inspoApi, bridesApi, type InspoUpload } from "@/lib/api";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const BRIDE_PAGE_SIZE = 20;
@@ -22,6 +22,7 @@ export function AdminInspo() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [brideSearch, setBrideSearch] = useState("");
   const [bridePage, setBridePage] = useState(1);
+  const [embedLoading, setEmbedLoading] = useState(true);
 
   const debouncedSearch = useDebounce(brideSearch);
 
@@ -90,6 +91,27 @@ export function AdminInspo() {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    return null;
+  }
+
+  function getTikTokEmbedUrl(url: string): string | null {
+    // Extract TikTok video ID
+    const match = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+    if (match) {
+      return `https://www.tiktok.com/embed/v2/${match[1]}`;
+    }
+    return null;
+  }
+
+  function getVideoThumbnail(item: InspoUpload): string | null {
+    if (item.platform === "youtube" && item.videoLink) {
+      const videoId = item.videoLink.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+      )?.[1];
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      }
     }
     return null;
   }
@@ -210,7 +232,10 @@ export function AdminInspo() {
       {selectedItem && selectedItem.mediaType === "video_link" && (
         <>
           <div
-            onClick={() => setLightboxIdx(null)}
+            onClick={() => {
+              setLightboxIdx(null);
+              setEmbedLoading(true);
+            }}
             style={{
               position: "fixed",
               inset: 0,
@@ -272,7 +297,10 @@ export function AdminInspo() {
                   </span>
                 </div>
                 <button
-                  onClick={() => setLightboxIdx(null)}
+                  onClick={() => {
+                    setLightboxIdx(null);
+                    setEmbedLoading(true);
+                  }}
                   style={{
                     background: "none",
                     border: "none",
@@ -284,7 +312,33 @@ export function AdminInspo() {
                 </button>
               </div>
 
-              <div style={{ padding: 24 }}>
+              <div style={{ padding: 24, position: "relative" }}>
+                {/* Loading State */}
+                {embedLoading && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 12,
+                      zIndex: 10,
+                    }}
+                  >
+                    <Loader2
+                      size={32}
+                      className="animate-spin"
+                      color="#D4A373"
+                    />
+                    <div style={{ fontSize: 13, color: "#888" }}>
+                      Loading video...
+                    </div>
+                  </div>
+                )}
+
                 {/* Instagram Embed */}
                 {selectedItem.platform === "instagram" &&
                   getInstagramEmbedUrl(selectedItem.videoLink!) && (
@@ -294,6 +348,7 @@ export function AdminInspo() {
                         borderRadius: 12,
                         overflow: "hidden",
                         background: "#F5F5F5",
+                        minHeight: embedLoading ? 400 : "auto",
                       }}
                     >
                       <iframe
@@ -303,7 +358,13 @@ export function AdminInspo() {
                         frameBorder="0"
                         scrolling="no"
                         allowTransparency
-                        style={{ border: "none", overflow: "hidden" }}
+                        onLoad={() => setEmbedLoading(false)}
+                        style={{
+                          border: "none",
+                          overflow: "hidden",
+                          opacity: embedLoading ? 0 : 1,
+                          transition: "opacity 0.3s",
+                        }}
                       />
                     </div>
                   )}
@@ -317,6 +378,8 @@ export function AdminInspo() {
                         borderRadius: 12,
                         overflow: "hidden",
                         aspectRatio: "16/9",
+                        minHeight: embedLoading ? 300 : "auto",
+                        background: "#F5F5F5",
                       }}
                     >
                       <iframe
@@ -326,15 +389,50 @@ export function AdminInspo() {
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        style={{ border: "none" }}
+                        onLoad={() => setEmbedLoading(false)}
+                        style={{
+                          border: "none",
+                          opacity: embedLoading ? 0 : 1,
+                          transition: "opacity 0.3s",
+                        }}
                       />
                     </div>
                   )}
 
-                {/* Fallback for TikTok, Pinterest, or if embed fails */}
+                {/* TikTok Embed */}
+                {selectedItem.platform === "tiktok" &&
+                  getTikTokEmbedUrl(selectedItem.videoLink!) && (
+                    <div
+                      style={{
+                        marginBottom: 20,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        background: "#F5F5F5",
+                        minHeight: embedLoading ? 400 : "auto",
+                      }}
+                    >
+                      <iframe
+                        src={getTikTokEmbedUrl(selectedItem.videoLink!)!}
+                        width="100%"
+                        height="600"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowFullScreen
+                        onLoad={() => setEmbedLoading(false)}
+                        style={{
+                          border: "none",
+                          opacity: embedLoading ? 0 : 1,
+                          transition: "opacity 0.3s",
+                        }}
+                      />
+                    </div>
+                  )}
+
+                {/* Fallback for Pinterest or if embed fails */}
                 {(!selectedItem.platform ||
                   (selectedItem.platform !== "instagram" &&
-                    selectedItem.platform !== "youtube")) && (
+                    selectedItem.platform !== "youtube" &&
+                    selectedItem.platform !== "tiktok")) && (
                   <div
                     style={{
                       background: "#F5F5F5",
@@ -672,7 +770,12 @@ export function AdminInspo() {
                   {uploads.map((item, i) => (
                     <div
                       key={item.id}
-                      onClick={() => setLightboxIdx(i)}
+                      onClick={() => {
+                        setLightboxIdx(i);
+                        if (item.mediaType === "video_link") {
+                          setEmbedLoading(true);
+                        }
+                      }}
                       style={{
                         borderRadius: 10,
                         overflow: "hidden",
@@ -710,8 +813,89 @@ export function AdminInspo() {
                               gap: 8,
                               position: "relative",
                               border: "1px solid #E8E0D5",
+                              overflow: "hidden",
                             }}
                           >
+                            {/* Show YouTube thumbnail if available */}
+                            {getVideoThumbnail(item) ? (
+                              <>
+                                <img
+                                  src={getVideoThumbnail(item)!}
+                                  alt="Video thumbnail"
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    background:
+                                      "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3))",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: 48,
+                                      height: 48,
+                                      background: "rgba(255,255,255,0.95)",
+                                      borderRadius: "50%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                                    }}
+                                  >
+                                    <Play
+                                      size={22}
+                                      color="#D4A373"
+                                      fill="#D4A373"
+                                    />
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                {/* Fallback for non-YouTube videos */}
+                                <div
+                                  style={{
+                                    width: 48,
+                                    height: 48,
+                                    background: "#fff",
+                                    borderRadius: "50%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                  }}
+                                >
+                                  <Play
+                                    size={22}
+                                    color="#D4A373"
+                                    fill="#D4A373"
+                                  />
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#666",
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  Video Link
+                                </div>
+                              </>
+                            )}
+
                             <div
                               style={{
                                 position: "absolute",
@@ -728,31 +912,6 @@ export function AdminInspo() {
                               }}
                             >
                               {getPlatformIcon(item.platform)} {item.platform}
-                            </div>
-
-                            <div
-                              style={{
-                                width: 48,
-                                height: 48,
-                                background: "#fff",
-                                borderRadius: "50%",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                              }}
-                            >
-                              <Play size={22} color="#D4A373" fill="#D4A373" />
-                            </div>
-
-                            <div
-                              style={{
-                                color: "#666",
-                                fontSize: 11,
-                                fontWeight: 500,
-                              }}
-                            >
-                              Video Link
                             </div>
                           </div>
                         </>

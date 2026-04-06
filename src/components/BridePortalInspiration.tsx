@@ -26,6 +26,7 @@ export function BridePortalInspiration() {
   const [videoLink, setVideoLink] = useState("");
   const [addingVideo, setAddingVideo] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [embedLoading, setEmbedLoading] = useState(true);
 
   const { data: uploads = [], isLoading } = useQuery({
     queryKey: ["inspo-mine"],
@@ -297,7 +298,10 @@ export function BridePortalInspiration() {
       {selectedItem && selectedItem.mediaType === "video_link" && (
         <>
           <div
-            onClick={() => setLightboxIdx(null)}
+            onClick={() => {
+              setLightboxIdx(null);
+              setEmbedLoading(true);
+            }}
             style={{
               position: "fixed",
               inset: 0,
@@ -359,7 +363,10 @@ export function BridePortalInspiration() {
                   </span>
                 </div>
                 <button
-                  onClick={() => setLightboxIdx(null)}
+                  onClick={() => {
+                    setLightboxIdx(null);
+                    setEmbedLoading(true);
+                  }}
                   style={{
                     background: "none",
                     border: "none",
@@ -370,7 +377,33 @@ export function BridePortalInspiration() {
                   <X size={20} color="#666" />
                 </button>
               </div>
-              <div style={{ padding: 24 }}>
+              <div style={{ padding: 24, position: "relative" }}>
+                {/* Loading State */}
+                {embedLoading && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 12,
+                      zIndex: 10,
+                    }}
+                  >
+                    <Loader2
+                      size={32}
+                      className="animate-spin"
+                      color="#D4A373"
+                    />
+                    <div style={{ fontSize: 13, color: "#888" }}>
+                      Loading video...
+                    </div>
+                  </div>
+                )}
+
                 {/* Instagram Embed */}
                 {selectedItem.platform === "instagram" &&
                   getInstagramEmbedUrl(selectedItem.videoLink!) && (
@@ -380,6 +413,7 @@ export function BridePortalInspiration() {
                         borderRadius: 12,
                         overflow: "hidden",
                         background: "#F5F5F5",
+                        minHeight: embedLoading ? 400 : "auto",
                       }}
                     >
                       <iframe
@@ -389,7 +423,13 @@ export function BridePortalInspiration() {
                         frameBorder="0"
                         scrolling="no"
                         allowTransparency
-                        style={{ border: "none", overflow: "hidden" }}
+                        onLoad={() => setEmbedLoading(false)}
+                        style={{
+                          border: "none",
+                          overflow: "hidden",
+                          opacity: embedLoading ? 0 : 1,
+                          transition: "opacity 0.3s",
+                        }}
                       />
                     </div>
                   )}
@@ -403,6 +443,8 @@ export function BridePortalInspiration() {
                         borderRadius: 12,
                         overflow: "hidden",
                         aspectRatio: "16/9",
+                        minHeight: embedLoading ? 300 : "auto",
+                        background: "#F5F5F5",
                       }}
                     >
                       <iframe
@@ -412,7 +454,12 @@ export function BridePortalInspiration() {
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        style={{ border: "none" }}
+                        onLoad={() => setEmbedLoading(false)}
+                        style={{
+                          border: "none",
+                          opacity: embedLoading ? 0 : 1,
+                          transition: "opacity 0.3s",
+                        }}
                       />
                     </div>
                   )}
@@ -426,6 +473,7 @@ export function BridePortalInspiration() {
                         borderRadius: 12,
                         overflow: "hidden",
                         background: "#F5F5F5",
+                        minHeight: embedLoading ? 400 : "auto",
                       }}
                     >
                       <iframe
@@ -435,7 +483,12 @@ export function BridePortalInspiration() {
                         frameBorder="0"
                         scrolling="no"
                         allowFullScreen
-                        style={{ border: "none" }}
+                        onLoad={() => setEmbedLoading(false)}
+                        style={{
+                          border: "none",
+                          opacity: embedLoading ? 0 : 1,
+                          transition: "opacity 0.3s",
+                        }}
                       />
                     </div>
                   )}
@@ -969,7 +1022,12 @@ export function BridePortalInspiration() {
                   {uploads.map((item, i) => (
                     <div
                       key={item.id}
-                      onClick={() => setLightboxIdx(i)}
+                      onClick={() => {
+                        setLightboxIdx(i);
+                        if (item.mediaType === "video_link") {
+                          setEmbedLoading(true);
+                        }
+                      }}
                       style={{
                         borderRadius: 10,
                         overflow: "hidden",
@@ -1017,8 +1075,89 @@ export function BridePortalInspiration() {
                               gap: 12,
                               position: "relative",
                               border: "1px solid #E8E0D5",
+                              overflow: "hidden",
                             }}
                           >
+                            {/* Show YouTube thumbnail if available */}
+                            {getVideoThumbnail(item) ? (
+                              <>
+                                <img
+                                  src={getVideoThumbnail(item)!}
+                                  alt="Video thumbnail"
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    background:
+                                      "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3))",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: 64,
+                                      height: 64,
+                                      background: "rgba(255,255,255,0.95)",
+                                      borderRadius: "50%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                                    }}
+                                  >
+                                    <Play
+                                      size={28}
+                                      color="#D4A373"
+                                      fill="#D4A373"
+                                    />
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                {/* Fallback for non-YouTube videos */}
+                                <div
+                                  style={{
+                                    width: 64,
+                                    height: 64,
+                                    background: "#fff",
+                                    borderRadius: "50%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                  }}
+                                >
+                                  <Play
+                                    size={28}
+                                    color="#D4A373"
+                                    fill="#D4A373"
+                                  />
+                                </div>
+
+                                <div
+                                  style={{
+                                    color: "#666",
+                                    fontSize: 13,
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  Video Link
+                                </div>
+                              </>
+                            )}
+
                             <div
                               style={{
                                 position: "absolute",
@@ -1035,31 +1174,6 @@ export function BridePortalInspiration() {
                               }}
                             >
                               {getPlatformIcon(item.platform)} {item.platform}
-                            </div>
-
-                            <div
-                              style={{
-                                width: 64,
-                                height: 64,
-                                background: "#fff",
-                                borderRadius: "50%",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                              }}
-                            >
-                              <Play size={28} color="#D4A373" fill="#D4A373" />
-                            </div>
-
-                            <div
-                              style={{
-                                color: "#666",
-                                fontSize: 13,
-                                fontWeight: 500,
-                              }}
-                            >
-                              Video Link
                             </div>
                           </div>
                         </>
