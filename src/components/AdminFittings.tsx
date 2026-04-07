@@ -872,13 +872,13 @@ export function AdminFittings() {
                     }}
                   >
                     <CardContent
-                      style={{ padding: 0, display: "flex", minHeight: 140 }}
+                      style={{ padding: 0, display: "flex", height: 140 }}
                     >
                       <div
                         style={{
                           display: "flex",
                           width: 180,
-                          minHeight: 140,
+                          height: 140,
                           flexShrink: 0,
                           overflow: "hidden",
                         }}
@@ -888,7 +888,7 @@ export function AdminFittings() {
                             key={k}
                             style={{
                               flex: 1,
-                              minHeight: 140,
+                              height: 140,
                               overflow: "hidden",
                             }}
                           >
@@ -909,7 +909,7 @@ export function AdminFittings() {
                             style={{
                               flex: 1,
                               background: "#F5EFE9",
-                              minHeight: 140,
+                              height: 140,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -972,18 +972,30 @@ export function AdminFittings() {
                             />
                           </div>
                         )}
-                        <Badge
+                        <div
                           style={{
-                            background: "#F5EFE9",
-                            color: "#A67C52",
-                            border: "none",
-                            fontSize: 10,
-                            width: "fit-content",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
                           }}
                         >
-                          {f.photos.length} photo
-                          {f.photos.length !== 1 ? "s" : ""}
-                        </Badge>
+                          <Badge
+                            style={{
+                              background: "#F5EFE9",
+                              color: "#A67C52",
+                              border: "none",
+                              fontSize: 10,
+                              width: "fit-content",
+                            }}
+                          >
+                            {f.photos.length} photo
+                            {f.photos.length !== 1 ? "s" : ""}
+                          </Badge>
+                          <span style={{ fontSize: 12, color: "#D4A373" }}>
+                            View{" "}
+                            <span className="hidden sm:inline">album →</span>
+                          </span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

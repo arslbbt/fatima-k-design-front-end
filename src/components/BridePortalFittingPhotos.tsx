@@ -380,7 +380,7 @@ export function BridePortalFittingPhotos() {
                       style={{
                         padding: 0,
                         display: "flex",
-                        minHeight: 140,
+                        height: 140,
                       }}
                     >
                       {/* Photo strip preview */}
@@ -388,7 +388,7 @@ export function BridePortalFittingPhotos() {
                         style={{
                           display: "flex",
                           width: 200,
-                          minHeight: 140,
+                          height: 140,
                           flexShrink: 0,
                           overflow: "hidden",
                         }}
@@ -399,7 +399,7 @@ export function BridePortalFittingPhotos() {
                               key={k}
                               style={{
                                 flex: 1,
-                                minHeight: 140,
+                                height: 140,
                                 overflow: "hidden",
                               }}
                             >
@@ -420,7 +420,7 @@ export function BridePortalFittingPhotos() {
                             style={{
                               width: "100%",
                               background: "#F5EFE9",
-                              minHeight: 140,
+                              height: 140,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
