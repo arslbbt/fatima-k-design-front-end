@@ -177,31 +177,51 @@ export function BridePortalFittingPhotos() {
             >
               {activeFitting ? (
                 <span
-                  style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 6,
+                  }}
+                  className="sm:flex-row sm:items-center sm:gap-2"
                 >
-                  <button
-                    onClick={() => {
-                      setActiveFitting(null);
-                      setLightboxIdx(null);
-                      setNotesExpanded(false);
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      color: "#A67C52",
-                      fontSize: 14,
-                      fontFamily: "'DM Sans', sans-serif",
-                      padding: 0,
-                    }}
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
                   >
-                    <ChevronLeft size={16} /> All Albums
-                  </button>
-                  <span style={{ color: "#DDD" }}>·</span>
-                  Fitting #{fitting?.fittingNumber} - {fitting?.name}
+                    <button
+                      onClick={() => {
+                        setActiveFitting(null);
+                        setLightboxIdx(null);
+                        setNotesExpanded(false);
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        color: "#A67C52",
+                        fontSize: 14,
+                        fontFamily: "'DM Sans', sans-serif",
+                        padding: 0,
+                      }}
+                    >
+                      <ChevronLeft size={16} /> All Albums
+                    </button>
+                  </span>
+
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <span
+                      style={{ color: "#DDD" }}
+                      className="hidden sm:inline"
+                    >
+                      ·
+                    </span>
+                    Fitting #{fitting?.fittingNumber} - {fitting?.name}
+                  </span>
                 </span>
               ) : (
                 "Fitting Photos"

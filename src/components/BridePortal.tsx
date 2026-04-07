@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   ChevronRight,
   Loader2,
+  Play,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -313,6 +314,35 @@ export function BridePortal() {
     } finally {
       setUploading(false);
     }
+  }
+
+  function getPlatformIcon(platform?: string | null) {
+    switch (platform?.toLowerCase()) {
+      case "tiktok":
+        return "🎵";
+      case "instagram":
+        return "📸";
+      case "youtube":
+        return "▶️";
+      case "pinterest":
+        return "📌";
+      case "vimeo":
+        return "🎬";
+      default:
+        return "🔗";
+    }
+  }
+
+  function getVideoThumbnail(item: InspoUpload): string | null {
+    if (item.platform === "youtube" && item.videoLink) {
+      const videoId = item.videoLink.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+      )?.[1];
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      }
+    }
+    return null;
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -649,13 +679,55 @@ export function BridePortal() {
                     <div
                       key={img.id}
                       className="aspect-[4/3] rounded-lg overflow-hidden border border-[#E8E0D5] cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => navigate("/bride/inspiration")}
+                      onClick={() => {
+                        if (img.mediaType === "video_link") {
+                          window.open(img.videoLink!, "_blank");
+                        } else {
+                          navigate("/bride/inspiration");
+                        }
+                      }}
                     >
-                      <img
-                        src={img?.imageUrl ?? undefined}
-                        alt={img?.caption ?? "Inspiration"}
-                        className="w-full h-full object-cover"
-                      />
+                      {img.mediaType === "image" ? (
+                        <img
+                          src={img?.imageUrl ?? undefined}
+                          alt={img?.caption ?? "Inspiration"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[#F5F5F5] flex flex-col items-center justify-center gap-2 relative">
+                          {getVideoThumbnail(img) ? (
+                            <>
+                              <img
+                                src={getVideoThumbnail(img)!}
+                                alt="Video thumbnail"
+                                className="w-full h-full object-cover absolute top-0 left-0"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/30 flex items-center justify-center">
+                                <div className="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-lg">
+                                  <Play
+                                    size={20}
+                                    className="text-[#D4A373]"
+                                    fill="#D4A373"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                                <Play
+                                  size={20}
+                                  className="text-[#D4A373]"
+                                  fill="#D4A373"
+                                />
+                              </div>
+                              <div className="text-[10px] text-[#666] font-medium">
+                                {getPlatformIcon(img.platform)} {img.platform}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
             </div>

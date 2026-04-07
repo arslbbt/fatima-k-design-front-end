@@ -463,11 +463,14 @@ export function AdminFittings() {
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  flexDirection: "column", // mobile
+                  alignItems: "flex-start",
+                  gap: 10,
                   marginBottom: 20,
                 }}
+                className="sm:flex-row sm:justify-between sm:items-center sm:gap-0"
               >
+                {/* Back Button */}
                 <button
                   onClick={() => {
                     setSelectedBrideId(null);
@@ -486,7 +489,18 @@ export function AdminFittings() {
                 >
                   <ChevronLeft size={15} /> All Brides
                 </button>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+                {/* Right Section */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    width: "100%", // helps spacing on mobile
+                    justifyContent: "space-between",
+                  }}
+                  className="sm:w-auto sm:justify-end"
+                >
                   <span
                     style={{
                       fontFamily: "'Cormorant Garamond', serif",
@@ -497,6 +511,7 @@ export function AdminFittings() {
                   >
                     {selectedBride?.name}
                   </span>
+
                   <button
                     onClick={() => setShowCreateForm(true)}
                     style={{
@@ -513,7 +528,8 @@ export function AdminFittings() {
                       cursor: "pointer",
                     }}
                   >
-                    <Plus size={13} /> New Fitting
+                    <Plus size={13} /> New{" "}
+                    <span className="hidden sm:block">Fitting</span>
                   </button>
                 </div>
               </div>
@@ -1024,7 +1040,6 @@ export function AdminFittings() {
                             WebkitBoxOrient: "vertical",
                             lineHeight: 1.3,
                             minHeight: "22px",
-                            // maxHeight: "50px",
                           }}
                         >
                           Fitting #{f.fittingNumber} - {f.name}
