@@ -98,6 +98,7 @@ export const adminApi = {
           stage: BrideStage;
           weddingDate: string | null;
           phone: string | null;
+          brideType: BrideType;
         } | null;
         balance: number;
         hasDue: boolean;
@@ -220,6 +221,7 @@ export const bridesApi = {
     const qs = new URLSearchParams();
     if (params?.search) qs.set("search", params.search);
     if (params?.stage) qs.set("stage", params.stage);
+    if (params?.brideType) qs.set("brideType", params.brideType);
     if (params?.stylePreferences)
       qs.set("stylePreferences", params.stylePreferences);
     if (params?.page) qs.set("page", String(params.page));
@@ -454,6 +456,13 @@ export const BRIDE_STAGE_ORDER: BrideStage[] = [
   "COLLECTION_READY",
 ];
 
+export type BrideType = "CUSTOM" | "READY_TO_WEAR";
+
+export const BRIDE_TYPE_LABELS: Record<BrideType, string> = {
+  CUSTOM: "Custom",
+  READY_TO_WEAR: "Ready to Wear",
+};
+
 export interface User {
   id: string;
   name: string;
@@ -465,6 +474,7 @@ export interface User {
 export interface BrideProfile {
   id: string;
   userId: string;
+  brideType: BrideType;
   weddingDate: string | null;
   phone: string | null;
   address: string | null;
@@ -510,6 +520,7 @@ export interface RegisterBridePayload {
   name: string;
   email: string;
   password: string;
+  brideType?: BrideType;
   weddingDate?: string;
   phone?: string;
   partnerName?: string;
@@ -534,6 +545,7 @@ export interface UpdateBrideProfilePayload {
 export interface ListBridesParams {
   search?: string;
   stage?: BrideStage;
+  brideType?: BrideType;
   stylePreferences?: string;
   page?: number;
   limit?: number;

@@ -81,6 +81,9 @@ export function AdminDashboard() {
   const [, navigate] = useLocation();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [viewBride, setViewBride] = useState<BrideWithProfile | null>(null);
+  const [brideTypeFilter, setBrideTypeFilter] = useState<
+    "CUSTOM" | "READY_TO_WEAR"
+  >("CUSTOM");
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.admin.dashboard(),
@@ -252,6 +255,50 @@ export function AdminDashboard() {
                 </button>
               </div>
 
+              {/* Bride Type Tabs */}
+              <div className="flex gap-3 items-center flex-wrap">
+                <button
+                  onClick={() => setBrideTypeFilter("CUSTOM")}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    brideTypeFilter === "CUSTOM"
+                      ? "bg-white text-[#333333] shadow-sm border border-[#E8E0D5]"
+                      : "bg-transparent text-[#999999] hover:text-[#666666]"
+                  }`}
+                >
+                  <span className="text-base">✦</span>
+                  Couture Brides
+                  {brideTypeFilter === "CUSTOM" && (
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-[#D4A373] text-white text-xs font-semibold">
+                      {
+                        (data?.brides ?? []).filter(
+                          (b) => b.brideProfile?.brideType === "CUSTOM",
+                        ).length
+                      }
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setBrideTypeFilter("READY_TO_WEAR")}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    brideTypeFilter === "READY_TO_WEAR"
+                      ? "bg-white text-[#333333] shadow-sm border border-[#E8E0D5]"
+                      : "bg-transparent text-[#999999] hover:text-[#666666]"
+                  }`}
+                >
+                  <span className="text-base">◇</span>
+                  Ready to Wear
+                  {brideTypeFilter === "READY_TO_WEAR" && (
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-[#999999] text-white text-xs font-semibold">
+                      {
+                        (data?.brides ?? []).filter(
+                          (b) => b.brideProfile?.brideType === "READY_TO_WEAR",
+                        ).length
+                      }
+                    </span>
+                  )}
+                </button>
+              </div>
+
               <Card className="bg-white border-[#E8E0D5] shadow-sm overflow-hidden">
                 {isLoading ? (
                   <div className="flex justify-center py-10">
@@ -282,71 +329,84 @@ export function AdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(data?.brides ?? []).length === 0 ? (
-                        <TableRow>
-                          <TableCell
-                            colSpan={5}
-                            className="text-center text-[#AAAAAA] py-8"
-                          >
-                            No brides yet
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        (data?.brides ?? []).map((bride) => (
-                          <TableRow key={bride.id} className="border-[#E8E0D5]">
-                            <TableCell className="font-medium text-[#333333]">
-                              {bride.name}
-                            </TableCell>
-                            <TableCell className="text-[#666666] text-sm">
-                              {fmtWeddingDate(bride.brideProfile?.weddingDate)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className="bg-[#FAF8F5] text-[#555555] border-[#E8E0D5] font-normal"
-                              >
-                                {bride.brideProfile?.stage
-                                  ? BRIDE_STAGE_LABELS[bride.brideProfile.stage]
-                                  : "—"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <span
-                                className={
-                                  bride.hasDue
-                                    ? "text-[#B87A4F] font-medium"
-                                    : "text-[#888888]"
-                                }
-                              >
-                                {bride.balance > 0
-                                  ? `$${bride.balance.toLocaleString()}`
-                                  : "$0"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-[#A67C52] hover:bg-[#FAF8F5] hover:text-[#A67C52] cursor-pointer"
-                                  onClick={() => navigate("/admin/fittings")}
-                                  title="Fitting Photos"
-                                >
-                                  <Upload className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 border-[#E8E0D5] text-[#555555] font-normal cursor-pointer"
-                                  onClick={() => handleViewBride(bride.id)}
-                                >
-                                  View
-                                </Button>
-                              </div>
+                      {(() => {
+                        const filteredBrides = (data?.brides ?? []).filter(
+                          (b) => b.brideProfile?.brideType === brideTypeFilter,
+                        );
+
+                        return filteredBrides.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={5}
+                              className="text-center text-[#AAAAAA] py-8"
+                            >
+                              No brides in this category
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
+                        ) : (
+                          filteredBrides.map((bride) => (
+                            <TableRow
+                              key={bride.id}
+                              className="border-[#E8E0D5]"
+                            >
+                              <TableCell className="font-medium text-[#333333]">
+                                {bride.name}
+                              </TableCell>
+                              <TableCell className="text-[#666666] text-sm">
+                                {fmtWeddingDate(
+                                  bride.brideProfile?.weddingDate,
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className="bg-[#FAF8F5] text-[#555555] border-[#E8E0D5] font-normal"
+                                >
+                                  {bride.brideProfile?.stage
+                                    ? BRIDE_STAGE_LABELS[
+                                        bride.brideProfile.stage
+                                      ]
+                                    : "—"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <span
+                                  className={
+                                    bride.hasDue
+                                      ? "text-[#B87A4F] font-medium"
+                                      : "text-[#888888]"
+                                  }
+                                >
+                                  {bride.balance > 0
+                                    ? `$${bride.balance.toLocaleString()}`
+                                    : "$0"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-[#A67C52] hover:bg-[#FAF8F5] hover:text-[#A67C52] cursor-pointer"
+                                    onClick={() => navigate("/admin/fittings")}
+                                    title="Fitting Photos"
+                                  >
+                                    <Upload className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 border-[#E8E0D5] text-[#555555] font-normal cursor-pointer"
+                                    onClick={() => handleViewBride(bride.id)}
+                                  >
+                                    View
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        );
+                      })()}
                     </TableBody>
                   </Table>
                 )}

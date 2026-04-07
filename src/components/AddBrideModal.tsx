@@ -14,6 +14,7 @@ interface FormState {
   name: string;
   email: string;
   password: string;
+  brideType: "CUSTOM" | "READY_TO_WEAR";
   weddingDate: string;
   phone: string;
   partnerName: string;
@@ -33,6 +34,7 @@ const EMPTY: FormState = {
   name: "",
   email: "",
   password: "",
+  brideType: "CUSTOM",
   weddingDate: "",
   phone: "",
   partnerName: "",
@@ -158,6 +160,7 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
       name: form.name.trim(),
       email: form.email.trim(),
       password: form.password,
+      brideType: form.brideType,
       weddingDate: form.weddingDate,
       phone: form.phone.trim(),
       ...(form.partnerName.trim() && { partnerName: form.partnerName.trim() }),
@@ -303,38 +306,58 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
               </Field>
             </div>
 
-            {/* Password */}
-            <Field label="Temporary Password *" error={errors.password}>
-              <div style={{ position: "relative" }}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) => set("password", e.target.value)}
-                  placeholder="Min. 6 characters"
-                  style={{ ...inputStyle(!!errors.password), paddingRight: 40 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 2,
-                  }}
+            {/* Row: Password + Bride Type */}
+            <div className="bride-modal-row">
+              <Field label="Temporary Password *" error={errors.password}>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(e) => set("password", e.target.value)}
+                    placeholder="Min. 6 characters"
+                    style={{
+                      ...inputStyle(!!errors.password),
+                      paddingRight: 40,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 2,
+                    }}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={15} color="#AAA" />
+                    ) : (
+                      <Eye size={15} color="#AAA" />
+                    )}
+                  </button>
+                </div>
+              </Field>
+              <Field label="Bride Type *">
+                <select
+                  value={form.brideType}
+                  onChange={(e) =>
+                    set(
+                      "brideType",
+                      e.target.value as "CUSTOM" | "READY_TO_WEAR",
+                    )
+                  }
+                  style={inputStyle(false)}
                 >
-                  {showPassword ? (
-                    <EyeOff size={15} color="#AAA" />
-                  ) : (
-                    <Eye size={15} color="#AAA" />
-                  )}
-                </button>
-              </div>
-            </Field>
+                  <option value="CUSTOM">Custom</option>
+                  <option value="READY_TO_WEAR">Ready to Wear</option>
+                </select>
+              </Field>
+            </div>
 
             {/* Row: Wedding Date + Phone */}
             <div className="bride-modal-row">

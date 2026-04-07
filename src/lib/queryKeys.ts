@@ -28,6 +28,7 @@ export const queryKeys = {
     list: (filters: {
       search?: string;
       stage?: string;
+      brideType?: string;
       page?: number;
       limit?: number;
     }) => ["brides", "list", filters] as const,

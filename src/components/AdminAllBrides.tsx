@@ -21,6 +21,7 @@ import {
   bridesApi,
   type BrideWithProfile,
   type BrideStage,
+  type BrideType,
   BRIDE_STAGE_LABELS,
   BRIDE_STAGE_ORDER,
 } from "@/lib/api";
@@ -36,10 +37,19 @@ const stageFilters: Array<{ label: string; value: BrideStage | "ALL" }> = [
   ...BRIDE_STAGE_ORDER.map((s) => ({ label: BRIDE_STAGE_LABELS[s], value: s })),
 ];
 
+const brideTypeFilters: Array<{ label: string; value: BrideType | "ALL" }> = [
+  { label: "All", value: "ALL" },
+  { label: "✦ Couture", value: "CUSTOM" },
+  { label: "◇ Ready to Wear", value: "READY_TO_WEAR" },
+];
+
 export function AdminAllBrides() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<BrideStage | "ALL">("ALL");
+  const [brideTypeFilter, setBrideTypeFilter] = useState<BrideType | "ALL">(
+    "ALL",
+  );
   const [page, setPage] = useState(1);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [viewBride, setViewBride] = useState<BrideWithProfile | null>(null);
@@ -56,16 +66,23 @@ export function AdminAllBrides() {
     setPage(1);
   }, []);
 
+  const handleBrideType = useCallback((val: BrideType | "ALL") => {
+    setBrideTypeFilter(val);
+    setPage(1);
+  }, []);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.brides.list({
       search: debouncedSearch,
       stage: stageFilter === "ALL" ? undefined : stageFilter,
+      brideType: brideTypeFilter === "ALL" ? undefined : brideTypeFilter,
       page,
     }),
     queryFn: () =>
       bridesApi.list({
         search: debouncedSearch || undefined,
         stage: stageFilter === "ALL" ? undefined : stageFilter,
+        brideType: brideTypeFilter === "ALL" ? undefined : brideTypeFilter,
         page,
         limit: PAGE_SIZE,
       }),
@@ -132,9 +149,20 @@ export function AdminAllBrides() {
             </button>
           </div>
 
-          {/* Search */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ position: "relative", maxWidth: 400 }}>
+          {/* Search and Bride Type Filters Row */}
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              marginBottom: 16,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            {/* Search */}
+            <div
+              style={{ position: "relative", flex: "1 1 300px", minWidth: 250 }}
+            >
               <Search
                 size={15}
                 color="#AAA"
@@ -148,7 +176,7 @@ export function AdminAllBrides() {
               <input
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search by name or email…"
+                placeholder="Search by name or gown…"
                 style={{
                   width: "100%",
                   paddingLeft: 36,
@@ -164,6 +192,37 @@ export function AdminAllBrides() {
                   boxSizing: "border-box",
                 }}
               />
+            </div>
+
+            {/* Bride Type Tabs */}
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              {brideTypeFilters.map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => handleBrideType(t.value)}
+                  style={{
+                    padding: "8px 18px",
+                    borderRadius: 8,
+                    border: `1px solid ${brideTypeFilter === t.value ? "#D4A373" : "#E8E0D5"}`,
+                    background:
+                      brideTypeFilter === t.value ? "#FAF8F5" : "#fff",
+                    color: brideTypeFilter === t.value ? "#7A5C3A" : "#999",
+                    fontSize: 13,
+                    fontWeight: brideTypeFilter === t.value ? 500 : 400,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -183,15 +242,16 @@ export function AdminAllBrides() {
                 key={s.value}
                 onClick={() => handleStage(s.value)}
                 style={{
-                  padding: "4px 12px",
+                  padding: "6px 14px",
                   borderRadius: 20,
-                  border: `1px solid ${stageFilter === s.value ? "#A67C52" : "#E8E0D5"}`,
+                  border: `1px solid ${stageFilter === s.value ? "#D4A373" : "#E8E0D5"}`,
                   background:
-                    stageFilter === s.value ? "#E8D8CE" : "transparent",
-                  color: stageFilter === s.value ? "#7A5C3A" : "#888",
-                  fontSize: 11,
-                  fontWeight: stageFilter === s.value ? 600 : 400,
+                    stageFilter === s.value ? "#F5EFE9" : "transparent",
+                  color: stageFilter === s.value ? "#7A5C3A" : "#999",
+                  fontSize: 12,
+                  fontWeight: stageFilter === s.value ? 500 : 400,
                   cursor: "pointer",
+                  transition: "all 0.2s",
                 }}
               >
                 {s.label}
@@ -249,6 +309,7 @@ export function AdminAllBrides() {
                     onClick={() => {
                       handleSearch("");
                       handleStage("ALL");
+                      handleBrideType("ALL");
                     }}
                     style={{
                       marginTop: 12,
