@@ -42,6 +42,7 @@ export function AdminFittings() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [newFittingNotes, setNewFittingNotes] = useState("");
+  const [newFittingName, setNewFittingName] = useState("");
   const [newFittingApptId, setNewFittingApptId] = useState("");
   const [newFittingPhotos, setNewFittingPhotos] = useState<File[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -93,6 +94,7 @@ export function AdminFittings() {
       const fitting = await fittingsApi.create(
         selectedBrideId!,
         newFittingApptId,
+        newFittingName,
         newFittingNotes || undefined,
       );
       // Then upload photos if any
@@ -113,6 +115,7 @@ export function AdminFittings() {
             : undefined,
       });
       setNewFittingNotes("");
+      setNewFittingName("");
       setNewFittingApptId("");
       setNewFittingPhotos([]);
       setShowCreateForm(false);
@@ -588,6 +591,53 @@ export function AdminFittings() {
                     </select>
                   </div>
 
+                  {/* Fitting Name — mandatory */}
+                  <div style={{ marginBottom: 12 }}>
+                    <label
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#555",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                        display: "block",
+                        marginBottom: 5,
+                      }}
+                    >
+                      Fitting Name * (Max 9 words)
+                    </label>
+                    <input
+                      type="text"
+                      value={newFittingName}
+                      onChange={(e) => setNewFittingName(e.target.value)}
+                      placeholder="e.g. First Toile Fitting"
+                      maxLength={100}
+                      style={{
+                        width: "100%",
+                        padding: "9px 12px",
+                        border: `1px solid ${!newFittingName && createMutation.isError ? "#F5C6C6" : "#E8E0D5"}`,
+                        borderRadius: 7,
+                        fontSize: 13,
+                        color: "#333",
+                        background: "#FDFBF8",
+                        outline: "none",
+                        boxSizing: "border-box" as const,
+                      }}
+                    />
+                    {newFittingName &&
+                      newFittingName.trim().split(/\s+/).length > 9 && (
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "#CC4444",
+                            marginTop: 4,
+                          }}
+                        >
+                          Name must not exceed 9 words
+                        </div>
+                      )}
+                  </div>
+
                   <div style={{ marginBottom: 12 }}>
                     <label
                       style={{
@@ -776,6 +826,9 @@ export function AdminFittings() {
                       onClick={() => {
                         setShowCreateForm(false);
                         setNewFittingPhotos([]);
+                        setNewFittingName("");
+                        setNewFittingApptId("");
+                        setNewFittingNotes("");
                       }}
                       style={{
                         padding: "8px 16px",
@@ -798,18 +851,46 @@ export function AdminFittings() {
                           });
                           return;
                         }
+                        if (!newFittingName.trim()) {
+                          toast({
+                            title: "Fitting name required",
+                            description: "Please enter a fitting name.",
+                          });
+                          return;
+                        }
+                        const wordCount = newFittingName
+                          .trim()
+                          .split(/\s+/).length;
+                        if (wordCount > 9) {
+                          toast({
+                            title: "Name too long",
+                            description:
+                              "Fitting name must not exceed 9 words.",
+                          });
+                          return;
+                        }
                         createMutation.mutate();
                       }}
-                      disabled={createMutation.isPending || !newFittingApptId}
+                      disabled={
+                        createMutation.isPending ||
+                        !newFittingApptId ||
+                        !newFittingName.trim()
+                      }
                       style={{
                         padding: "8px 16px",
-                        background: !newFittingApptId ? "#CCC" : "#2C2C2C",
+                        background:
+                          !newFittingApptId || !newFittingName.trim()
+                            ? "#CCC"
+                            : "#2C2C2C",
                         color: "#fff",
                         border: "none",
                         borderRadius: 7,
                         fontSize: 12,
                         fontWeight: 600,
-                        cursor: !newFittingApptId ? "not-allowed" : "pointer",
+                        cursor:
+                          !newFittingApptId || !newFittingName.trim()
+                            ? "not-allowed"
+                            : "pointer",
                         display: "flex",
                         alignItems: "center",
                         gap: 6,
@@ -938,7 +1019,7 @@ export function AdminFittings() {
                             marginBottom: 4,
                           }}
                         >
-                          Fitting #{f.fittingNumber}
+                          Fitting #{f.fittingNumber} - {f.name}
                         </div>
                         <div
                           style={{
@@ -1031,7 +1112,8 @@ export function AdminFittings() {
                       color: "#2C2C2C",
                     }}
                   >
-                    Fitting #{activeFitting.fittingNumber}
+                    Fitting #{activeFitting.fittingNumber} -{" "}
+                    {activeFitting.name}
                   </span>
                 </div>
                 <div className="fitting-detail-actions">

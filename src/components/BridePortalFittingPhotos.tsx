@@ -201,7 +201,7 @@ export function BridePortalFittingPhotos() {
                     <ChevronLeft size={16} /> All Albums
                   </button>
                   <span style={{ color: "#DDD" }}>·</span>
-                  Fitting #{fitting?.fittingNumber}
+                  Fitting #{fitting?.fittingNumber} - {fitting?.name}
                 </span>
               ) : (
                 "Fitting Photos"
@@ -449,7 +449,7 @@ export function BridePortalFittingPhotos() {
                             marginBottom: 6,
                           }}
                         >
-                          Fitting #{f.fittingNumber}
+                          Fitting #{f.fittingNumber} - {f.name}
                         </div>
                         <div
                           style={{

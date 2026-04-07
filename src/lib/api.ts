@@ -645,6 +645,7 @@ export interface Fitting {
   brideId: string;
   appointmentId: string | null;
   fittingNumber: number;
+  name: string;
   notes: string | null;
   createdAt: string;
   photos: FittingPhoto[];
@@ -656,10 +657,15 @@ export const fittingsApi = {
 
   listMine: () => request<Fitting[]>(`/fittings/bride/me`),
 
-  create: (brideId: string, appointmentId: string, notes?: string) =>
+  create: (
+    brideId: string,
+    appointmentId: string,
+    name: string,
+    notes?: string,
+  ) =>
     request<Fitting>(`/fittings/bride/${brideId}`, {
       method: "POST",
-      body: JSON.stringify({ appointmentId, notes }),
+      body: JSON.stringify({ appointmentId, name, notes }),
     }),
 
   uploadPhotos: (fittingId: string, files: File[]) => {
