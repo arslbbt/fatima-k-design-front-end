@@ -652,8 +652,8 @@ export function BridePortal() {
                       onClick={() => navigate("/bride/inspiration")}
                     >
                       <img
-                        src={img.imageUrl}
-                        alt={img.caption ?? "Inspiration"}
+                        src={img?.imageUrl ?? undefined}
+                        alt={img?.caption ?? "Inspiration"}
                         className="w-full h-full object-cover"
                       />
                     </div>

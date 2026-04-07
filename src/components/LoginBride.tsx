@@ -52,7 +52,7 @@ export function LoginBride() {
       <div
         style={{
           padding: "20px 32px",
-          marginLeft:"20px",
+          marginLeft: "20px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
