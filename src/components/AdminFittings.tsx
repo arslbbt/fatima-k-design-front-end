@@ -1017,6 +1017,11 @@ export function AdminFittings() {
                             fontWeight: 500,
                             color: "#2C2C2C",
                             marginBottom: 4,
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            lineHeight: 1.3,
                           }}
                         >
                           Fitting #{f.fittingNumber} - {f.name}
@@ -1035,7 +1040,10 @@ export function AdminFittings() {
                           })}
                         </div>
                         {f.notes && (
-                          <div style={{ marginBottom: 8, flex: 1 }}>
+                          <div
+                            className="hidden md:block"
+                            style={{ marginBottom: 8, flex: 1 }}
+                          >
                             <div
                               className="ql-editor ql-fitting-notes"
                               dangerouslySetInnerHTML={{ __html: f.notes }}

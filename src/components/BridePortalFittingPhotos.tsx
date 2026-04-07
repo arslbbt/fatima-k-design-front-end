@@ -447,6 +447,11 @@ export function BridePortalFittingPhotos() {
                             fontWeight: 500,
                             color: "#2C2C2C",
                             marginBottom: 6,
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            lineHeight: 1.3,
                           }}
                         >
                           Fitting #{f.fittingNumber} - {f.name}
@@ -465,7 +470,10 @@ export function BridePortalFittingPhotos() {
                           })}
                         </div>
                         {f.notes && (
-                          <div style={{ marginBottom: 10, flex: 1 }}>
+                          <div
+                            className="hidden md:block"
+                            style={{ marginBottom: 10, flex: 1 }}
+                          >
                             <div
                               className="ql-editor ql-fitting-notes"
                               style={{
