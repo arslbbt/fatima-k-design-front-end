@@ -1016,12 +1016,15 @@ export function AdminFittings() {
                             fontSize: 18,
                             fontWeight: 500,
                             color: "#2C2C2C",
+                            // marginBottom: 6,
                             marginBottom: 4,
                             overflow: "hidden",
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
                             lineHeight: 1.3,
+                            minHeight: "22px",
+                            // maxHeight: "50px",
                           }}
                         >
                           Fitting #{f.fittingNumber} - {f.name}
@@ -1030,7 +1033,7 @@ export function AdminFittings() {
                           style={{
                             fontSize: 12,
                             color: "#888",
-                            marginBottom: 8,
+                            marginBottom: 6,
                           }}
                         >
                           {new Date(f.createdAt).toLocaleDateString("en-AU", {
@@ -1042,7 +1045,7 @@ export function AdminFittings() {
                         {f.notes && (
                           <div
                             className="hidden md:block"
-                            style={{ marginBottom: 8, flex: 1 }}
+                            style={{ marginBottom: 6, flex: 1 }}
                           >
                             <div
                               className="ql-editor ql-fitting-notes"

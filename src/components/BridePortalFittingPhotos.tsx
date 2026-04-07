@@ -452,6 +452,7 @@ export function BridePortalFittingPhotos() {
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
                             lineHeight: 1.3,
+                            minHeight: "26px",
                           }}
                         >
                           Fitting #{f.fittingNumber} - {f.name}
@@ -460,7 +461,7 @@ export function BridePortalFittingPhotos() {
                           style={{
                             fontSize: 12,
                             color: "#888",
-                            marginBottom: f.notes ? 8 : 10,
+                            marginBottom: f.notes ? 6 : 8,
                           }}
                         >
                           {new Date(f.createdAt).toLocaleDateString("en-AU", {
@@ -472,7 +473,7 @@ export function BridePortalFittingPhotos() {
                         {f.notes && (
                           <div
                             className="hidden md:block"
-                            style={{ marginBottom: 10, flex: 1 }}
+                            style={{ marginBottom: 8, flex: 1 }}
                           >
                             <div
                               className="ql-editor ql-fitting-notes"
