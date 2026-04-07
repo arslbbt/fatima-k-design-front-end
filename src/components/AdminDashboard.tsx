@@ -255,18 +255,18 @@ export function AdminDashboard() {
                 </button>
               </div>
 
-              {/* Bride Type Tabs */}
-              <div className="flex gap-3 items-center flex-wrap">
+              {/* Bride Type Tabs Container - matches table width */}
+              <div className="bg-[#F5EFE9] w-full rounded-lg p-1 flex justify-around items-center ">
                 <button
                   onClick={() => setBrideTypeFilter("CUSTOM")}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`w-full flex items-center justify-center text-center gap-2 px-5 py-2 rounded-md text-sm font-medium transition-all ${
                     brideTypeFilter === "CUSTOM"
-                      ? "bg-white text-[#333333] shadow-sm border border-[#E8E0D5]"
+                      ? "bg-white text-[#333333] shadow-sm"
                       : "bg-transparent text-[#999999] hover:text-[#666666]"
                   }`}
                 >
                   <span className="text-base">✦</span>
-                  Couture Brides
+                  Custom Brides
                   {brideTypeFilter === "CUSTOM" && (
                     <span className="ml-1 px-2 py-0.5 rounded-full bg-[#D4A373] text-white text-xs font-semibold">
                       {
@@ -279,9 +279,9 @@ export function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => setBrideTypeFilter("READY_TO_WEAR")}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`w-full flex items-center justify-center text-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all ${
                     brideTypeFilter === "READY_TO_WEAR"
-                      ? "bg-white text-[#333333] shadow-sm border border-[#E8E0D5]"
+                      ? "bg-white text-[#333333] shadow-sm"
                       : "bg-transparent text-[#999999] hover:text-[#666666]"
                   }`}
                 >

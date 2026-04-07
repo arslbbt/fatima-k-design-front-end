@@ -181,18 +181,49 @@ export function BrideProfileModal({ bride, onClose }: BrideProfileModalProps) {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <h2
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontSize: 24,
+                      fontWeight: 500,
+                      color: "#fff",
+                      margin: 0,
+                    }}
+                  >
+                    {bride.name}
+                  </h2>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      padding: "3px 10px",
+                      borderRadius: 12,
+                      background:
+                        profile?.brideType === "CUSTOM"
+                          ? "rgba(212,163,115,0.2)"
+                          : "rgba(255,255,255,0.15)",
+                      color:
+                        profile?.brideType === "CUSTOM"
+                          ? "#D4A373"
+                          : "rgba(255,255,255,0.8)",
+                      border: `1px solid ${profile?.brideType === "CUSTOM" ? "rgba(212,163,115,0.3)" : "rgba(255,255,255,0.2)"}`,
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    {profile?.brideType === "CUSTOM"
+                      ? "✦ Custom"
+                      : "◇ Ready to Wear"}
+                  </span>
+                </div>
+                <div
                   style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: 24,
-                    fontWeight: 500,
-                    color: "#fff",
-                    margin: "0 0 4px",
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.5)",
+                    marginTop: 4,
                   }}
                 >
-                  {bride.name}
-                </h2>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
                   Member since {memberSince}
                 </div>
               </div>

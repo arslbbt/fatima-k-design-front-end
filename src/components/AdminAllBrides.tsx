@@ -39,7 +39,7 @@ const stageFilters: Array<{ label: string; value: BrideStage | "ALL" }> = [
 
 const brideTypeFilters: Array<{ label: string; value: BrideType | "ALL" }> = [
   { label: "All", value: "ALL" },
-  { label: "✦ Couture", value: "CUSTOM" },
+  { label: "✦ Custom", value: "CUSTOM" },
   { label: "◇ Ready to Wear", value: "READY_TO_WEAR" },
 ];
 
