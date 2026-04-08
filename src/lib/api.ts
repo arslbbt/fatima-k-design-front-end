@@ -409,7 +409,7 @@ export type AppointmentStatus =
   | "CANCELLED";
 export type AppointmentTitle =
   // Shared stages (used by both Custom and RTW)
-  | "CONSULTATION"
+  // | "CONSULTATION"
   | "ALTERATION"
   | "GOWN_COMPLETE"
   | "COLLECTION_READY"
@@ -425,7 +425,7 @@ export type AppointmentTitle =
 
 export const APPOINTMENT_TITLE_LABELS: Record<AppointmentTitle, string> = {
   // Shared stages
-  CONSULTATION: "Consultation",
+  // CONSULTATION: "Consultation",
   ALTERATION: "Alteration",
   GOWN_COMPLETE: "Gown Complete",
   COLLECTION_READY: "Collection Ready",
@@ -442,7 +442,7 @@ export const APPOINTMENT_TITLE_LABELS: Record<AppointmentTitle, string> = {
 
 // Appointment types by bride type
 export const CUSTOM_APPOINTMENT_TITLES: AppointmentTitle[] = [
-  "CONSULTATION",
+  // "CONSULTATION",
   "MEASUREMENTS",
   "CALICO",
   "GOWN_IN_FABRIC",
@@ -454,7 +454,7 @@ export const CUSTOM_APPOINTMENT_TITLES: AppointmentTitle[] = [
 ];
 
 export const RTW_APPOINTMENT_TITLES: AppointmentTitle[] = [
-  "CONSULTATION",
+  // "CONSULTATION",
   "GOWN_TRY_ON",
   "ALTERATION",
   "GOWN_COMPLETE",
