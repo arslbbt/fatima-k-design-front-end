@@ -408,45 +408,41 @@ export type AppointmentStatus =
   | "COMPLETED"
   | "CANCELLED";
 export type AppointmentTitle =
-  // | "CONSULTATION"
-  // Custom dress flow
+  // Shared stages (used by both Custom and RTW)
+  | "CONSULTATION"
+  | "ALTERATION"
+  | "GOWN_COMPLETE"
+  | "COLLECTION_READY"
+  // Custom dress flow only
   | "MEASUREMENTS"
   | "CALICO"
   | "GOWN_IN_FABRIC"
   | "DETAIL_ON"
-  | "ALTERATION"
-  | "GOWN_COMPLETE"
-  | "COLLECTION_READY"
-  // RTW flow
+  // RTW flow only
   | "GOWN_TRY_ON"
-  | "ALTERATIONS"
-  | "RTW_GOWN_COMPLETE"
-  | "RTW_COLLECTION_READY"
   // Generic
   | "CUSTOM";
 
 export const APPOINTMENT_TITLE_LABELS: Record<AppointmentTitle, string> = {
-  // CONSULTATION: "Consultation",
+  // Shared stages
+  CONSULTATION: "Consultation",
+  ALTERATION: "Alteration",
+  GOWN_COMPLETE: "Gown Complete",
+  COLLECTION_READY: "Collection Ready",
   // Custom dress flow
   MEASUREMENTS: "Measurements",
   CALICO: "Calico",
   GOWN_IN_FABRIC: "Gown in Fabric",
   DETAIL_ON: "Detail On",
-  ALTERATION: "Alteration",
-  GOWN_COMPLETE: "Gown Complete",
-  COLLECTION_READY: "Collection Ready",
   // RTW flow
   GOWN_TRY_ON: "Gown Try On",
-  ALTERATIONS: "Alterations",
-  RTW_GOWN_COMPLETE: "Gown Complete",
-  RTW_COLLECTION_READY: "Collection Ready",
   // Generic
   CUSTOM: "Custom",
 };
 
 // Appointment types by bride type
 export const CUSTOM_APPOINTMENT_TITLES: AppointmentTitle[] = [
-  // "CONSULTATION",
+  "CONSULTATION",
   "MEASUREMENTS",
   "CALICO",
   "GOWN_IN_FABRIC",
@@ -458,45 +454,41 @@ export const CUSTOM_APPOINTMENT_TITLES: AppointmentTitle[] = [
 ];
 
 export const RTW_APPOINTMENT_TITLES: AppointmentTitle[] = [
-  // "CONSULTATION",
+  "CONSULTATION",
   "GOWN_TRY_ON",
-  "ALTERATIONS",
-  "RTW_GOWN_COMPLETE",
-  "RTW_COLLECTION_READY",
+  "ALTERATION",
+  "GOWN_COMPLETE",
+  "COLLECTION_READY",
   "CUSTOM",
 ];
 
 export type BrideStage =
+  // Shared stages (used by both Custom and RTW)
   | "CONSULTATION"
-  // Custom dress stages
+  | "ALTERATION"
+  | "GOWN_COMPLETE"
+  | "COLLECTION_READY"
+  // Custom dress stages only
   | "MEASUREMENTS"
   | "CALICO"
   | "GOWN_IN_FABRIC"
   | "DETAIL_ON"
-  | "ALTERATION"
-  | "GOWN_COMPLETE"
-  | "COLLECTION_READY"
-  // RTW stages
-  | "GOWN_TRY_ON"
-  | "ALTERATIONS"
-  | "RTW_GOWN_COMPLETE"
-  | "RTW_COLLECTION_READY";
+  // RTW stages only
+  | "GOWN_TRY_ON";
 
 export const BRIDE_STAGE_LABELS: Record<BrideStage, string> = {
+  // Shared stages
   CONSULTATION: "Consultation",
+  ALTERATION: "Alteration",
+  GOWN_COMPLETE: "Gown Complete",
+  COLLECTION_READY: "Collection Ready",
   // Custom dress stages
   MEASUREMENTS: "Measurements",
   CALICO: "Calico",
   GOWN_IN_FABRIC: "Gown in Fabric",
   DETAIL_ON: "Detail On",
-  ALTERATION: "Alteration",
-  GOWN_COMPLETE: "Gown Complete",
-  COLLECTION_READY: "Collection Ready",
   // RTW stages
   GOWN_TRY_ON: "Gown Try On",
-  ALTERATIONS: "Alterations",
-  RTW_GOWN_COMPLETE: "Gown Complete",
-  RTW_COLLECTION_READY: "Collection Ready",
 };
 
 // Stage order by bride type
@@ -514,9 +506,9 @@ export const CUSTOM_BRIDE_STAGE_ORDER: BrideStage[] = [
 export const RTW_BRIDE_STAGE_ORDER: BrideStage[] = [
   "CONSULTATION",
   "GOWN_TRY_ON",
-  "ALTERATIONS",
-  "RTW_GOWN_COMPLETE",
-  "RTW_COLLECTION_READY",
+  "ALTERATION",
+  "GOWN_COMPLETE",
+  "COLLECTION_READY",
 ];
 
 export type BrideType = "CUSTOM" | "READY_TO_WEAR";
