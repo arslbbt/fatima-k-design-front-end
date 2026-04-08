@@ -58,7 +58,7 @@ const DEFAULT_APPOINTMENT_TITLE: AppointmentTitle =
 
 const EMPTY: FormState = {
   brideId: "",
-  title: DEFAULT_APPOINTMENT_TITLE,
+  title: "" as AppointmentTitle, // Empty until bride is selected
   customTitle: "",
   description: "",
   location: "",
@@ -402,9 +402,19 @@ export function AddAppointmentModal({
                 onChange={(e) =>
                   set("title", e.target.value as AppointmentTitle)
                 }
-                style={inputStyle(!!errors.title)}
+                style={{
+                  ...inputStyle(!!errors.title),
+                  cursor:
+                    !isEdit && !selectedBrideType ? "not-allowed" : "pointer",
+                  opacity: !isEdit && !selectedBrideType ? 0.6 : 1,
+                }}
                 disabled={!isEdit && !selectedBrideType}
               >
+                <option value="" disabled>
+                  {!isEdit && !selectedBrideType
+                    ? "Select a bride first..."
+                    : "Select appointment type..."}
+                </option>
                 {availableTitles.map((t) => (
                   <option key={t} value={t}>
                     {APPOINTMENT_TITLE_LABELS[t]}
