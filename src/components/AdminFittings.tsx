@@ -28,6 +28,7 @@ import {
   APPOINTMENT_TITLE_LABELS,
   type BrideWithProfile,
 } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "@/hooks/use-toast";
 
@@ -76,7 +77,7 @@ export function AdminFittings() {
 
   // Load bride's appointments for the create form dropdown
   const { data: brideAppointments = [] } = useQuery({
-    queryKey: ["bride-appts-for-fitting", selectedBrideId],
+    queryKey: queryKeys.appointments.forBride(selectedBrideId!),
     queryFn: () => appointmentsApi.listForBride(selectedBrideId!),
     enabled: !!selectedBrideId && showCreateForm,
   });

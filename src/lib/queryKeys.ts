@@ -123,8 +123,8 @@ export const invalidateQueries = {
 
   // After creating/updating an appointment
   afterAppointmentMutation: (queryClient: any) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
-    queryClient.invalidateQueries({ queryKey: queryKeys.appointments.my() });
+    // Invalidate all appointment queries (including forBride queries)
+    queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all() });
     queryClient.invalidateQueries({ queryKey: queryKeys.brides.journey() });
     queryClient.invalidateQueries({ queryKey: queryKeys.admin.dashboard() });
   },
