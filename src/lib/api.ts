@@ -408,52 +408,115 @@ export type AppointmentStatus =
   | "COMPLETED"
   | "CANCELLED";
 export type AppointmentTitle =
-  | "CONSULTATION"
-  | "FIRST_FITTING"
-  | "SECOND_FITTING"
-  | "THIRD_FITTING"
-  | "FINAL_FITTING"
+  // | "CONSULTATION"
+  // Custom dress flow
+  | "MEASUREMENTS"
+  | "CALICO"
+  | "GOWN_IN_FABRIC"
+  | "DETAIL_ON"
   | "ALTERATION"
+  | "GOWN_COMPLETE"
   | "COLLECTION_READY"
+  // RTW flow
+  | "GOWN_TRY_ON"
+  | "ALTERATIONS"
+  | "RTW_GOWN_COMPLETE"
+  | "RTW_COLLECTION_READY"
+  // Generic
   | "CUSTOM";
 
 export const APPOINTMENT_TITLE_LABELS: Record<AppointmentTitle, string> = {
-  CONSULTATION: "Consultation",
-  FIRST_FITTING: "1st Fitting",
-  SECOND_FITTING: "2nd Fitting",
-  THIRD_FITTING: "3rd Fitting",
-  FINAL_FITTING: "Final Fitting",
+  // CONSULTATION: "Consultation",
+  // Custom dress flow
+  MEASUREMENTS: "Measurements",
+  CALICO: "Calico",
+  GOWN_IN_FABRIC: "Gown in Fabric",
+  DETAIL_ON: "Detail On",
   ALTERATION: "Alteration",
+  GOWN_COMPLETE: "Gown Complete",
   COLLECTION_READY: "Collection Ready",
+  // RTW flow
+  GOWN_TRY_ON: "Gown Try On",
+  ALTERATIONS: "Alterations",
+  RTW_GOWN_COMPLETE: "Gown Complete",
+  RTW_COLLECTION_READY: "Collection Ready",
+  // Generic
   CUSTOM: "Custom",
 };
+
+// Appointment types by bride type
+export const CUSTOM_APPOINTMENT_TITLES: AppointmentTitle[] = [
+  // "CONSULTATION",
+  "MEASUREMENTS",
+  "CALICO",
+  "GOWN_IN_FABRIC",
+  "DETAIL_ON",
+  "ALTERATION",
+  "GOWN_COMPLETE",
+  "COLLECTION_READY",
+  "CUSTOM",
+];
+
+export const RTW_APPOINTMENT_TITLES: AppointmentTitle[] = [
+  // "CONSULTATION",
+  "GOWN_TRY_ON",
+  "ALTERATIONS",
+  "RTW_GOWN_COMPLETE",
+  "RTW_COLLECTION_READY",
+  "CUSTOM",
+];
+
 export type BrideStage =
   | "CONSULTATION"
-  | "FIRST_FITTING"
-  | "SECOND_FITTING"
-  | "THIRD_FITTING"
-  | "FINAL_FITTING"
+  // Custom dress stages
+  | "MEASUREMENTS"
+  | "CALICO"
+  | "GOWN_IN_FABRIC"
+  | "DETAIL_ON"
   | "ALTERATION"
-  | "COLLECTION_READY";
+  | "GOWN_COMPLETE"
+  | "COLLECTION_READY"
+  // RTW stages
+  | "GOWN_TRY_ON"
+  | "ALTERATIONS"
+  | "RTW_GOWN_COMPLETE"
+  | "RTW_COLLECTION_READY";
 
 export const BRIDE_STAGE_LABELS: Record<BrideStage, string> = {
   CONSULTATION: "Consultation",
-  FIRST_FITTING: "1st Fitting",
-  SECOND_FITTING: "2nd Fitting",
-  THIRD_FITTING: "3rd Fitting",
-  FINAL_FITTING: "Final Fitting",
+  // Custom dress stages
+  MEASUREMENTS: "Measurements",
+  CALICO: "Calico",
+  GOWN_IN_FABRIC: "Gown in Fabric",
+  DETAIL_ON: "Detail On",
   ALTERATION: "Alteration",
+  GOWN_COMPLETE: "Gown Complete",
   COLLECTION_READY: "Collection Ready",
+  // RTW stages
+  GOWN_TRY_ON: "Gown Try On",
+  ALTERATIONS: "Alterations",
+  RTW_GOWN_COMPLETE: "Gown Complete",
+  RTW_COLLECTION_READY: "Collection Ready",
 };
 
-export const BRIDE_STAGE_ORDER: BrideStage[] = [
+// Stage order by bride type
+export const CUSTOM_BRIDE_STAGE_ORDER: BrideStage[] = [
   "CONSULTATION",
-  "FIRST_FITTING",
-  "SECOND_FITTING",
-  "THIRD_FITTING",
-  "FINAL_FITTING",
+  "MEASUREMENTS",
+  "CALICO",
+  "GOWN_IN_FABRIC",
+  "DETAIL_ON",
   "ALTERATION",
+  "GOWN_COMPLETE",
   "COLLECTION_READY",
+];
+
+export const RTW_BRIDE_STAGE_ORDER: BrideStage[] = [
+  "CONSULTATION",
+  "GOWN_TRY_ON",
+  "ALTERATIONS",
+  "RTW_GOWN_COMPLETE",
+  "RTW_COLLECTION_READY",
 ];
 
 export type BrideType = "CUSTOM" | "READY_TO_WEAR";

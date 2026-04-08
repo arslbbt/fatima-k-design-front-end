@@ -23,7 +23,8 @@ import {
   type BrideStage,
   type BrideType,
   BRIDE_STAGE_LABELS,
-  BRIDE_STAGE_ORDER,
+  CUSTOM_BRIDE_STAGE_ORDER,
+  RTW_BRIDE_STAGE_ORDER,
 } from "@/lib/api";
 import { Pagination } from "./ui/Pagination";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -32,9 +33,14 @@ import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 
 const PAGE_SIZE = 6;
 
+// Combine all unique stages from both bride types for filter
+const ALL_STAGES: BrideStage[] = Array.from(
+  new Set([...CUSTOM_BRIDE_STAGE_ORDER, ...RTW_BRIDE_STAGE_ORDER]),
+);
+
 const stageFilters: Array<{ label: string; value: BrideStage | "ALL" }> = [
   { label: "All Stages", value: "ALL" },
-  ...BRIDE_STAGE_ORDER.map((s) => ({ label: BRIDE_STAGE_LABELS[s], value: s })),
+  ...ALL_STAGES.map((s) => ({ label: BRIDE_STAGE_LABELS[s], value: s })),
 ];
 
 const brideTypeFilters: Array<{ label: string; value: BrideType | "ALL" }> = [
@@ -382,6 +388,11 @@ function BrideCard({
 }) {
   const profile = bride.brideProfile;
   const currentStage = profile?.stage ?? "CONSULTATION";
+  const brideType = profile?.brideType ?? "CUSTOM";
+  const BRIDE_STAGE_ORDER =
+    brideType === "READY_TO_WEAR"
+      ? RTW_BRIDE_STAGE_ORDER
+      : CUSTOM_BRIDE_STAGE_ORDER;
   const stageIndex = BRIDE_STAGE_ORDER.indexOf(currentStage);
   const progressPct = Math.round(
     ((stageIndex + 1) / BRIDE_STAGE_ORDER.length) * 100,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, Loader2, Pointer } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import {
   appointmentsApi,
   bridesApi,
@@ -10,7 +10,10 @@ import {
   type AppointmentWithBride,
   type CreateAppointmentPayload,
   type UpdateAppointmentPayload,
+  type BrideType,
   APPOINTMENT_TITLE_LABELS,
+  CUSTOM_APPOINTMENT_TITLES,
+  RTW_APPOINTMENT_TITLES,
 } from "@/lib/api";
 import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -20,17 +23,6 @@ interface AddAppointmentModalProps {
   onClose: () => void;
   editAppointment?: AppointmentWithBride | null;
 }
-
-const TITLE_OPTIONS: AppointmentTitle[] = [
-  "CONSULTATION",
-  "FIRST_FITTING",
-  "SECOND_FITTING",
-  "THIRD_FITTING",
-  "FINAL_FITTING",
-  "ALTERATION",
-  "COLLECTION_READY",
-  "CUSTOM",
-];
 
 const STATUS_OPTIONS: { value: AppointmentStatus; label: string }[] = [
   { value: "SCHEDULED", label: "Scheduled" },
@@ -60,9 +52,12 @@ interface FormErrors {
   endTime?: string;
 }
 
+const DEFAULT_APPOINTMENT_TITLE: AppointmentTitle =
+  (CUSTOM_APPOINTMENT_TITLES[0] ?? RTW_APPOINTMENT_TITLES[0]) as AppointmentTitle;
+
 const EMPTY: FormState = {
   brideId: "",
-  title: "CONSULTATION",
+  title: DEFAULT_APPOINTMENT_TITLE,
   customTitle: "",
   description: "",
   location: "",
@@ -107,6 +102,9 @@ export function AddAppointmentModal({
   const [errors, setErrors] = useState<FormErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [brideSearch, setBrideSearch] = useState("");
+  const [selectedBrideType, setSelectedBrideType] = useState<BrideType | null>(
+    null,
+  );
 
   // Pre-fill form when editing
   useEffect(() => {
@@ -123,8 +121,12 @@ export function AddAppointmentModal({
         whatToBring: editAppointment.whatToBring ?? "",
         status: editAppointment.status,
       });
+      setSelectedBrideType(
+        editAppointment.bride.brideProfile?.brideType ?? "CUSTOM",
+      );
     } else if (open) {
       setForm(EMPTY);
+      setSelectedBrideType(null);
     }
     setErrors({});
     setApiError(null);
@@ -146,6 +148,28 @@ export function AddAppointmentModal({
     queryFn: () => bridesApi.names({ search: brideSearch || undefined }),
     enabled: open && !isEdit,
   });
+
+  // Fetch selected bride details to get bride type
+  const { data: selectedBride } = useQuery({
+    queryKey: queryKeys.brides.detail(form.brideId),
+    queryFn: () => bridesApi.get(form.brideId),
+    enabled: !!form.brideId && !isEdit,
+  });
+
+  // Update bride type when bride is selected
+  useEffect(() => {
+    if (selectedBride?.brideProfile?.brideType) {
+      const brideType = selectedBride.brideProfile.brideType;
+      setSelectedBrideType(brideType);
+      setForm((f) => ({
+        ...f,
+        title:
+          brideType === "READY_TO_WEAR"
+            ? RTW_APPOINTMENT_TITLES[0]
+            : CUSTOM_APPOINTMENT_TITLES[0],
+      }));
+    }
+  }, [selectedBride]);
 
   const handleBrideSearch = useCallback((search: string) => {
     setBrideSearch(search);
@@ -238,6 +262,12 @@ export function AddAppointmentModal({
   if (!open) return null;
 
   const today = new Date().toISOString().split("T")[0];
+
+  // Determine which appointment titles to show based on bride type
+  const availableTitles =
+    selectedBrideType === "READY_TO_WEAR"
+      ? RTW_APPOINTMENT_TITLES
+      : CUSTOM_APPOINTMENT_TITLES;
 
   return (
     <>
@@ -364,6 +394,28 @@ export function AddAppointmentModal({
               </Field>
             )}
 
+            {/* Show bride type indicator */}
+            {selectedBrideType && !isEdit && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  background: "#F5EFE9",
+                  border: "1px solid #E8E0D5",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: "#A67C52",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span style={{ fontWeight: 600 }}>Bride Type:</span>
+                {selectedBrideType === "READY_TO_WEAR"
+                  ? "Ready to Wear"
+                  : "Custom"}
+              </div>
+            )}
+
             {/* Appointment type */}
             <Field label="Appointment Type *" error={errors.title}>
               <select
@@ -372,8 +424,9 @@ export function AddAppointmentModal({
                   set("title", e.target.value as AppointmentTitle)
                 }
                 style={inputStyle(!!errors.title)}
+                disabled={!isEdit && !selectedBrideType}
               >
-                {TITLE_OPTIONS.map((t) => (
+                {availableTitles.map((t) => (
                   <option key={t} value={t}>
                     {APPOINTMENT_TITLE_LABELS[t]}
                   </option>
@@ -398,7 +451,7 @@ export function AddAppointmentModal({
               style={{
                 display: "grid",
                 gap: 12,
-                gridTemplateColumns: "1fr 1fr", // 2 columns
+                gridTemplateColumns: "1fr 1fr",
                 gridAutoRows: "auto",
               }}
             >
@@ -424,7 +477,7 @@ export function AddAppointmentModal({
                     type="time"
                     value={form.startTime}
                     onChange={(e) => set("startTime", e.target.value)}
-                    onClick={(e) => e.currentTarget.showPicker?.()} // 👈 key
+                    onClick={(e) => e.currentTarget.showPicker?.()}
                     style={{
                       ...inputStyle(!!errors.startTime),
                       cursor: "pointer",
@@ -439,7 +492,7 @@ export function AddAppointmentModal({
                     type="time"
                     value={form.endTime}
                     onChange={(e) => set("endTime", e.target.value)}
-                    onClick={(e) => e.currentTarget.showPicker?.()} // 👈 added
+                    onClick={(e) => e.currentTarget.showPicker?.()}
                     style={{
                       ...inputStyle(!!errors.endTime),
                       cursor: "pointer",

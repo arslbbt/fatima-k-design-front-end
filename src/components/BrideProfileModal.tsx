@@ -15,7 +15,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   type BrideWithProfile,
   BRIDE_STAGE_LABELS,
-  BRIDE_STAGE_ORDER,
+  CUSTOM_BRIDE_STAGE_ORDER,
+  RTW_BRIDE_STAGE_ORDER,
 } from "@/lib/api";
 
 interface BrideProfileModalProps {
@@ -42,6 +43,11 @@ export function BrideProfileModal({ bride, onClose }: BrideProfileModalProps) {
 
   const profile = bride.brideProfile;
   const currentStage = profile?.stage ?? "CONSULTATION";
+  const brideType = profile?.brideType ?? "CUSTOM";
+  const BRIDE_STAGE_ORDER =
+    brideType === "READY_TO_WEAR"
+      ? RTW_BRIDE_STAGE_ORDER
+      : CUSTOM_BRIDE_STAGE_ORDER;
   const stageIndex = BRIDE_STAGE_ORDER.indexOf(currentStage);
   const progressPct = Math.round(
     ((stageIndex + 1) / BRIDE_STAGE_ORDER.length) * 100,
