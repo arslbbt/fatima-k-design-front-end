@@ -53,7 +53,8 @@ interface FormErrors {
 }
 
 const DEFAULT_APPOINTMENT_TITLE: AppointmentTitle =
-  (CUSTOM_APPOINTMENT_TITLES[0] ?? RTW_APPOINTMENT_TITLES[0]) as AppointmentTitle;
+  (CUSTOM_APPOINTMENT_TITLES[0] ??
+    RTW_APPOINTMENT_TITLES[0]) as AppointmentTitle;
 
 const EMPTY: FormState = {
   brideId: "",
@@ -394,28 +395,6 @@ export function AddAppointmentModal({
               </Field>
             )}
 
-            {/* Show bride type indicator */}
-            {selectedBrideType && !isEdit && (
-              <div
-                style={{
-                  padding: "8px 12px",
-                  background: "#F5EFE9",
-                  border: "1px solid #E8E0D5",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  color: "#A67C52",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                <span style={{ fontWeight: 600 }}>Bride Type:</span>
-                {selectedBrideType === "READY_TO_WEAR"
-                  ? "Ready to Wear"
-                  : "Custom"}
-              </div>
-            )}
-
             {/* Appointment type */}
             <Field label="Appointment Type *" error={errors.title}>
               <select
@@ -432,6 +411,18 @@ export function AddAppointmentModal({
                   </option>
                 ))}
               </select>
+              {!isEdit && !selectedBrideType && (
+                <div
+                  style={{
+                    marginTop: 6,
+                    fontSize: 11,
+                    color: "#888",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Please select a bride first to choose appointment type
+                </div>
+              )}
             </Field>
 
             {/* Custom title */}
