@@ -281,11 +281,9 @@ export const appointmentsApi = {
 
 // ── Payments ──────────────────────────────────────────────────────────────────
 
-export type PaymentType =
-  | "BOOKING_DEPOSIT"
-  | "FABRICATION"
-  | "CONSTRUCTION"
-  | "FINAL_BALANCE";
+// PaymentType now uses AppointmentTitle for better alignment with bride journey
+export type PaymentType = AppointmentTitle;
+
 export type PaymentStatus = "PAID" | "PENDING" | "OVERDUE";
 
 export interface Payment {
@@ -305,6 +303,7 @@ export interface Payment {
     email: string;
     brideProfile?: {
       stylePreferences: string | null;
+      brideType?: BrideType;
     } | null;
   };
 }

@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, AlertCircle, CreditCard } from "lucide-react";
-import { paymentsApi, bridesApi, ApiError, type PaymentType } from "@/lib/api";
+import {
+  paymentsApi,
+  bridesApi,
+  ApiError,
+  type PaymentType,
+  type BrideType,
+  APPOINTMENT_TITLE_LABELS,
+  CUSTOM_APPOINTMENT_TITLES,
+  RTW_APPOINTMENT_TITLES,
+} from "@/lib/api";
 import { queryKeys, invalidateQueries } from "@/lib/queryKeys";
 import { toast } from "@/hooks/use-toast";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -15,36 +24,9 @@ interface CreatePaymentModalProps {
     amount: number;
     dueDate: string | null;
     notes: string | null;
+    brideId?: string;
   } | null;
 }
-
-const PAYMENT_LABELS: { value: PaymentType; label: string }[] = [
-  { value: "BOOKING_DEPOSIT", label: "Booking Deposit" },
-  { value: "FABRICATION", label: "Fabrication" },
-  { value: "CONSTRUCTION", label: "Construction" },
-  { value: "FINAL_BALANCE", label: "Final Balance" },
-];
-
-const inp: React.CSSProperties = {
-  width: "100%",
-  padding: "12px 14px",
-  border: "1px solid #E8E0D5",
-  borderRadius: 10,
-  fontSize: 14,
-  color: "#333",
-  background: "#FDFBF8",
-  outline: "none",
-  boxSizing: "border-box",
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-const lbl: React.CSSProperties = {
-  display: "block",
-  fontSize: 13,
-  fontWeight: 500,
-  color: "#1F1F1F",
-  marginBottom: 8,
-};
 
 export function CreatePaymentModal({
   open,
@@ -54,18 +36,41 @@ export function CreatePaymentModal({
   const queryClient = useQueryClient();
   const isEdit = !!editPayment;
   const [brideId, setBrideId] = useState("");
-  const [paymentType, setPaymentType] =
-    useState<PaymentType>("BOOKING_DEPOSIT");
+  const [paymentType, setPaymentType] = useState<PaymentType>("CONSULTATION");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [markAsPaid, setMarkAsPaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [brideSearch, setBrideSearch] = useState("");
+  const [selectedBrideType, setSelectedBrideType] = useState<BrideType | null>(
+    null,
+  );
+
+  // Fetch selected bride details to get their type
+  const { data: selectedBride } = useQuery({
+    queryKey: ["bride", brideId],
+    queryFn: () => bridesApi.get(brideId),
+    enabled: !!brideId && open,
+  });
+
+  // Update bride type when bride is selected
+  useEffect(() => {
+    if (selectedBride?.brideProfile?.brideType) {
+      setSelectedBrideType(selectedBride.brideProfile.brideType);
+    }
+  }, [selectedBride]);
+
+  // Get available payment types based on bride type
+  const availablePaymentTypes =
+    selectedBrideType === "READY_TO_WEAR"
+      ? RTW_APPOINTMENT_TITLES
+      : CUSTOM_APPOINTMENT_TITLES;
 
   useEffect(() => {
     if (open) {
       if (editPayment) {
+        setBrideId(editPayment.brideId || "");
         setPaymentType(editPayment.paymentType as PaymentType);
         setAmount(String(Number(editPayment.amount)));
         setDueDate(
@@ -75,11 +80,12 @@ export function CreatePaymentModal({
         setMarkAsPaid(false);
       } else {
         setBrideId("");
-        setPaymentType("BOOKING_DEPOSIT");
+        setPaymentType("CONSULTATION");
         setAmount("");
         setDueDate("");
         setNotes("");
         setMarkAsPaid(false);
+        setSelectedBrideType(null);
       }
       setError(null);
       setBrideSearch("");
@@ -112,6 +118,27 @@ export function CreatePaymentModal({
   const handleBrideSearch = useCallback((search: string) => {
     setBrideSearch(search);
   }, []);
+
+  const inp: React.CSSProperties = {
+    width: "100%",
+    padding: "12px 14px",
+    border: "1px solid #E8E0D5",
+    borderRadius: 10,
+    fontSize: 14,
+    color: "#333",
+    background: "#FDFBF8",
+    outline: "none",
+    boxSizing: "border-box",
+    fontFamily: "'DM Sans', sans-serif",
+  };
+
+  const lbl: React.CSSProperties = {
+    display: "block",
+    fontSize: 13,
+    fontWeight: 500,
+    color: "#1F1F1F",
+    marginBottom: 8,
+  };
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -312,18 +339,48 @@ export function CreatePaymentModal({
             )}
 
             <div>
-              <label style={lbl}>Payment Label *</label>
+              <label style={lbl}>
+                Payment Label *
+                {selectedBrideType && (
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 11,
+                      fontWeight: 400,
+                      color: "#888",
+                    }}
+                  >
+                    ({selectedBrideType === "READY_TO_WEAR" ? "RTW" : "Custom"}{" "}
+                    bride)
+                  </span>
+                )}
+              </label>
               <select
                 value={paymentType}
                 onChange={(e) => setPaymentType(e.target.value as PaymentType)}
                 style={inp}
+                disabled={!brideId && !isEdit}
               >
-                {PAYMENT_LABELS.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
+                {!brideId && !isEdit && (
+                  <option value="">Select a bride first...</option>
+                )}
+                {availablePaymentTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {APPOINTMENT_TITLE_LABELS[type]}
                   </option>
                 ))}
               </select>
+              {!brideId && !isEdit && (
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#888",
+                    marginTop: 6,
+                  }}
+                >
+                  Payment options will appear after selecting a bride
+                </div>
+              )}
             </div>
 
             <div

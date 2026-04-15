@@ -1,13 +1,9 @@
 import { useRef } from "react";
 import { X, Printer, Download, CheckCircle2 } from "lucide-react";
 import type { Payment } from "@/lib/api";
+import { APPOINTMENT_TITLE_LABELS } from "@/lib/api";
 
-const PAYMENT_TYPE_LABELS: Record<string, string> = {
-  BOOKING_DEPOSIT: "Booking Deposit",
-  FABRICATION: "Fabrication",
-  CONSTRUCTION: "Construction",
-  FINAL_BALANCE: "Final Balance",
-};
+const PAYMENT_TYPE_LABELS = APPOINTMENT_TITLE_LABELS;
 
 interface PaymentReceiptModalProps {
   payment: Payment | null;

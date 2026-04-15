@@ -13,8 +13,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { paymentsApi, ApiError } from "@/lib/api";
-import type { Payment } from "@/lib/api";
+import { paymentsApi, ApiError, APPOINTMENT_TITLE_LABELS } from "@/lib/api";
+import type { Payment, AppointmentTitle } from "@/lib/api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,19 +54,13 @@ const statusConfig: Record<
   },
 };
 
-const PAYMENT_TYPE_LABELS = {
-  BOOKING_DEPOSIT: "Booking Deposit",
-  FABRICATION: "Fabrication",
-  CONSTRUCTION: "Construction",
-  FINAL_BALANCE: "Final Balance",
-};
-
-const PAYMENT_STEPS = [
-  "BOOKING_DEPOSIT",
-  "FABRICATION",
-  "CONSTRUCTION",
-  "FINAL_BALANCE",
-] as const;
+// Common payment stages that most brides go through
+const COMMON_PAYMENT_STEPS: AppointmentTitle[] = [
+  "CONSULTATION",
+  "MEASUREMENTS",
+  "GOWN_IN_FABRIC",
+  "COLLECTION_READY",
+];
 
 export function AdminPaymentsDesktop() {
   const queryClient = useQueryClient();
@@ -871,7 +865,7 @@ export function AdminPaymentsDesktop() {
                           </div>
                         )}
 
-                        {/* Payment cards — min 4 visible, horizontally scrollable */}
+                        {/* Payment cards — horizontally scrollable */}
                         <div
                           style={{
                             display: "flex",
@@ -882,52 +876,9 @@ export function AdminPaymentsDesktop() {
                             scrollbarColor: "#E8E0D5 transparent",
                           }}
                         >
-                          {PAYMENT_STEPS.map((step) => {
-                            const stepsPayments =
-                              bride.payments?.filter(
-                                (p: any) => p.paymentType === step,
-                              ) || [];
-
-                            if (stepsPayments.length === 0) {
-                              return (
-                                <div
-                                  key={step}
-                                  style={{
-                                    flexShrink: 0,
-                                    width: "calc(25% - 9px)",
-                                    minWidth: 180,
-                                    background: "#FAFAFA",
-                                    border: "1px dashed #E8E0D5",
-                                    borderRadius: 10,
-                                    padding: "14px 16px",
-                                    opacity: 0.5,
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      fontSize: 9,
-                                      color: "#AAA",
-                                      textTransform: "uppercase",
-                                      letterSpacing: "0.08em",
-                                      marginBottom: 6,
-                                    }}
-                                  >
-                                    Not requested
-                                  </div>
-                                  <div
-                                    style={{
-                                      fontSize: 13,
-                                      fontWeight: 600,
-                                      color: "#CCC",
-                                    }}
-                                  >
-                                    {PAYMENT_TYPE_LABELS[step]}
-                                  </div>
-                                </div>
-                              );
-                            }
-
-                            return stepsPayments.map((pmt: any) => {
+                          {/* Show all payments for this bride */}
+                          {bride.payments && bride.payments.length > 0 ? (
+                            bride.payments.map((pmt: any) => {
                               const isPaid = pmt.status === "PAID";
 
                               const now = new Date();
@@ -1023,7 +974,9 @@ export function AdminPaymentsDesktop() {
                                       marginBottom: 4,
                                     }}
                                   >
-                                    {PAYMENT_TYPE_LABELS[step]}
+                                    {APPOINTMENT_TITLE_LABELS[
+                                      pmt.paymentType
+                                    ] || pmt.paymentType}
                                   </div>
                                   <div
                                     style={{
@@ -1080,7 +1033,12 @@ export function AdminPaymentsDesktop() {
                                   ) : (
                                     <div style={{ display: "flex", gap: 6 }}>
                                       <button
-                                        onClick={() => setEditPayment(pmt)}
+                                        onClick={() =>
+                                          setEditPayment({
+                                            ...pmt,
+                                            brideId: bride.id,
+                                          })
+                                        }
                                         style={{
                                           flex: 1,
                                           padding: "7px",
@@ -1121,8 +1079,20 @@ export function AdminPaymentsDesktop() {
                                   )}
                                 </div>
                               );
-                            });
-                          })}
+                            })
+                          ) : (
+                            <div
+                              style={{
+                                padding: "40px 20px",
+                                textAlign: "center",
+                                color: "#AAA",
+                                fontSize: 13,
+                                width: "100%",
+                              }}
+                            >
+                              No payments created yet
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}

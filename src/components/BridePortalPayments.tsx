@@ -1,19 +1,14 @@
 import { CheckCircle2, Clock, AlertCircle, Download, Info } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { paymentsApi, type Payment } from "@/lib/api";
+import { paymentsApi, type Payment, APPOINTMENT_TITLE_LABELS } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
 import { PaymentReceiptModal } from "@/components/PaymentReceiptModal";
 import { useAuth } from "@/lib/auth";
 
-const PAYMENT_TYPE_LABELS: Record<string, string> = {
-  BOOKING_DEPOSIT: "Booking Deposit",
-  FABRICATION: "Fabrication",
-  CONSTRUCTION: "Construction",
-  FINAL_BALANCE: "Final Balance",
-};
+const PAYMENT_TYPE_LABELS = APPOINTMENT_TITLE_LABELS;
 
 export function BridePortalPayments() {
   const { user } = useAuth();
