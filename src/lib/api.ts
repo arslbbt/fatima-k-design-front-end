@@ -368,7 +368,9 @@ export const paymentsApi = {
       revenueCollected: number;
       outstanding: number;
       paymentsDue: number;
+      paymentsDueAmount: number;
       overdueCount: number;
+      overdueAmount: number;
     }>("/payments/revenue-overview"),
 
   getMonthlyRevenue: (year?: number) =>

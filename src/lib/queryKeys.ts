@@ -150,6 +150,10 @@ export const invalidateQueries = {
       refetchType: "active",
     });
     queryClient.invalidateQueries({
+      queryKey: queryKeys.brides.all(),
+      refetchType: "active",
+    });
+    queryClient.invalidateQueries({
       queryKey: queryKeys.admin.dashboard(),
       refetchType: "active",
     });

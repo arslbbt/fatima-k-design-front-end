@@ -79,6 +79,9 @@ export function AdminPaymentsDesktop() {
   const [confirmDeletePaymentId, setConfirmDeletePaymentId] = useState<
     string | null
   >(null);
+  const [confirmMarkPaidPaymentId, setConfirmMarkPaidPaymentId] = useState<
+    string | null
+  >(null);
 
   const { data: overview } = useQuery({
     queryKey: ["payments", "revenue"],
@@ -206,15 +209,15 @@ export function AdminPaymentsDesktop() {
               },
               {
                 label: "Payments Due",
-                value: String(overview?.paymentsDue || 0),
-                sub: "This month",
+                value: `$${(overview?.paymentsDueAmount || 0).toLocaleString()}`,
+                sub: `${overview?.paymentsDue || 0} due payment${(overview?.paymentsDue || 0) !== 1 ? "s" : ""} this month`,
                 icon: <AlertCircle size={18} color="#C07840" />,
                 warn: true,
               },
               {
                 label: "Overdue",
-                value: String(overview?.overdueCount || 0),
-                sub: "Needs follow-up",
+                value: `$${(overview?.overdueAmount || 0).toLocaleString()}`,
+                sub: `${overview?.overdueCount || 0} payment${(overview?.overdueCount || 0) !== 1 ? "s" : ""} need follow-up`,
                 icon: <AlertCircle size={18} color="#C04040" />,
                 danger: true,
               },
@@ -975,7 +978,7 @@ export function AdminPaymentsDesktop() {
                                     }}
                                   >
                                     {APPOINTMENT_TITLE_LABELS[
-                                      pmt.paymentType
+                                      pmt.paymentType as AppointmentTitle
                                     ] || pmt.paymentType}
                                   </div>
                                   <div
@@ -1054,7 +1057,7 @@ export function AdminPaymentsDesktop() {
                                       </button>
                                       <button
                                         onClick={() =>
-                                          markPaidMutation.mutate(pmt.id)
+                                          setConfirmMarkPaidPaymentId(pmt.id)
                                         }
                                         disabled={markPaidMutation.isPending}
                                         style={{
@@ -1221,6 +1224,114 @@ export function AdminPaymentsDesktop() {
                   }}
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Confirm mark as paid */}
+      {confirmMarkPaidPaymentId && (
+        <>
+          <div
+            onClick={() => setConfirmMarkPaidPaymentId(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.45)",
+              zIndex: 200,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                width: "100%",
+                maxWidth: 380,
+                padding: "28px 24px",
+                textAlign: "center",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 22,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  margin: "0 0 8px",
+                }}
+              >
+                Mark payment as paid?
+              </h3>
+              <p style={{ fontSize: 13, color: "#888", margin: "0 0 24px" }}>
+                This will record the payment as collected today.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setConfirmMarkPaidPaymentId(null)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "1px solid #E8E0D5",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    color: "#666",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    markPaidMutation.mutate(confirmMarkPaidPaymentId);
+                    setConfirmMarkPaidPaymentId(null);
+                  }}
+                  disabled={markPaidMutation.isPending}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "none",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: markPaidMutation.isPending ? "#888" : "#2C2C2C",
+                    cursor: markPaidMutation.isPending
+                      ? "not-allowed"
+                      : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  {markPaidMutation.isPending ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Marking...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={14} />
+                      Confirm
+                    </>
+                  )}
                 </button>
               </div>
             </div>
