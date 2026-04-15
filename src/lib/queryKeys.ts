@@ -106,6 +106,11 @@ export const invalidateQueries = {
     });
     queryClient.invalidateQueries({ queryKey: queryKeys.brides.names() });
     queryClient.invalidateQueries({ queryKey: queryKeys.admin.dashboard() });
+    // Invalidate payment queries since initial payment may be created
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.payments.all(),
+      refetchType: "active",
+    });
   },
 
   afterBrideUpdate: (queryClient: any, brideId?: string) => {
@@ -119,6 +124,11 @@ export const invalidateQueries = {
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.brides.me() });
     queryClient.invalidateQueries({ queryKey: queryKeys.admin.dashboard() });
+    // Invalidate payment queries since initial payment may be created
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.payments.all(),
+      refetchType: "active",
+    });
   },
 
   // After creating/updating an appointment

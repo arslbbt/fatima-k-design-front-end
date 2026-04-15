@@ -648,7 +648,7 @@ function BrideCard({
                 marginBottom: 3,
               }}
             >
-              Balance
+              Balance due
             </div>
             <div
               style={{
@@ -658,7 +658,7 @@ function BrideCard({
               }}
             >
               {(bride.outstanding ?? 0) > 0
-                ? `$${bride.outstanding!.toLocaleString()} due`
+                ? `$${bride.outstanding!.toLocaleString()} `
                 : "$0 due"}
             </div>
           </div>

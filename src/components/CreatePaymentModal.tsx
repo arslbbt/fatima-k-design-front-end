@@ -47,7 +47,7 @@ export function CreatePaymentModal({
     null,
   );
 
-  // Fetch selected bride details to get their type
+  // Fetch selected bride details to get their type and outstanding balance
   const { data: selectedBride } = useQuery({
     queryKey: ["bride", brideId],
     queryFn: () => bridesApi.get(brideId),
@@ -60,6 +60,18 @@ export function CreatePaymentModal({
       setSelectedBrideType(selectedBride.brideProfile.brideType);
     }
   }, [selectedBride]);
+
+  // Get financial info from selected bride
+  const totalGownAmount = selectedBride?.brideProfile?.totalGownAmount
+    ? Number(selectedBride.brideProfile.totalGownAmount)
+    : null;
+  const outstandingBalance = selectedBride?.outstanding
+    ? Number(selectedBride.outstanding)
+    : null;
+  const amountPaid =
+    totalGownAmount !== null && outstandingBalance !== null
+      ? totalGownAmount - outstandingBalance
+      : null;
 
   // Get available payment types based on bride type
   const availablePaymentTypes =
@@ -173,6 +185,17 @@ export function CreatePaymentModal({
     }
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       setError("Enter a valid amount.");
+      return;
+    }
+    // Validate amount doesn't exceed outstanding balance
+    if (
+      !isEdit &&
+      outstandingBalance !== null &&
+      Number(amount) > outstandingBalance
+    ) {
+      setError(
+        `Amount cannot exceed outstanding balance of $${outstandingBalance.toLocaleString()}`,
+      );
       return;
     }
     if (!dueDate) {
@@ -338,6 +361,109 @@ export function CreatePaymentModal({
               </div>
             )}
 
+            {/* Financial Summary - show when bride is selected */}
+            {!isEdit && brideId && totalGownAmount !== null && (
+              <div
+                style={{
+                  background: "#FCFCFC",
+                  padding: "16px 18px",
+                  borderRadius: 10,
+                  border: "1px solid #E8E0D5",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: 13, color: "#666" }}>
+                    Total Gown Amount
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: "#2C2C2C",
+                    }}
+                  >
+                    ${totalGownAmount.toLocaleString()}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    height: 1,
+                    background: "#E8E0D5",
+                  }}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: 13, color: "#666" }}>
+                    Amount Paid
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: "#4CAF50",
+                    }}
+                  >
+                    ${amountPaid?.toLocaleString() ?? "0"}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    height: 1,
+                    background: "#E8E0D5",
+                  }}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: 13, color: "#666" }}>
+                    Outstanding Balance
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color:
+                        outstandingBalance && outstandingBalance > 0
+                          ? "#D4574A"
+                          : "#4CAF50",
+                    }}
+                  >
+                    ${outstandingBalance?.toLocaleString() ?? "0"}
+                  </span>
+                </div>
+                {outstandingBalance !== null && outstandingBalance === 0 && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#4CAF50",
+                      marginTop: 2,
+                      fontWeight: 500,
+                    }}
+                  >
+                    ✓ Fully paid
+                  </div>
+                )}
+              </div>
+            )}
+
             <div>
               <label style={lbl}>
                 Payment Label *
@@ -409,12 +535,30 @@ export function CreatePaymentModal({
                     type="number"
                     step="0.01"
                     min="0"
+                    max={
+                      !isEdit && outstandingBalance !== null
+                        ? outstandingBalance
+                        : undefined
+                    }
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
                     style={{ ...inp, paddingLeft: 28 }}
                   />
                 </div>
+                {!isEdit &&
+                  outstandingBalance !== null &&
+                  outstandingBalance > 0 && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#888",
+                        marginTop: 6,
+                      }}
+                    >
+                      Max: ${outstandingBalance.toLocaleString()}
+                    </div>
+                  )}
               </div>
               <div>
                 <label style={lbl}>Due Date *</label>
