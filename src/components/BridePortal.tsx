@@ -252,12 +252,17 @@ export function BridePortal() {
   const nextAppt = upcomingAppts[0] ?? null;
 
   // payments summary
-  const totalAmount = payments.reduce((s, p) => s + Number(p.amount), 0);
+  const totalGownAmount = me?.brideProfile?.totalGownAmount
+    ? Number(me.brideProfile.totalGownAmount)
+    : null;
   const paidAmount = payments
     .filter((p) => p.status === "PAID")
     .reduce((s, p) => s + Number(p.amount), 0);
-  const remaining = totalAmount - paidAmount;
-  const fullyPaid = totalAmount > 0 && remaining === 0;
+  const remaining = totalGownAmount ? totalGownAmount - paidAmount : 0;
+  const duePayments = payments
+    .filter((p) => p.status !== "PAID")
+    .reduce((s, p) => s + Number(p.amount), 0);
+  const fullyPaid = totalGownAmount ? remaining === 0 : false;
 
   // recent fitting photos: flatten all photos, sort by uploadedAt, take 2
   const allPhotos: (FittingPhoto & { fittingNum: number })[] = fittings
@@ -457,7 +462,7 @@ export function BridePortal() {
                   <div className="text-sm text-[#888888] font-medium uppercase tracking-wider mb-3">
                     Outstanding Balance
                   </div>
-                  {totalAmount > 0 ? (
+                  {totalGownAmount ? (
                     <>
                       <div className="font-['Cormorant_Garamond'] text-4xl font-medium text-[#B87A4F] mb-1">
                         {fullyPaid ? (
@@ -471,9 +476,16 @@ export function BridePortal() {
                           </>
                         )}
                       </div>
-                      <div className="text-sm text-[#888888]">
-                        ${paidAmount.toLocaleString()} paid of $
-                        {totalAmount.toLocaleString()} total
+                      <div className="text-sm text-[#888888] space-y-1">
+                        <div>
+                          ${paidAmount.toLocaleString()} paid of $
+                          {totalGownAmount.toLocaleString()} total
+                        </div>
+                        {duePayments > 0 && (
+                          <div className="text-[#D4574A] font-medium">
+                            ${duePayments.toLocaleString()} due payment for now
+                          </div>
+                        )}
                       </div>
                     </>
                   ) : (
