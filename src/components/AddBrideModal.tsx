@@ -1,13 +1,24 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Eye, EyeOff, Loader2 } from "lucide-react";
-import { adminApi, ApiError, type RegisterBridePayload } from "@/lib/api";
+import {
+  adminApi,
+  ApiError,
+  type RegisterBridePayload,
+  type UpdateBridePayload,
+  type BrideWithProfile,
+  type AppointmentTitle,
+  APPOINTMENT_TITLE_LABELS,
+  CUSTOM_APPOINTMENT_TITLES,
+  RTW_APPOINTMENT_TITLES,
+} from "@/lib/api";
 import { invalidateQueries } from "@/lib/queryKeys";
 import { toast } from "@/hooks/use-toast";
 
 interface AddBrideModalProps {
   open: boolean;
   onClose: () => void;
+  editBride?: BrideWithProfile | null;
 }
 
 interface FormState {
@@ -20,6 +31,11 @@ interface FormState {
   partnerName: string;
   venueName: string;
   notes: string;
+  totalGownAmount: string;
+  // Initial payment fields
+  initialPaymentAmount: string;
+  initialPaymentType: AppointmentTitle;
+  initialPaymentNotes: string;
 }
 
 interface FormErrors {
@@ -28,6 +44,8 @@ interface FormErrors {
   password?: string;
   weddingDate?: string;
   phone?: string;
+  totalGownAmount?: string;
+  initialPaymentAmount?: string;
 }
 
 const EMPTY: FormState = {
@@ -40,9 +58,13 @@ const EMPTY: FormState = {
   partnerName: "",
   venueName: "",
   notes: "",
+  totalGownAmount: "",
+  initialPaymentAmount: "",
+  initialPaymentType: "CONSULTATION",
+  initialPaymentNotes: "",
 };
 
-function validate(form: FormState): FormErrors {
+function validate(form: FormState, isEdit: boolean): FormErrors {
   const errors: FormErrors = {};
 
   // Name validation
@@ -59,11 +81,13 @@ function validate(form: FormState): FormErrors {
     errors.email = "Enter a valid email address";
   }
 
-  // Password validation
-  if (!form.password) {
-    errors.password = "Password is required";
-  } else if (form.password.length < 6) {
-    errors.password = "Password must be at least 6 characters";
+  // Password validation (only for create mode)
+  if (!isEdit) {
+    if (!form.password) {
+      errors.password = "Password is required";
+    } else if (form.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
   }
 
   // Wedding date validation
@@ -81,7 +105,6 @@ function validate(form: FormState): FormErrors {
   if (!form.phone.trim()) {
     errors.phone = "Phone number is required";
   } else {
-    // Remove all non-digit characters for validation
     const digitsOnly = form.phone.replace(/\D/g, "");
     if (digitsOnly.length < 10) {
       errors.phone = "Phone number must be at least 10 digits";
@@ -90,25 +113,85 @@ function validate(form: FormState): FormErrors {
     }
   }
 
+  // Total gown amount validation (mandatory for create, optional for edit)
+  if (!isEdit) {
+    if (!form.totalGownAmount) {
+      errors.totalGownAmount = "Total gown amount is required";
+    } else if (parseFloat(form.totalGownAmount) <= 0) {
+      errors.totalGownAmount = "Amount must be greater than 0";
+    }
+  } else {
+    // For edit mode, only validate if provided
+    if (form.totalGownAmount && parseFloat(form.totalGownAmount) < 0) {
+      errors.totalGownAmount = "Amount must be positive";
+    }
+  }
+
+  // Initial payment validation (only for create mode)
+  if (!isEdit && form.initialPaymentAmount) {
+    const paymentAmount = parseFloat(form.initialPaymentAmount);
+    const gownAmount = parseFloat(form.totalGownAmount);
+
+    if (paymentAmount < 0) {
+      errors.initialPaymentAmount = "Amount must be positive";
+    } else if (gownAmount && paymentAmount > gownAmount) {
+      errors.initialPaymentAmount = "Cannot exceed total gown amount";
+    }
+  }
+
   return errors;
 }
 
-export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
+export function AddBrideModal({
+  open,
+  onClose,
+  editBride,
+}: AddBrideModalProps) {
   const queryClient = useQueryClient();
+  const isEdit = !!editBride;
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Reset on open
+  // Get available payment types based on bride type
+  const availablePaymentTypes =
+    form.brideType === "READY_TO_WEAR"
+      ? RTW_APPOINTMENT_TITLES
+      : CUSTOM_APPOINTMENT_TITLES;
+
+  // Reset on open or when editBride changes
   useEffect(() => {
     if (open) {
-      setForm(EMPTY);
+      if (editBride) {
+        // Pre-fill form with bride data for editing
+        setForm({
+          name: editBride.name,
+          email: editBride.email,
+          password: "", // Never pre-fill password
+          brideType: editBride.brideProfile?.brideType || "CUSTOM",
+          weddingDate: editBride.brideProfile?.weddingDate
+            ? editBride.brideProfile.weddingDate.split("T")[0]
+            : "",
+          phone: editBride.brideProfile?.phone || "",
+          partnerName: editBride.brideProfile?.partnerName || "",
+          venueName: editBride.brideProfile?.venueName || "",
+          notes: editBride.brideProfile?.notes || "",
+          totalGownAmount: editBride.brideProfile?.totalGownAmount
+            ? String(editBride.brideProfile.totalGownAmount)
+            : "",
+          initialPaymentAmount: "",
+          initialPaymentType: "CONSULTATION",
+          initialPaymentNotes: "",
+        });
+      } else {
+        setForm(EMPTY);
+      }
       setErrors({});
       setApiError(null);
       setShowPassword(false);
     }
-  }, [open]);
+  }, [open, editBride]);
 
   // Close on Escape
   useEffect(() => {
@@ -121,13 +204,24 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
   }, [open, onClose]);
 
   const mutation = useMutation({
-    mutationFn: (payload: RegisterBridePayload) =>
-      adminApi.registerBride(payload),
+    mutationFn: async (payload: RegisterBridePayload | UpdateBridePayload) => {
+      if (isEdit && editBride) {
+        return adminApi.updateBride(
+          editBride.id,
+          payload as UpdateBridePayload,
+        );
+      }
+      return adminApi.registerBride(payload as RegisterBridePayload);
+    },
     onSuccess: () => {
       invalidateQueries.afterBrideCreate(queryClient);
       toast({
-        title: "Bride added successfully",
-        description: `${form.name} can now log in to their portal.`,
+        title: isEdit
+          ? "Bride updated successfully"
+          : "Bride added successfully",
+        description: isEdit
+          ? `${form.name}'s details have been updated.`
+          : `${form.name} can now log in to their portal.`,
       });
       onClose();
     },
@@ -150,24 +244,58 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validate(form);
+    const errs = validate(form, isEdit);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
 
-    const payload: RegisterBridePayload = {
-      name: form.name.trim(),
-      email: form.email.trim(),
-      password: form.password,
-      brideType: form.brideType,
-      weddingDate: form.weddingDate,
-      phone: form.phone.trim(),
-      ...(form.partnerName.trim() && { partnerName: form.partnerName.trim() }),
-      ...(form.venueName.trim() && { venueName: form.venueName.trim() }),
-      ...(form.notes.trim() && { notes: form.notes.trim() }),
-    };
-    mutation.mutate(payload);
+    if (isEdit) {
+      // Update bride payload
+      const payload: UpdateBridePayload = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        brideType: form.brideType,
+        weddingDate: form.weddingDate,
+        phone: form.phone.trim(),
+        ...(form.partnerName.trim() && {
+          partnerName: form.partnerName.trim(),
+        }),
+        ...(form.venueName.trim() && { venueName: form.venueName.trim() }),
+        ...(form.notes.trim() && { notes: form.notes.trim() }),
+        ...(form.totalGownAmount && {
+          totalGownAmount: parseFloat(form.totalGownAmount),
+        }),
+      };
+      mutation.mutate(payload);
+    } else {
+      // Create bride payload
+      const payload: RegisterBridePayload = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        brideType: form.brideType,
+        weddingDate: form.weddingDate,
+        phone: form.phone.trim(),
+        ...(form.partnerName.trim() && {
+          partnerName: form.partnerName.trim(),
+        }),
+        ...(form.venueName.trim() && { venueName: form.venueName.trim() }),
+        ...(form.notes.trim() && { notes: form.notes.trim() }),
+        ...(form.totalGownAmount && {
+          totalGownAmount: parseFloat(form.totalGownAmount),
+        }),
+        // Initial payment fields
+        ...(form.initialPaymentAmount && {
+          initialPaymentAmount: parseFloat(form.initialPaymentAmount),
+          initialPaymentType: form.initialPaymentType,
+          ...(form.initialPaymentNotes.trim() && {
+            initialPaymentNotes: form.initialPaymentNotes.trim(),
+          }),
+        }),
+      };
+      mutation.mutate(payload);
+    }
   }
 
   if (!open) return null;
@@ -236,10 +364,12 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
                   margin: "0 0 4px",
                 }}
               >
-                Add New Bride
+                {isEdit ? "Edit Bride" : "Add New Bride"}
               </h2>
               <p style={{ fontSize: 12, color: "#AAA", margin: 0 }}>
-                She'll receive login credentials to access her portal.
+                {isEdit
+                  ? "Update bride details and gown amount"
+                  : "She'll receive login credentials to access her portal."}
               </p>
             </div>
             <button
@@ -308,55 +438,59 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
 
             {/* Row: Password + Bride Type */}
             <div className="bride-modal-row">
-              <Field label="Temporary Password *" error={errors.password}>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={(e) => set("password", e.target.value)}
-                    placeholder="Min. 6 characters"
-                    style={{
-                      ...inputStyle(!!errors.password),
-                      paddingRight: 40,
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    style={{
-                      position: "absolute",
-                      right: 12,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 2,
-                    }}
+              {!isEdit && (
+                <Field label="Temporary Password *" error={errors.password}>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) => set("password", e.target.value)}
+                      placeholder="Min. 6 characters"
+                      style={{
+                        ...inputStyle(!!errors.password),
+                        paddingRight: 40,
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 2,
+                      }}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={15} color="#AAA" />
+                      ) : (
+                        <Eye size={15} color="#AAA" />
+                      )}
+                    </button>
+                  </div>
+                </Field>
+              )}
+              {!isEdit && (
+                <Field label="Bride Type *">
+                  <select
+                    value={form.brideType}
+                    onChange={(e) =>
+                      set(
+                        "brideType",
+                        e.target.value as "CUSTOM" | "READY_TO_WEAR",
+                      )
+                    }
+                    style={inputStyle(false)}
                   >
-                    {showPassword ? (
-                      <EyeOff size={15} color="#AAA" />
-                    ) : (
-                      <Eye size={15} color="#AAA" />
-                    )}
-                  </button>
-                </div>
-              </Field>
-              <Field label="Bride Type *">
-                <select
-                  value={form.brideType}
-                  onChange={(e) =>
-                    set(
-                      "brideType",
-                      e.target.value as "CUSTOM" | "READY_TO_WEAR",
-                    )
-                  }
-                  style={inputStyle(false)}
-                >
-                  <option value="CUSTOM">Custom</option>
-                  <option value="READY_TO_WEAR">Ready to Wear</option>
-                </select>
-              </Field>
+                    <option value="CUSTOM">Custom</option>
+                    <option value="READY_TO_WEAR">Ready to Wear</option>
+                  </select>
+                </Field>
+              )}
             </div>
 
             {/* Row: Wedding Date + Phone */}
@@ -412,6 +546,41 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
               </Field>
             </div>
 
+            {/* Total Gown Amount */}
+            <Field
+              label={
+                isEdit ? "Total Gown Amount (AUD)" : "Total Gown Amount (AUD) *"
+              }
+              error={errors.totalGownAmount}
+            >
+              <div style={{ position: "relative" }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: 13,
+                    color: "#999",
+                  }}
+                >
+                  $
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.totalGownAmount}
+                  onChange={(e) => set("totalGownAmount", e.target.value)}
+                  placeholder="e.g. 5000"
+                  style={{
+                    ...inputStyle(!!errors.totalGownAmount),
+                    paddingLeft: 28,
+                  }}
+                />
+              </div>
+            </Field>
+
             {/* Notes */}
             <Field label="Notes">
               <textarea
@@ -426,6 +595,106 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
                 }}
               />
             </Field>
+
+            {/* Initial Payment Section - Only show in create mode */}
+            {!isEdit && (
+              <>
+                <div
+                  style={{
+                    borderTop: "1px solid #F0EAE2",
+                    paddingTop: 18,
+                    marginTop: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#555",
+                      marginBottom: 18,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                    }}
+                  >
+                    Initial Payment (Optional)
+                  </div>
+
+                  {/* Row: Initial Payment Amount + Payment Type */}
+                  <div className="bride-modal-row">
+                    <Field
+                      label="Payment Amount"
+                      error={errors.initialPaymentAmount}
+                    >
+                      <div style={{ position: "relative" }}>
+                        <span
+                          style={{
+                            position: "absolute",
+                            left: 12,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            fontSize: 13,
+                            color: "#999",
+                          }}
+                        >
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={form.initialPaymentAmount}
+                          onChange={(e) =>
+                            set("initialPaymentAmount", e.target.value)
+                          }
+                          placeholder="Amount paid today"
+                          style={{
+                            ...inputStyle(!!errors.initialPaymentAmount),
+                            paddingLeft: 28,
+                          }}
+                        />
+                      </div>
+                    </Field>
+                    <Field label="Payment Type">
+                      <select
+                        value={form.initialPaymentType}
+                        onChange={(e) =>
+                          set(
+                            "initialPaymentType",
+                            e.target.value as AppointmentTitle,
+                          )
+                        }
+                        style={inputStyle(false)}
+                        disabled={!form.initialPaymentAmount}
+                      >
+                        {availablePaymentTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {APPOINTMENT_TITLE_LABELS[type]}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+
+                  {/* Payment Notes */}
+                  <Field label="Payment Notes">
+                    <textarea
+                      value={form.initialPaymentNotes}
+                      onChange={(e) =>
+                        set("initialPaymentNotes", e.target.value)
+                      }
+                      placeholder="Notes about this payment…"
+                      rows={2}
+                      style={{
+                        ...inputStyle(false),
+                        resize: "vertical",
+                        lineHeight: 1.5,
+                      }}
+                      disabled={!form.initialPaymentAmount}
+                    />
+                  </Field>
+                </div>
+              </>
+            )}
 
             {/* Footer */}
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
@@ -466,8 +735,11 @@ export function AddBrideModal({ open, onClose }: AddBrideModalProps) {
               >
                 {mutation.isPending ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" /> Adding Bride…
+                    <Loader2 size={15} className="animate-spin" />{" "}
+                    {isEdit ? "Saving…" : "Adding Bride…"}
                   </>
+                ) : isEdit ? (
+                  "Save Changes"
                 ) : (
                   "Add Bride"
                 )}

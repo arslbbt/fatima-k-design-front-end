@@ -123,6 +123,12 @@ export const adminApi = {
       body: JSON.stringify(data),
     }),
 
+  updateBride: (id: string, data: UpdateBridePayload) =>
+    request<BrideWithProfile>(`/admin/brides/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   resetUserPassword: (userId: string, newPassword: string) =>
     request<{ message: string }>(`/admin/users/${userId}/reset-password`, {
       method: "PATCH",
@@ -538,6 +544,7 @@ export interface BrideProfile {
   dietaryNotes: string | null;
   stylePreferences: string | null;
   notes: string | null;
+  totalGownAmount: number | null;
   stage: BrideStage;
   createdAt: string;
 }
@@ -580,6 +587,23 @@ export interface RegisterBridePayload {
   partnerName?: string;
   venueName?: string;
   notes?: string;
+  totalGownAmount?: number;
+  // Initial payment fields
+  initialPaymentAmount?: number;
+  initialPaymentType?: AppointmentTitle;
+  initialPaymentNotes?: string;
+}
+
+export interface UpdateBridePayload {
+  name?: string;
+  email?: string;
+  brideType?: BrideType;
+  weddingDate?: string;
+  phone?: string;
+  partnerName?: string;
+  venueName?: string;
+  notes?: string;
+  totalGownAmount?: number;
 }
 
 export interface UpdateBrideProfilePayload {

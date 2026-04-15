@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Heart,
   Loader2,
+  Edit2,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,6 +59,7 @@ export function AdminAllBrides() {
   );
   const [page, setPage] = useState(1);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editBride, setEditBride] = useState<BrideWithProfile | null>(null);
   const [viewBride, setViewBride] = useState<BrideWithProfile | null>(null);
 
   const debouncedSearch = useDebounce(search);
@@ -347,6 +349,7 @@ export function AdminAllBrides() {
                       }
                       stageUpdating={stageMutation.isPending}
                       onViewProfile={() => setViewBride(bride)}
+                      onEdit={() => setEditBride(bride)}
                     />
                   ))}
                 </div>
@@ -367,8 +370,12 @@ export function AdminAllBrides() {
       </main>
 
       <AddBrideModal
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        open={addModalOpen || !!editBride}
+        onClose={() => {
+          setAddModalOpen(false);
+          setEditBride(null);
+        }}
+        editBride={editBride}
       />
       <BrideProfileModal bride={viewBride} onClose={() => setViewBride(null)} />
     </AdminLayout>
@@ -380,11 +387,13 @@ function BrideCard({
   onStageChange,
   stageUpdating,
   onViewProfile,
+  onEdit,
 }: {
   bride: BrideWithProfile;
   onStageChange: (stage: BrideStage) => void;
   stageUpdating: boolean;
   onViewProfile: () => void;
+  onEdit: () => void;
 }) {
   const profile = bride.brideProfile;
   const currentStage = profile?.stage ?? "CONSULTATION";
@@ -421,8 +430,44 @@ function BrideCard({
         borderRadius: 12,
         boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
         overflow: "hidden",
+        position: "relative",
       }}
     >
+      {/* Edit button - top right */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit();
+        }}
+        title="Edit bride"
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          border: "1px solid #E8E0D5",
+          background: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          zIndex: 10,
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#F5EFE9";
+          e.currentTarget.style.borderColor = "#D4A373";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#fff";
+          e.currentTarget.style.borderColor = "#E8E0D5";
+        }}
+      >
+        <Edit2 size={14} color="#888" />
+      </button>
+
       {/* Top accent — gold if balance outstanding, green if paid */}
       <div
         style={{
@@ -557,7 +602,14 @@ function BrideCard({
         </div>
 
         {/* Info row */}
-        <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 20,
+            marginBottom: 14,
+            flexWrap: "wrap",
+          }}
+        >
           {weddingDate && (
             <div>
               <div
@@ -610,6 +662,31 @@ function BrideCard({
                 : "$0 due"}
             </div>
           </div>
+          {/* Total Gown Amount */}
+          {profile?.totalGownAmount && (
+            <div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#AAAAAA",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: 3,
+                }}
+              >
+                Gown Total
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#555",
+                }}
+              >
+                ${Number(profile.totalGownAmount).toLocaleString()}
+              </div>
+            </div>
+          )}
           {profile?.phone && (
             <div>
               <div

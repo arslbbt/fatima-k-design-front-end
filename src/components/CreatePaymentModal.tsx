@@ -326,7 +326,7 @@ export function CreatePaymentModal({
             {/* Bride selector — create mode only */}
             {!isEdit && (
               <div>
-                <label style={lbl}>Client *</label>
+                <label style={lbl}>Bride *</label>
                 <SearchableSelect
                   value={brideId}
                   onChange={setBrideId}
