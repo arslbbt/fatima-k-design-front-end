@@ -1,7 +1,12 @@
 import { CheckCircle2, Clock, AlertCircle, Download, Info } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { paymentsApi, type Payment, APPOINTMENT_TITLE_LABELS } from "@/lib/api";
+import {
+  paymentsApi,
+  bridesApi,
+  type Payment,
+  APPOINTMENT_TITLE_LABELS,
+} from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BridePortalLayout } from "@/components/BridePortalLayout";
@@ -19,16 +24,28 @@ export function BridePortalPayments() {
     queryFn: () => paymentsApi.listMine(),
   });
 
-  const total = payments?.reduce((s, p) => s + Number(p.amount), 0) || 0;
+  const { data: me } = useQuery({
+    queryKey: ["bride-me"],
+    queryFn: () => bridesApi.me(),
+  });
+
+  const totalGownAmount = me?.brideProfile?.totalGownAmount
+    ? Number(me.brideProfile.totalGownAmount)
+    : null;
   const paid =
     payments
       ?.filter((p) => p.status === "PAID")
       .reduce((s, p) => s + Number(p.amount), 0) || 0;
-  const outstanding =
+  const duePayments =
     payments
       ?.filter((p) => p.status !== "PAID")
       .reduce((s, p) => s + Number(p.amount), 0) || 0;
-  const paidPct = total > 0 ? Math.round((paid / total) * 100) : 0;
+  const outstanding = totalGownAmount ? totalGownAmount - paid : 0;
+  const total = totalGownAmount || 0;
+  const paidPct =
+    totalGownAmount && totalGownAmount > 0
+      ? Math.round((paid / totalGownAmount) * 1000) / 10
+      : 0;
 
   const nextPayment = payments?.find((p) => p.status !== "PAID");
 
@@ -55,7 +72,12 @@ export function BridePortalPayments() {
 
           <div
             className="payment-stats-grid"
-            style={{ display: "flex", gap: 16, marginBottom: 28 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+              gap: 16,
+              marginBottom: 28,
+            }}
           >
             {[
               {
@@ -71,19 +93,24 @@ export function BridePortalPayments() {
                 accent: false,
               },
               {
-                label: "Outstanding",
-                value: `$${outstanding.toLocaleString()}`,
+                label: "Due Payments",
+                value: `$${duePayments.toLocaleString()}`,
                 sub: nextPayment
                   ? `Due ${new Date(nextPayment.dueDate!).toLocaleDateString()}`
-                  : "No pending payments",
-                accent: true,
+                  : "No due payments",
+                accent: duePayments > 0,
+              },
+              {
+                label: "Outstanding Balance",
+                value: `$${outstanding.toLocaleString()}`,
+                sub: "Remaining to pay",
+                accent: false,
               },
             ].map((s, i) => (
               <Card
                 key={i}
                 className="payment-stat-card"
                 style={{
-                  flex: 1,
                   background: s.accent
                     ? "linear-gradient(135deg, #FFF4EC, #FDE8D4)"
                     : "#FFFFFF",
@@ -179,7 +206,7 @@ export function BridePortalPayments() {
                 }}
               >
                 <span>${paid.toLocaleString()} paid</span>
-                <span>${(total - paid).toLocaleString()} remaining</span>
+                <span>${outstanding.toLocaleString()} remaining</span>
               </div>
             </CardContent>
           </Card>
