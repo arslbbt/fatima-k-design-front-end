@@ -49,7 +49,7 @@ export function CreatePaymentModal({
 
   // Fetch selected bride details to get their type and outstanding balance
   const { data: selectedBride } = useQuery({
-    queryKey: ["bride", brideId],
+    queryKey: queryKeys.brides.detail(brideId),
     queryFn: () => bridesApi.get(brideId),
     enabled: !!brideId && open,
   });
@@ -65,9 +65,11 @@ export function CreatePaymentModal({
   const totalGownAmount = selectedBride?.brideProfile?.totalGownAmount
     ? Number(selectedBride.brideProfile.totalGownAmount)
     : null;
-  const outstandingBalance = selectedBride?.outstanding
-    ? Number(selectedBride.outstanding)
-    : null;
+  const outstandingBalance =
+    selectedBride?.outstanding !== undefined &&
+    selectedBride?.outstanding !== null
+      ? Number(selectedBride.outstanding)
+      : null;
   const amountPaid =
     totalGownAmount !== null && outstandingBalance !== null
       ? totalGownAmount - outstandingBalance

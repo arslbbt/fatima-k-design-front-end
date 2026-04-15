@@ -23,6 +23,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { CreatePaymentModal } from "./CreatePaymentModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import { toast } from "@/hooks/use-toast";
+import { invalidateQueries } from "@/lib/queryKeys";
 
 const statusConfig: Record<
   string,
@@ -107,7 +108,7 @@ export function AdminPaymentsDesktop() {
   const markPaidMutation = useMutation({
     mutationFn: (id: string) => paymentsApi.markAsPaid(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      invalidateQueries.afterPaymentMutation(queryClient);
     },
   });
 
@@ -125,7 +126,7 @@ export function AdminPaymentsDesktop() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => paymentsApi.remove(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      invalidateQueries.afterPaymentMutation(queryClient);
       toast({ title: "Payment deleted" });
     },
     onError: (err) =>
@@ -598,10 +599,8 @@ export function AdminPaymentsDesktop() {
               bridesData.items.map((bride: any) => {
                 const isOpen = expandedId === bride.id;
                 const cfg = statusConfig[bride.status] || statusConfig.due;
-                const progress =
-                  bride.total > 0
-                    ? Math.round((bride.paid / bride.total) * 100)
-                    : 0;
+                const progress = bride.total > 0 ? Math.round((bride.paid / bride.total) * 1000) / 10 : 0;
+
 
                 return (
                   <Card

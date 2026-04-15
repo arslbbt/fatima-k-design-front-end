@@ -149,6 +149,7 @@ export const invalidateQueries = {
       queryKey: queryKeys.brides.lists(),
       refetchType: "active",
     });
+    // Invalidate all bride queries including detail queries
     queryClient.invalidateQueries({
       queryKey: queryKeys.brides.all(),
       refetchType: "active",
