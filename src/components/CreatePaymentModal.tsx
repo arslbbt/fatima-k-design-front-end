@@ -65,6 +65,11 @@ export function CreatePaymentModal({
   const totalGownAmount = selectedBride?.brideProfile?.totalGownAmount
     ? Number(selectedBride.brideProfile.totalGownAmount)
     : null;
+  const duePayments =
+    selectedBride?.duePayments !== undefined &&
+    selectedBride?.duePayments !== null
+      ? Number(selectedBride.duePayments)
+      : 0;
   const outstandingBalance =
     selectedBride?.outstanding !== undefined &&
     selectedBride?.outstanding !== null
@@ -74,6 +79,19 @@ export function CreatePaymentModal({
     totalGownAmount !== null && outstandingBalance !== null
       ? totalGownAmount - outstandingBalance
       : null;
+
+  // For display in modal: outstanding after accounting for due payments
+  // In edit mode, add back the original payment amount to get available balance
+  const displayOutstanding =
+    outstandingBalance !== null && duePayments !== null
+      ? Math.max(0, outstandingBalance - duePayments)
+      : outstandingBalance;
+
+  // When editing, calculate max allowed amount (add back the original payment amount)
+  const maxAllowedAmount =
+    isEdit && editPayment
+      ? (displayOutstanding ?? 0) + Number(editPayment.amount)
+      : displayOutstanding;
 
   // Get available payment types based on bride type
   const availablePaymentTypes =
@@ -189,14 +207,10 @@ export function CreatePaymentModal({
       setError("Enter a valid amount.");
       return;
     }
-    // Validate amount doesn't exceed outstanding balance
-    if (
-      !isEdit &&
-      outstandingBalance !== null &&
-      Number(amount) > outstandingBalance
-    ) {
+    // Validate amount doesn't exceed outstanding balance (after due payments)
+    if (maxAllowedAmount !== null && Number(amount) > maxAllowedAmount) {
       setError(
-        `Amount cannot exceed outstanding balance of $${outstandingBalance.toLocaleString()}`,
+        `Amount cannot exceed outstanding balance of $${maxAllowedAmount.toLocaleString()}. To create a larger payment, please update the Total Gown Amount first.`,
       );
       return;
     }
@@ -364,7 +378,7 @@ export function CreatePaymentModal({
             )}
 
             {/* Financial Summary - show when bride is selected */}
-            {!isEdit && brideId && totalGownAmount !== null && (
+            {brideId && totalGownAmount !== null && (
               <div
                 style={{
                   background: "#FCFCFC",
@@ -422,6 +436,37 @@ export function CreatePaymentModal({
                     ${amountPaid?.toLocaleString() ?? "0"}
                   </span>
                 </div>
+                {/* Show due payments row only if > 0 */}
+                {duePayments > 0 && (
+                  <>
+                    <div
+                      style={{
+                        height: 1,
+                        background: "#E8E0D5",
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span style={{ fontSize: 13, color: "#666" }}>
+                        Due Payments
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 600,
+                          color: "#E07020",
+                        }}
+                      >
+                        ${duePayments.toLocaleString()}
+                      </span>
+                    </div>
+                  </>
+                )}
                 <div
                   style={{
                     height: 1,
@@ -443,15 +488,15 @@ export function CreatePaymentModal({
                       fontSize: 16,
                       fontWeight: 700,
                       color:
-                        outstandingBalance && outstandingBalance > 0
+                        displayOutstanding && displayOutstanding > 0
                           ? "#D4574A"
                           : "#4CAF50",
                     }}
                   >
-                    ${outstandingBalance?.toLocaleString() ?? "0"}
+                    ${displayOutstanding?.toLocaleString() ?? "0"}
                   </span>
                 </div>
-                {outstandingBalance !== null && outstandingBalance === 0 && (
+                {displayOutstanding !== null && displayOutstanding === 0 && (
                   <div
                     style={{
                       fontSize: 11,
@@ -537,30 +582,23 @@ export function CreatePaymentModal({
                     type="number"
                     step="0.01"
                     min="0"
-                    max={
-                      !isEdit && outstandingBalance !== null
-                        ? outstandingBalance
-                        : undefined
-                    }
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
                     style={{ ...inp, paddingLeft: 28 }}
                   />
                 </div>
-                {!isEdit &&
-                  outstandingBalance !== null &&
-                  outstandingBalance > 0 && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#888",
-                        marginTop: 6,
-                      }}
-                    >
-                      Max: ${outstandingBalance.toLocaleString()}
-                    </div>
-                  )}
+                {maxAllowedAmount !== null && maxAllowedAmount > 0 && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#888",
+                      marginTop: 6,
+                    }}
+                  >
+                    Max: ${maxAllowedAmount.toLocaleString()}
+                  </div>
+                )}
               </div>
               <div>
                 <label style={lbl}>Due Date *</label>

@@ -554,6 +554,7 @@ export interface BrideProfile {
 export interface BrideWithProfile extends User {
   brideProfile: BrideProfile | null;
   outstanding?: number;
+  duePayments?: number;
 }
 
 export interface Appointment {
