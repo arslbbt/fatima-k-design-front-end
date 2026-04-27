@@ -531,7 +531,11 @@ export function CreatePaymentModal({
               <select
                 value={paymentType}
                 onChange={(e) => setPaymentType(e.target.value as PaymentType)}
-                style={inp}
+                style={{
+                  ...inp,
+                  cursor: !brideId && !isEdit ? "not-allowed" : "pointer",
+                  opacity: !brideId && !isEdit ? 0.6 : 1,
+                }}
                 disabled={!brideId && !isEdit}
               >
                 {!brideId && !isEdit && (
