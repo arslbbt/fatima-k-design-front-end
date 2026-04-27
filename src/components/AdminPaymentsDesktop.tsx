@@ -599,8 +599,10 @@ export function AdminPaymentsDesktop() {
               bridesData.items.map((bride: any) => {
                 const isOpen = expandedId === bride.id;
                 const cfg = statusConfig[bride.status] || statusConfig.due;
-                const progress = bride.total > 0 ? Math.round((bride.paid / bride.total) * 1000) / 10 : 0;
-
+                const progress =
+                  bride.total > 0
+                    ? Math.round((bride.paid / bride.total) * 1000) / 10
+                    : 0;
 
                 return (
                   <Card
