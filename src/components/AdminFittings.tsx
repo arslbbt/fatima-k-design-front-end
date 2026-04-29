@@ -189,8 +189,8 @@ export function AdminFittings() {
         });
         return false;
       }
-      if (f.size > 10 * 1024 * 1024) {
-        toast({ title: "Too large", description: `${f.name} exceeds 10MB.` });
+      if (f.size > 30 * 1024 * 1024) {
+        toast({ title: "Too large", description: `${f.name} exceeds 30MB.` });
         return false;
       }
       return true;
@@ -732,10 +732,10 @@ export function AdminFittings() {
                               });
                               return false;
                             }
-                            if (f.size > 10 * 1024 * 1024) {
+                            if (f.size > 30 * 1024 * 1024) {
                               toast({
                                 title: "Too large",
-                                description: `${f.name} exceeds 10MB.`,
+                                description: `${f.name} exceeds 30MB.`,
                               });
                               return false;
                             }
@@ -773,7 +773,7 @@ export function AdminFittings() {
                         Click to select photos
                       </div>
                       <div style={{ fontSize: 11, color: "#888" }}>
-                        JPEG or PNG · Max 10MB · Up to 10 photos
+                        JPEG or PNG · Max 30MB · Up to 10 photos
                       </div>
                     </div>
                     {newFittingPhotos.length > 0 && (
@@ -1307,7 +1307,7 @@ export function AdminFittings() {
                     Drop photos here or click to upload
                   </div>
                   <div style={{ fontSize: 12, color: "#888" }}>
-                    JPEG or PNG · Max 10MB · Up to 10 at a time
+                    JPEG or PNG · Max 30MB · Up to 10 at a time
                   </div>
                 </div>
               )}

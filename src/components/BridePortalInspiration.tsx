@@ -57,10 +57,10 @@ export function BridePortalInspiration() {
         });
         return false;
       }
-      if (f.size > 10 * 1024 * 1024) {
+      if (f.size > 30 * 1024 * 1024) {
         toast({
           title: "File too large",
-          description: `${f.name} exceeds 10MB.`,
+          description: `${f.name} exceeds 30MB.`,
         });
         return false;
       }
@@ -608,7 +608,7 @@ export function BridePortalInspiration() {
                   Drop photos here to add to your board
                 </div>
                 <div style={{ fontSize: 12, color: "#888" }}>
-                  JPEG or PNG · Max 10MB per image · Up to 5 at a time
+                  JPEG or PNG · Max 30MB per image · Up to 5 at a time
                 </div>
               </div>
               <button
