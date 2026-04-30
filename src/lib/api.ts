@@ -101,6 +101,8 @@ export const adminApi = {
           brideType: BrideType;
         } | null;
         balance: number;
+        currency: string;
+        country: string;
         hasDue: boolean;
       }>;
       recentActivity: Array<{

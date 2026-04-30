@@ -208,7 +208,9 @@ export function AdminDashboard() {
                   <div className="text-3xl font-['Cormorant_Garamond'] font-medium">
                     ${(data?.paidThisMonth ?? 0).toLocaleString()}
                   </div>
-                  <span className="text-xs text-[#888888]">This month</span>
+                  <span className="text-xs text-[#888888]">
+                    This month (converted)
+                  </span>
                 </CardContent>
               </Card>
 
@@ -229,7 +231,7 @@ export function AdminDashboard() {
                   </div>
                   <span className="text-xs text-[#888888]">
                     Across {data?.outstandingBridesCount ?? 0} bride
-                    {(data?.outstandingBridesCount ?? 0) !== 1 ? "s" : ""}
+                    {(data?.outstandingBridesCount ?? 0) !== 1 ? "s" : ""} (converted)
                   </span>
                 </CardContent>
               </Card>
@@ -377,9 +379,8 @@ export function AdminDashboard() {
                                       : "text-[#888888]"
                                   }
                                 >
-                                  {bride.balance > 0
-                                    ? `$${bride.balance.toLocaleString()}`
-                                    : "$0"}
+                                  {bride.balance.toLocaleString()}{" "}
+                                  {bride.currency}
                                 </span>
                               </TableCell>
                               <TableCell className="text-right">
