@@ -9,6 +9,7 @@ interface PaymentReceiptModalProps {
   payment: Payment | null;
   brideName: string;
   brideEmail: string;
+  brideCurrency?: string;
   onClose: () => void;
 }
 
@@ -29,13 +30,14 @@ export function PaymentReceiptModal({
   payment,
   brideName,
   brideEmail,
+  brideCurrency = "AUD",
   onClose,
 }: PaymentReceiptModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
 
   if (!payment) return null;
 
-  const amount = `$${Number(payment.amount).toLocaleString()}`;
+  const amount = `${Number(payment.amount).toLocaleString()} ${brideCurrency}`;
   const label = PAYMENT_TYPE_LABELS[payment.paymentType] ?? payment.paymentType;
 
   function handlePrint() {

@@ -75,6 +75,7 @@ export function AdminPaymentsDesktop() {
   const [receiptBride, setReceiptBride] = useState<{
     name: string;
     email: string;
+    currency: string;
   } | null>(null);
   const [editPayment, setEditPayment] = useState<any | null>(null);
   const [confirmDeletePaymentId, setConfirmDeletePaymentId] = useState<
@@ -199,13 +200,13 @@ export function AdminPaymentsDesktop() {
               {
                 label: "Revenue Collected",
                 value: `$${(overview?.revenueCollected || 0).toLocaleString()}`,
-                sub: "All time",
+                sub: "All time (converted)",
                 icon: <TrendingUp size={18} color="#D4A373" />,
               },
               {
                 label: "Outstanding",
                 value: `$${(overview?.outstanding || 0).toLocaleString()}`,
-                sub: "Across all brides",
+                sub: "Across all brides (converted)",
                 icon: <Clock size={18} color="#D4A373" />,
               },
               {
@@ -318,7 +319,7 @@ export function AdminPaymentsDesktop() {
                     Monthly Revenue
                   </div>
                   <div style={{ fontSize: 12, color: "#888" }}>
-                    {chartYear} — collected payments by month
+                    {chartYear} — collected payments by month (AUD)
                   </div>
                 </div>
                 <select
@@ -661,16 +662,39 @@ export function AdminPaymentsDesktop() {
                             gap: 12,
                           }}
                         >
-                          <span
+                          <div
                             style={{
-                              fontFamily: "'Cormorant Garamond', serif",
-                              fontSize: 18,
-                              fontWeight: 500,
-                              color: "#2C2C2C",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
                             }}
                           >
-                            {bride.name}
-                          </span>
+                            <span
+                              style={{
+                                fontFamily: "'Cormorant Garamond', serif",
+                                fontSize: 18,
+                                fontWeight: 500,
+                                color: "#2C2C2C",
+                              }}
+                            >
+                              {bride.name}
+                            </span>
+                            {/* Country badge */}
+                            <span
+                              style={{
+                                fontSize: 9,
+                                fontWeight: 600,
+                                padding: "2px 6px",
+                                borderRadius: 4,
+                                background: "#F5EFE9",
+                                color: "#8B6F5A",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.5px",
+                              }}
+                            >
+                              {bride.country}
+                            </span>
+                          </div>
                           <div
                             style={{
                               display: "flex",
@@ -692,7 +716,7 @@ export function AdminPaymentsDesktop() {
                                   color: "#2C2C2C",
                                 }}
                               >
-                                ${bride.total.toLocaleString()}
+                                {bride.total.toLocaleString()} {bride.currency}
                               </div>
                               <div
                                 style={{
@@ -765,7 +789,8 @@ export function AdminPaymentsDesktop() {
                               whiteSpace: "nowrap",
                             }}
                           >
-                            ${bride.paid.toLocaleString()} • {progress}%
+                            {bride.paid.toLocaleString()} {bride.currency} •{" "}
+                            {progress}%
                           </span>
                         </div>
                       </div>
@@ -990,7 +1015,8 @@ export function AdminPaymentsDesktop() {
                                       marginBottom: 4,
                                     }}
                                   >
-                                    ${Number(pmt.amount).toLocaleString()}
+                                    {Number(pmt.amount).toLocaleString()}{" "}
+                                    {bride.currency}
                                   </div>
                                   <div
                                     style={{
@@ -1014,6 +1040,7 @@ export function AdminPaymentsDesktop() {
                                         setReceiptBride({
                                           name: bride.name,
                                           email: bride.email,
+                                          currency: bride.currency,
                                         });
                                       }}
                                       style={{
@@ -1134,6 +1161,7 @@ export function AdminPaymentsDesktop() {
         payment={receiptPayment}
         brideName={receiptBride?.name ?? ""}
         brideEmail={receiptBride?.email ?? ""}
+        brideCurrency={receiptBride?.currency ?? "AUD"}
         onClose={() => {
           setReceiptPayment(null);
           setReceiptBride(null);

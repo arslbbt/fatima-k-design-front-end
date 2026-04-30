@@ -80,6 +80,10 @@ export function CreatePaymentModal({
       ? totalGownAmount - outstandingBalance
       : null;
 
+  // Get bride's currency
+  const brideCurrency = selectedBride?.brideProfile?.currency || "AUD";
+  const brideCountry = selectedBride?.brideProfile?.country || "AU";
+
   // For display in modal: outstanding after accounting for due payments
   // In edit mode, add back the original payment amount to get available balance
   const displayOutstanding =
@@ -210,7 +214,7 @@ export function CreatePaymentModal({
     // Validate amount doesn't exceed outstanding balance (after due payments)
     if (maxAllowedAmount !== null && Number(amount) > maxAllowedAmount) {
       setError(
-        `Amount cannot exceed outstanding balance of $${maxAllowedAmount.toLocaleString()}. To create a larger payment, please update the Total Gown Amount first.`,
+        `Amount cannot exceed outstanding balance of ${maxAllowedAmount.toLocaleString()} ${brideCurrency}. To create a larger payment, please update the Total Gown Amount first.`,
       );
       return;
     }
@@ -365,7 +369,21 @@ export function CreatePaymentModal({
             {/* Bride selector — create mode only */}
             {!isEdit && (
               <div>
-                <label style={lbl}>Bride *</label>
+                <label style={lbl}>
+                  Bride *
+                  {brideId && (
+                    <span
+                      style={{
+                        marginLeft: 8,
+                        fontSize: 11,
+                        fontWeight: 400,
+                        color: "#888",
+                      }}
+                    >
+                      ({brideCountry} • {brideCurrency})
+                    </span>
+                  )}
+                </label>
                 <SearchableSelect
                   value={brideId}
                   onChange={setBrideId}
@@ -407,7 +425,7 @@ export function CreatePaymentModal({
                       color: "#2C2C2C",
                     }}
                   >
-                    ${totalGownAmount.toLocaleString()}
+                    {totalGownAmount.toLocaleString()} {brideCurrency}
                   </span>
                 </div>
                 <div
@@ -433,7 +451,7 @@ export function CreatePaymentModal({
                       color: "#4CAF50",
                     }}
                   >
-                    ${amountPaid?.toLocaleString() ?? "0"}
+                    {amountPaid?.toLocaleString() ?? "0"} {brideCurrency}
                   </span>
                 </div>
                 {/* Show due payments row only if > 0 */}
@@ -462,7 +480,7 @@ export function CreatePaymentModal({
                           color: "#E07020",
                         }}
                       >
-                        ${duePayments.toLocaleString()}
+                        {duePayments.toLocaleString()} {brideCurrency}
                       </span>
                     </div>
                   </>
@@ -493,7 +511,8 @@ export function CreatePaymentModal({
                           : "#4CAF50",
                     }}
                   >
-                    ${displayOutstanding?.toLocaleString() ?? "0"}
+                    {displayOutstanding?.toLocaleString() ?? "0"}{" "}
+                    {brideCurrency}
                   </span>
                 </div>
                 {displayOutstanding !== null && displayOutstanding === 0 && (
@@ -568,7 +587,7 @@ export function CreatePaymentModal({
               }}
             >
               <div>
-                <label style={lbl}>Amount (AUD) *</label>
+                <label style={lbl}>Amount ({brideCurrency}) *</label>
                 <div style={{ position: "relative" }}>
                   <span
                     style={{
@@ -576,11 +595,12 @@ export function CreatePaymentModal({
                       left: 14,
                       top: "50%",
                       transform: "translateY(-50%)",
-                      fontSize: 14,
+                      fontSize: 13,
+                      fontWeight: 600,
                       color: "#999",
                     }}
                   >
-                    $
+                    {brideCurrency}
                   </span>
                   <input
                     type="number"
@@ -589,7 +609,7 @@ export function CreatePaymentModal({
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
-                    style={{ ...inp, paddingLeft: 28 }}
+                    style={{ ...inp, paddingLeft: 52 }}
                   />
                 </div>
                 {maxAllowedAmount !== null && maxAllowedAmount > 0 && (
@@ -600,7 +620,7 @@ export function CreatePaymentModal({
                       marginTop: 6,
                     }}
                   >
-                    Max: ${maxAllowedAmount.toLocaleString()}
+                    Max: {maxAllowedAmount.toLocaleString()} {brideCurrency}
                   </div>
                 )}
               </div>
