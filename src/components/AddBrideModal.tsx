@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { X, Eye, EyeOff, Loader2, Search } from "lucide-react";
 import {
   adminApi,
+  currencyApi,
   ApiError,
   type RegisterBridePayload,
   type UpdateBridePayload,
@@ -26,6 +27,7 @@ interface FormState {
   email: string;
   password: string;
   brideType: "CUSTOM" | "READY_TO_WEAR";
+  country: string;
   weddingDate: string;
   phone: string;
   partnerName: string;
@@ -53,6 +55,7 @@ const EMPTY: FormState = {
   email: "",
   password: "",
   brideType: "CUSTOM",
+  country: "AU",
   weddingDate: "",
   phone: "",
   partnerName: "",
@@ -106,10 +109,10 @@ function validate(form: FormState, isEdit: boolean): FormErrors {
     errors.phone = "Phone number is required";
   } else {
     const digitsOnly = form.phone.replace(/\D/g, "");
-    if (digitsOnly.length < 10) {
-      errors.phone = "Phone number must be at least 10 digits";
-    } else if (digitsOnly.length > 12) {
-      errors.phone = "Phone number cannot exceed 12 digits";
+    if (digitsOnly.length < 7) {
+      errors.phone = "Phone number must be at least 7 digits";
+    } else if (digitsOnly.length > 15) {
+      errors.phone = "Phone number cannot exceed 15 digits";
     }
   }
 
@@ -153,6 +156,22 @@ export function AddBrideModal({
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+
+  // Fetch countries
+  const { data: countries = [] } = useQuery({
+    queryKey: ["countries"],
+    queryFn: () => currencyApi.getCountries(),
+  });
+
+  // Filter countries based on search
+  const filteredCountries = countries.filter((c) =>
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()),
+  );
+
+  // Get selected country details
+  const selectedCountry = countries.find((c) => c.isoCode === form.country);
 
   // Get available payment types based on bride type
   const availablePaymentTypes =
@@ -170,6 +189,7 @@ export function AddBrideModal({
           email: editBride.email,
           password: "", // Never pre-fill password
           brideType: editBride.brideProfile?.brideType || "CUSTOM",
+          country: editBride.brideProfile?.country || "AU",
           weddingDate: editBride.brideProfile?.weddingDate
             ? editBride.brideProfile.weddingDate.split("T")[0]
             : "",
@@ -190,6 +210,8 @@ export function AddBrideModal({
       setErrors({});
       setApiError(null);
       setShowPassword(false);
+      setCountrySearch("");
+      setShowCountryDropdown(false);
     }
   }, [open, editBride]);
 
@@ -256,6 +278,7 @@ export function AddBrideModal({
         name: form.name.trim(),
         email: form.email.trim(),
         brideType: form.brideType,
+        country: form.country,
         weddingDate: form.weddingDate,
         phone: form.phone.trim(),
         ...(form.partnerName.trim() && {
@@ -275,6 +298,7 @@ export function AddBrideModal({
         email: form.email.trim(),
         password: form.password,
         brideType: form.brideType,
+        country: form.country,
         weddingDate: form.weddingDate,
         phone: form.phone.trim(),
         ...(form.partnerName.trim() && {
@@ -493,6 +517,129 @@ export function AddBrideModal({
               )}
             </div>
 
+            {/* Country Selector - Only in create mode */}
+            {!isEdit && (
+              <Field label="Country *">
+                <div style={{ position: "relative" }}>
+                  <div
+                    onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                    style={{
+                      ...inputStyle(false),
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    {selectedCountry ? (
+                      <>
+                        <span style={{ fontSize: 18 }}>
+                          {selectedCountry.flag}
+                        </span>
+                        <span style={{ flex: 1 }}>
+                          {selectedCountry.name} ({selectedCountry.currency})
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ color: "#999" }}>Select country...</span>
+                    )}
+                  </div>
+
+                  {showCountryDropdown && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 4px)",
+                        left: 0,
+                        right: 0,
+                        background: "#fff",
+                        border: "1px solid #E8E0D5",
+                        borderRadius: 8,
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                        zIndex: 1000,
+                        maxHeight: 240,
+                        overflowY: "auto",
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: "8px 12px",
+                          borderBottom: "1px solid #F0EAE2",
+                        }}
+                      >
+                        <div style={{ position: "relative" }}>
+                          <Search
+                            size={14}
+                            style={{
+                              position: "absolute",
+                              left: 8,
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              color: "#AAA",
+                            }}
+                          />
+                          <input
+                            type="text"
+                            value={countrySearch}
+                            onChange={(e) => setCountrySearch(e.target.value)}
+                            placeholder="Search countries..."
+                            style={{
+                              width: "100%",
+                              padding: "6px 8px 6px 28px",
+                              border: "1px solid #E8E0D5",
+                              borderRadius: 6,
+                              fontSize: 12,
+                              outline: "none",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        {filteredCountries.slice(0, 50).map((country) => (
+                          <div
+                            key={country.isoCode}
+                            onClick={() => {
+                              set("country", country.isoCode);
+                              setShowCountryDropdown(false);
+                              setCountrySearch("");
+                            }}
+                            style={{
+                              padding: "8px 12px",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              fontSize: 13,
+                              background:
+                                form.country === country.isoCode
+                                  ? "#F8F6F3"
+                                  : "transparent",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "#F8F6F3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background =
+                                form.country === country.isoCode
+                                  ? "#F8F6F3"
+                                  : "transparent";
+                            }}
+                          >
+                            <span style={{ fontSize: 18 }}>{country.flag}</span>
+                            <span style={{ flex: 1 }}>{country.name}</span>
+                            <span style={{ fontSize: 11, color: "#999" }}>
+                              {country.currency}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Field>
+            )}
+
             {/* Row: Wedding Date + Phone */}
             <div className="bride-modal-row">
               <Field label="Wedding Date *" error={errors.weddingDate}>
@@ -514,14 +661,14 @@ export function AddBrideModal({
                     const cleaned = value.replace(/[^\d\s\-\+\(\)]/g, "");
                     // Count only digits
                     const digitsOnly = cleaned.replace(/\D/g, "");
-                    // Prevent input if more than 12 digits
-                    if (digitsOnly.length <= 12) {
+                    // Prevent input if more than 15 digits (international standard)
+                    if (digitsOnly.length <= 15) {
                       set("phone", cleaned);
                     }
                   }}
-                  placeholder="0412 345 678"
+                  placeholder="+1 234 567 8900"
                   style={inputStyle(!!errors.phone)}
-                  maxLength={15}
+                  maxLength={20}
                 />
               </Field>
             </div>
@@ -549,36 +696,55 @@ export function AddBrideModal({
             {/* Total Gown Amount */}
             <Field
               label={
-                isEdit ? "Total Gown Amount (AUD)" : "Total Gown Amount (AUD) *"
+                isEdit
+                  ? `Total Gown Amount (${selectedCountry?.currency || "AUD"}) *`
+                  : `Total Gown Amount (${selectedCountry?.currency || "AUD"}) *`
               }
               error={errors.totalGownAmount}
             >
-              <div style={{ position: "relative" }}>
-                <span
+              {!selectedCountry && !isEdit ? (
+                <div
                   style={{
-                    position: "absolute",
-                    left: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: 13,
-                    color: "#999",
+                    padding: "10px 12px",
+                    border: "1px solid #F5C6C6",
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: "#C0392B",
+                    background: "#FFF0F0",
                   }}
                 >
-                  $
-                </span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={form.totalGownAmount}
-                  onChange={(e) => set("totalGownAmount", e.target.value)}
-                  placeholder="e.g. 5000"
-                  style={{
-                    ...inputStyle(!!errors.totalGownAmount),
-                    paddingLeft: 28,
-                  }}
-                />
-              </div>
+                  Please select a country first
+                </div>
+              ) : (
+                <div style={{ position: "relative" }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#999",
+                    }}
+                  >
+                    {selectedCountry?.currency || "AUD"}
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.totalGownAmount}
+                    onChange={(e) => set("totalGownAmount", e.target.value)}
+                    placeholder="e.g. 5000"
+                    disabled={!selectedCountry && !isEdit}
+                    style={{
+                      ...inputStyle(!!errors.totalGownAmount),
+                      paddingLeft: 48,
+                    }}
+                  />
+                </div>
+              )}
             </Field>
 
             {/* Notes */}
@@ -625,34 +791,51 @@ export function AddBrideModal({
                       label="Payment Amount"
                       error={errors.initialPaymentAmount}
                     >
-                      <div style={{ position: "relative" }}>
-                        <span
+                      {!selectedCountry ? (
+                        <div
                           style={{
-                            position: "absolute",
-                            left: 12,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            fontSize: 13,
-                            color: "#999",
+                            padding: "10px 12px",
+                            border: "1px solid #F5C6C6",
+                            borderRadius: 8,
+                            fontSize: 12,
+                            color: "#C0392B",
+                            background: "#FFF0F0",
                           }}
                         >
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={form.initialPaymentAmount}
-                          onChange={(e) =>
-                            set("initialPaymentAmount", e.target.value)
-                          }
-                          placeholder="Amount paid today"
-                          style={{
-                            ...inputStyle(!!errors.initialPaymentAmount),
-                            paddingLeft: 28,
-                          }}
-                        />
-                      </div>
+                          Select country first
+                        </div>
+                      ) : (
+                        <div style={{ position: "relative" }}>
+                          <span
+                            style={{
+                              position: "absolute",
+                              left: 12,
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "#999",
+                            }}
+                          >
+                            {selectedCountry.currency}
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={form.initialPaymentAmount}
+                            onChange={(e) =>
+                              set("initialPaymentAmount", e.target.value)
+                            }
+                            placeholder="Amount paid today"
+                            disabled={!selectedCountry}
+                            style={{
+                              ...inputStyle(!!errors.initialPaymentAmount),
+                              paddingLeft: 48,
+                            }}
+                          />
+                        </div>
+                      )}
                     </Field>
                     <Field label="Payment Type">
                       <select
@@ -664,7 +847,9 @@ export function AddBrideModal({
                           )
                         }
                         style={inputStyle(false)}
-                        disabled={!form.initialPaymentAmount}
+                        disabled={
+                          !form.initialPaymentAmount || !selectedCountry
+                        }
                       >
                         {availablePaymentTypes.map((type) => (
                           <option key={type} value={type}>

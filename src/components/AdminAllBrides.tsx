@@ -507,16 +507,40 @@ function BrideCard({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 18,
-                fontWeight: 600,
-                color: "#2C2C2C",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 2,
               }}
             >
-              {bride.name}
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: "#2C2C2C",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {bride.name}
+              </div>
+              {profile?.country && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                    background: "#F0EAE2",
+                    color: "#7A5C3A",
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}
+                >
+                  {profile.country}
+                </span>
+              )}
             </div>
             <div
               style={{
@@ -658,8 +682,8 @@ function BrideCard({
               }}
             >
               {(bride.outstanding ?? 0) > 0
-                ? `$${bride.outstanding!.toLocaleString()} `
-                : "$0 due"}
+                ? `${bride.outstanding!.toLocaleString()} ${profile?.currency || "AUD"}`
+                : `0 ${profile?.currency || "AUD"}`}
             </div>
           </div>
           {/* Total Gown Amount */}
@@ -683,7 +707,8 @@ function BrideCard({
                   color: "#555",
                 }}
               >
-                ${Number(profile.totalGownAmount).toLocaleString()}
+                {Number(profile.totalGownAmount).toLocaleString()}{" "}
+                {profile.currency || "AUD"}
               </div>
             </div>
           )}

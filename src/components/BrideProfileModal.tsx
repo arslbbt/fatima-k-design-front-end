@@ -222,6 +222,23 @@ export function BrideProfileModal({ bride, onClose }: BrideProfileModalProps) {
                       ? "✦ Custom"
                       : "◇ Ready to Wear"}
                   </span>
+                  {profile?.country && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        padding: "3px 10px",
+                        borderRadius: 12,
+                        background: "rgba(255,255,255,0.15)",
+                        color: "rgba(255,255,255,0.9)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      {profile.country} • {profile.currency || "AUD"}
+                    </span>
+                  )}
                 </div>
                 <div
                   style={{

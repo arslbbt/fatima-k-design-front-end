@@ -175,6 +175,37 @@ export const adminApi = {
   },
 };
 
+// ── Currency ──────────────────────────────────────────────────────────────────
+
+export const currencyApi = {
+  getCountries: () =>
+    request<
+      Array<{
+        isoCode: string;
+        name: string;
+        currency: string;
+        flag: string;
+      }>
+    >("/currency/countries"),
+
+  searchCountries: (query: string) =>
+    request<
+      Array<{
+        isoCode: string;
+        name: string;
+        currency: string;
+        flag: string;
+      }>
+    >(`/currency/countries/search?q=${encodeURIComponent(query)}`),
+
+  getExchangeRate: (fromCurrency: string) =>
+    request<{
+      rate: number;
+      source: string;
+      timestamp: string;
+    }>(`/currency/exchange-rate?from=${fromCurrency}`),
+};
+
 // ── Brides ────────────────────────────────────────────────────────────────────
 
 export const bridesApi = {
@@ -537,6 +568,8 @@ export interface BrideProfile {
   id: string;
   userId: string;
   brideType: BrideType;
+  country: string;
+  currency: string;
   weddingDate: string | null;
   phone: string | null;
   address: string | null;
@@ -585,6 +618,7 @@ export interface RegisterBridePayload {
   email: string;
   password: string;
   brideType?: BrideType;
+  country?: string;
   weddingDate?: string;
   phone?: string;
   partnerName?: string;
@@ -601,6 +635,7 @@ export interface UpdateBridePayload {
   name?: string;
   email?: string;
   brideType?: BrideType;
+  country?: string;
   weddingDate?: string;
   phone?: string;
   partnerName?: string;
