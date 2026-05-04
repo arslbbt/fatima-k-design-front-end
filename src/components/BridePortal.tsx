@@ -233,6 +233,8 @@ export function BridePortal() {
   const firstName = me?.name ?? "there";
   const weddingDate = me?.brideProfile?.weddingDate ?? null;
   const days = daysUntil(weddingDate);
+  const brideCurrency = me?.brideProfile?.currency || "AUD";
+  const brideCountry = me?.brideProfile?.country || "AU";
 
   // upcoming appointments: today or future, max 3
   const now = new Date();
@@ -358,9 +360,27 @@ export function BridePortal() {
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
-            <h1 className="text-4xl font-['Cormorant_Garamond'] font-medium text-[#2C2C2C]">
-              Welcome back, {firstName}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-['Cormorant_Garamond'] font-medium text-[#2C2C2C]">
+                Welcome back, {firstName}
+              </h1>
+              {brideCountry && brideCountry !== "AU" && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    background: "#F5EFE9",
+                    color: "#8B6F5A",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {brideCountry}
+                </span>
+              )}
+            </div>
 
             {weddingDate && days !== null ? (
               <div className="bg-[#E8D8CE]/40 border border-[#D4A373]/20 rounded-xl p-4 flex items-center justify-center gap-3 shadow-sm">
@@ -469,7 +489,10 @@ export function BridePortal() {
                           <span className="text-[#4CAF50]">Fully Paid</span>
                         ) : (
                           <>
-                            ${remaining.toLocaleString()}{" "}
+                            {remaining.toLocaleString()}{" "}
+                            <span className="text-lg font-sans font-normal">
+                              {brideCurrency}
+                            </span>{" "}
                             <span className="text-lg font-sans text-[#888888] font-normal">
                               remaining
                             </span>
@@ -478,12 +501,14 @@ export function BridePortal() {
                       </div>
                       <div className="text-sm text-[#888888] space-y-1">
                         <div>
-                          ${paidAmount.toLocaleString()} paid of $
-                          {totalGownAmount.toLocaleString()} total
+                          {paidAmount.toLocaleString()} {brideCurrency} paid of{" "}
+                          {totalGownAmount.toLocaleString()} {brideCurrency}{" "}
+                          total
                         </div>
                         {duePayments > 0 && (
                           <div className="text-[#D4574A] font-medium">
-                            ${duePayments.toLocaleString()} due payment for now
+                            {duePayments.toLocaleString()} {brideCurrency} due
+                            payment for now
                           </div>
                         )}
                       </div>

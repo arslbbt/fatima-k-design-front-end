@@ -32,6 +32,9 @@ export function BridePortalPayments() {
   const totalGownAmount = me?.brideProfile?.totalGownAmount
     ? Number(me.brideProfile.totalGownAmount)
     : null;
+  const brideCurrency = me?.brideProfile?.currency || "AUD";
+  const brideCountry = me?.brideProfile?.country || "AU";
+
   const paid =
     payments
       ?.filter((p) => p.status === "PAID")
@@ -54,17 +57,35 @@ export function BridePortalPayments() {
       <main className="bp-page-main">
         <div style={{ maxWidth: 820, margin: "0 auto" }}>
           <div style={{ marginBottom: 28 }}>
-            <h1
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 32,
-                fontWeight: 500,
-                color: "#2C2C2C",
-                margin: "0 0 6px",
-              }}
-            >
-              Payments
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <h1
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 32,
+                  fontWeight: 500,
+                  color: "#2C2C2C",
+                  margin: "0 0 6px",
+                }}
+              >
+                Payments
+              </h1>
+              {brideCountry && brideCountry !== "AU" && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    background: "#F5EFE9",
+                    color: "#8B6F5A",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {brideCountry}
+                </span>
+              )}
+            </div>
             <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
               Your payment schedule and collection status
             </p>
@@ -82,19 +103,19 @@ export function BridePortalPayments() {
             {[
               {
                 label: "Total Value",
-                value: `$${total.toLocaleString()}`,
+                value: total.toLocaleString(),
                 sub: "Custom couture",
                 accent: false,
               },
               {
                 label: "Paid to Date",
-                value: `$${paid.toLocaleString()}`,
+                value: paid.toLocaleString(),
                 sub: `${paidPct}% complete`,
                 accent: false,
               },
               {
                 label: "Due Payments",
-                value: `$${duePayments.toLocaleString()}`,
+                value: duePayments.toLocaleString(),
                 sub: nextPayment
                   ? `Due ${new Date(nextPayment.dueDate!).toLocaleDateString()}`
                   : "No due payments",
@@ -102,7 +123,7 @@ export function BridePortalPayments() {
               },
               {
                 label: "Outstanding Balance",
-                value: `$${outstanding.toLocaleString()}`,
+                value: outstanding.toLocaleString(),
                 sub: "Remaining to pay",
                 accent: false,
               },
@@ -129,7 +150,15 @@ export function BridePortalPayments() {
                       marginBottom: 4,
                     }}
                   >
-                    {s.value}
+                    {s.value}{" "}
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: s.accent ? "#C07840" : "#D4A373",
+                      }}
+                    >
+                      {brideCurrency}
+                    </span>
                   </div>
                   <div
                     className="stat-label"
@@ -205,8 +234,20 @@ export function BridePortalPayments() {
                   color: "#AAAAAA",
                 }}
               >
-                <span>${paid.toLocaleString()} paid</span>
-                <span>${outstanding.toLocaleString()} remaining</span>
+                <span>
+                  {paid.toLocaleString()}{" "}
+                  <span style={{ fontSize: 10, color: "#AAAAAA" }}>
+                    {brideCurrency}
+                  </span>{" "}
+                  paid
+                </span>
+                <span>
+                  {outstanding.toLocaleString()}{" "}
+                  <span style={{ fontSize: 10, color: "#AAAAAA" }}>
+                    {brideCurrency}
+                  </span>{" "}
+                  remaining
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -405,7 +446,19 @@ export function BridePortalPayments() {
                                 : "#BBBBBB",
                           }}
                         >
-                          ${Number(pmt.amount).toLocaleString()}
+                          {Number(pmt.amount).toLocaleString()}{" "}
+                          <span
+                            style={{
+                              fontSize: 14,
+                              color: isPaid
+                                ? "#888"
+                                : isDue
+                                  ? "#C07840"
+                                  : "#BBBBBB",
+                            }}
+                          >
+                            {pmt.currency}
+                          </span>
                         </div>
                         {isPaid && (
                           <button
@@ -461,6 +514,7 @@ export function BridePortalPayments() {
         payment={receiptPayment}
         brideName={user?.name ?? ""}
         brideEmail={user?.email ?? ""}
+        brideCurrency={brideCurrency}
         onClose={() => setReceiptPayment(null)}
       />
     </BridePortalLayout>
