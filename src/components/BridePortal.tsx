@@ -364,7 +364,7 @@ export function BridePortal() {
               <h1 className="text-4xl font-['Cormorant_Garamond'] font-medium text-[#2C2C2C]">
                 Welcome back, {firstName}
               </h1>
-              {brideCountry && brideCountry !== "AU" && (
+       
                 <span
                   style={{
                     fontSize: 11,
@@ -379,7 +379,7 @@ export function BridePortal() {
                 >
                   {brideCountry}
                 </span>
-              )}
+              
             </div>
 
             {weddingDate && days !== null ? (
