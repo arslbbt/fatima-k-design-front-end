@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { X, Eye, EyeOff, Loader2, Search } from "lucide-react";
+import { X, Eye, EyeOff, Loader2, Search, ChevronDown } from "lucide-react";
 import {
   adminApi,
   currencyApi,
@@ -164,6 +164,23 @@ export function AddBrideModal({
     queryKey: ["countries"],
     queryFn: () => currencyApi.getCountries(),
   });
+
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    if (!showCountryDropdown) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Check if click is outside the country dropdown
+      if (!target.closest("[data-country-dropdown]")) {
+        setShowCountryDropdown(false);
+        setCountrySearch("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showCountryDropdown]);
 
   // Filter countries based on search
   const filteredCountries = countries.filter((c) =>
@@ -500,19 +517,36 @@ export function AddBrideModal({
               )}
               {!isEdit && (
                 <Field label="Bride Type *">
-                  <select
-                    value={form.brideType}
-                    onChange={(e) =>
-                      set(
-                        "brideType",
-                        e.target.value as "CUSTOM" | "READY_TO_WEAR",
-                      )
-                    }
-                    style={inputStyle(false)}
-                  >
-                    <option value="CUSTOM">Custom</option>
-                    <option value="READY_TO_WEAR">Ready to Wear</option>
-                  </select>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      value={form.brideType}
+                      onChange={(e) =>
+                        set(
+                          "brideType",
+                          e.target.value as "CUSTOM" | "READY_TO_WEAR",
+                        )
+                      }
+                      style={{
+                        ...inputStyle(false),
+                        appearance: "none",
+                        paddingRight: 36,
+                      }}
+                    >
+                      <option value="CUSTOM">Custom</option>
+                      <option value="READY_TO_WEAR">Ready to Wear</option>
+                    </select>
+                    <ChevronDown
+                      size={16}
+                      style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#AAA",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  </div>
                 </Field>
               )}
             </div>
@@ -520,7 +554,7 @@ export function AddBrideModal({
             {/* Country Selector - Only in create mode */}
             {!isEdit && (
               <Field label="Country *">
-                <div style={{ position: "relative" }}>
+                <div style={{ position: "relative" }} data-country-dropdown>
                   <div
                     onClick={() => setShowCountryDropdown(!showCountryDropdown)}
                     style={{
@@ -529,6 +563,7 @@ export function AddBrideModal({
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
+                      paddingRight: 36,
                     }}
                   >
                     {selectedCountry ? (
@@ -544,6 +579,20 @@ export function AddBrideModal({
                       <span style={{ color: "#999" }}>Select country...</span>
                     )}
                   </div>
+                  <ChevronDown
+                    size={16}
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: showCountryDropdown
+                        ? "translateY(-50%) rotate(180deg)"
+                        : "translateY(-50%)",
+                      color: "#AAA",
+                      pointerEvents: "none",
+                      transition: "transform 0.2s ease",
+                    }}
+                  />
 
                   {showCountryDropdown && (
                     <div
@@ -838,25 +887,42 @@ export function AddBrideModal({
                       )}
                     </Field>
                     <Field label="Payment Type">
-                      <select
-                        value={form.initialPaymentType}
-                        onChange={(e) =>
-                          set(
-                            "initialPaymentType",
-                            e.target.value as AppointmentTitle,
-                          )
-                        }
-                        style={inputStyle(false)}
-                        disabled={
-                          !form.initialPaymentAmount || !selectedCountry
-                        }
-                      >
-                        {availablePaymentTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {APPOINTMENT_TITLE_LABELS[type]}
-                          </option>
-                        ))}
-                      </select>
+                      <div style={{ position: "relative" }}>
+                        <select
+                          value={form.initialPaymentType}
+                          onChange={(e) =>
+                            set(
+                              "initialPaymentType",
+                              e.target.value as AppointmentTitle,
+                            )
+                          }
+                          style={{
+                            ...inputStyle(false),
+                            appearance: "none",
+                            paddingRight: 36,
+                          }}
+                          disabled={
+                            !form.initialPaymentAmount || !selectedCountry
+                          }
+                        >
+                          {availablePaymentTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {APPOINTMENT_TITLE_LABELS[type]}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown
+                          size={16}
+                          style={{
+                            position: "absolute",
+                            right: 12,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            color: "#AAA",
+                            pointerEvents: "none",
+                          }}
+                        />
+                      </div>
                     </Field>
                   </div>
 
